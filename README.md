@@ -105,6 +105,27 @@ npm run preview
 
 ---
 
+## 🌐 Deploy to Vercel via GitHub
+
+OmniDoc Studio is pre-configured with `vercel.json` for instant deployment on Vercel:
+
+1. **Push your repository to GitHub**:
+   ```bash
+   # Create a repository on https://github.com/new named 'omnidoc-studio'
+   git remote add origin https://github.com/albin170/omnidoc-studio.git
+   git push -u origin main
+   ```
+
+2. **Deploy on Vercel**:
+   - Go to [vercel.com/new](https://vercel.com/new) and log in with your GitHub account.
+   - Click **Import** next to your `omnidoc-studio` repository.
+   - Framework preset will automatically be detected as **Vite**.
+   - Click **Deploy**.
+   - Your studio is live within 30 seconds with a free `.vercel.app` URL and automatic HTTPS!
+   - Every future commit to `main` will automatically build and deploy.
+
+---
+
 ## 🧪 Automated Testing
 OmniDoc Studio includes automated tests covering:
 - Format detection & magic byte identification (`src/tests/converter.test.ts`)
