@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Presentation, 
   Plus, 
@@ -102,6 +102,17 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [isPresenting, setIsPresenting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    if (initialTitle) setDeckTitle(initialTitle);
+  }, [initialTitle]);
+
+  useEffect(() => {
+    if (initialSlides && Array.isArray(initialSlides) && initialSlides.length > 0) {
+      setSlides(initialSlides);
+      setActiveSlideIndex(0);
+    }
+  }, [initialSlides]);
 
   const activeSlide = slides[activeSlideIndex] || slides[0];
 

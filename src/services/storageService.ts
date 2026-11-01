@@ -19,119 +19,178 @@ export interface UserSession {
   planTier?: PlanTier;
   billingCycle?: 'monthly' | 'annual';
   subscriptionExpiresAt?: number;
+  isLocalPrototype?: boolean;
+  isDeveloperMode?: boolean;
 }
 
 /**
- * Get all stored projects
+ * Validate that an object conforms to the StoredProject schema.
+ */
+export function validateProjectStructure(project: any): project is StoredProject {
+  if (!project || typeof project !== 'object') return false;
+  if (typeof project.id !== 'string' || !project.id.trim()) return false;
+  if (typeof project.title !== 'string' || !project.title.trim()) return false;
+  const validTypes = ['pdf', 'docx', 'slides', 'sheets', 'image', 'ocr'];
+  if (!validTypes.includes(project.type)) return false;
+  if (typeof project.createdAt !== 'number' || isNaN(project.createdAt)) return false;
+  if (typeof project.updatedAt !== 'number' || isNaN(project.updatedAt)) return false;
+  if (project.data === undefined) return false;
+  return true;
+}
+
+/**
+ * Get all stored projects safely. Filters out corrupted entries.
  */
 export function getStoredProjects(): StoredProject[] {
   try {
     const raw = localStorage.getItem(STORAGE_PROJECTS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(validateProjectStructure);
   } catch (e) {
-    console.warn('Failed to read stored projects:', e);
+    console.warn('Failed to read or parse stored projects from localStorage:', e);
     return [];
   }
 }
 
 /**
- * Save or update a project
+ * Save or update a project. Throws on validation failure or quota exhaustion.
  */
-export function saveProject(project: StoredProject): void {
+export function saveProject(project: StoredProject): StoredProject {
+  if (!validateProjectStructure(project)) {
+    throw new Error('Invalid project structure: project must have an id, title, valid type, and data payload.');
+  }
+
+  const existing = getStoredProjects();
+  const index = existing.findIndex((p) => p.id === project.id);
+  const updatedProject = {
+    ...project,
+    updatedAt: Date.now(),
+    sizeBytes: project.sizeBytes || JSON.stringify(project.data).length,
+  };
+
+  if (index >= 0) {
+    existing[index] = updatedProject;
+  } else {
+    existing.unshift(updatedProject);
+  }
+
   try {
-    const existing = getStoredProjects();
-    const index = existing.findIndex((p) => p.id === project.id);
-    if (index >= 0) {
-      existing[index] = { ...project, updatedAt: Date.now() };
-    } else {
-      existing.unshift(project);
-    }
     localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(existing));
-  } catch (e) {
-    console.error('Failed to save project:', e);
+    return updatedProject;
+  } catch (err: any) {
+    if (err && (err.name === 'QuotaExceededError' || err.code === 22 || err.number === -2147024882)) {
+      throw new Error('Local storage quota exceeded. Please free up browser storage space or remove older projects.');
+    }
+    throw new Error(`Failed to save project to browser local storage: ${err?.message || 'Storage unavailable'}`);
   }
 }
 
 /**
- * Delete a project by ID
+ * Delete a project by ID. Throws on storage failure.
  */
 export function deleteProject(id: string): void {
+  if (!id || typeof id !== 'string') {
+    throw new Error('Project ID is required for deletion.');
+  }
+
+  const existing = getStoredProjects();
+  const filtered = existing.filter((p) => p.id !== id);
+
   try {
-    const existing = getStoredProjects().filter((p) => p.id !== id);
-    localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(existing));
-  } catch (e) {
-    console.error('Failed to delete project:', e);
+    localStorage.setItem(STORAGE_PROJECTS_KEY, JSON.stringify(filtered));
+  } catch (err: any) {
+    throw new Error(`Failed to delete project from browser local storage: ${err?.message || 'Storage unavailable'}`);
   }
 }
 
 /**
- * Get conversion history
+ * Get conversion history safely.
  */
 export function getConversionHistory(): ConversionHistoryItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_HISTORY_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
     return [];
   }
 }
 
 /**
- * Add a record to conversion history
+ * Add a record to conversion history. Throws on persistence failure.
  */
 export function addConversionHistoryItem(item: ConversionHistoryItem): void {
+  if (!item || !item.id) return;
   try {
     const history = getConversionHistory();
     history.unshift(item);
-    // Keep max 50 recent items
     const trimmed = history.slice(0, 50);
     localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(trimmed));
   } catch (e) {
-    console.warn('Failed to record conversion history:', e);
+    console.warn('Failed to record conversion history to local storage:', e);
   }
 }
 
 /**
- * Clear conversion history
+ * Clear conversion history.
  */
 export function clearConversionHistory(): void {
-  localStorage.removeItem(STORAGE_HISTORY_KEY);
+  try {
+    localStorage.removeItem(STORAGE_HISTORY_KEY);
+  } catch {
+    // Ignore error on clear
+  }
 }
 
 /**
- * Purge all local user data (privacy-first cleanup)
+ * Purge all local user data.
  */
 export function purgeAllLocalData(): void {
-  localStorage.removeItem(STORAGE_PROJECTS_KEY);
-  localStorage.removeItem(STORAGE_HISTORY_KEY);
-  localStorage.removeItem(STORAGE_AUTH_KEY);
+  try {
+    localStorage.removeItem(STORAGE_PROJECTS_KEY);
+    localStorage.removeItem(STORAGE_HISTORY_KEY);
+    localStorage.removeItem(STORAGE_AUTH_KEY);
+  } catch {
+    // Ignore error on purge
+  }
 }
 
 /**
  * Get current user session.
- * For existing authenticated users (saved in localStorage), returns isAuthenticated: true.
- * For new users (no stored session), returns default with isAuthenticated: false so they see login/signup gateway.
+ * For unauthenticated users, assigns a standard 'user' role on 'free' tier.
+ * Never assigns unverified admin or paid entitlements.
  */
 export function getUserSession(): UserSession {
   try {
     const raw = localStorage.getItem(STORAGE_AUTH_KEY);
     if (raw) {
       const parsed: UserSession = JSON.parse(raw);
-      return parsed;
+      return {
+        ...parsed,
+        isLocalPrototype: true,
+        // Ensure role defaults to 'user' if not explicitly configured
+        role: parsed.role === 'admin' ? 'admin' : (parsed.role === 'staff' ? 'staff' : 'user'),
+        planTier: parsed.planTier || 'free',
+      };
     }
-  } catch (e) {
+  } catch {
     // fallback
   }
 
-  // Brand new visitor default: unauthenticated
+  // Brand new visitor default: unauthenticated client-side demo
   return {
     isGuest: false,
     userName: '',
     storageUsedBytes: 0,
     isAuthenticated: false,
-    role: 'admin', // default to admin for standalone local application so user has full capabilities
-    planTier: 'pro',
-    billingCycle: 'annual',
+    role: 'user', // Default is standard user (never admin)
+    planTier: 'free', // Default is free tier (never pro)
+    billingCycle: 'monthly',
+    isLocalPrototype: true,
+    isDeveloperMode: false,
   };
 }
 

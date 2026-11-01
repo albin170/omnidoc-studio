@@ -48,10 +48,13 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
       storageUsedBytes: 0,
       isAuthenticated: true,
       rememberMe,
+      role: 'user',
+      planTier: 'free',
+      isLocalPrototype: true,
     };
 
     onAuthenticate(session);
-    addToast('success', 'Welcome Back!', `Signed in as ${session.userName}.`);
+    addToast('success', 'Local Session Active', `Signed in as ${session.userName} (Local Prototype).`);
   };
 
   const handleSignUp = (e: React.FormEvent) => {
@@ -73,10 +76,13 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
       storageUsedBytes: 0,
       isAuthenticated: true,
       rememberMe,
+      role: 'user',
+      planTier: 'free',
+      isLocalPrototype: true,
     };
 
     onAuthenticate(session);
-    addToast('success', 'Account Created!', `Welcome to OmniDoc Studio, ${name.trim()}!`);
+    addToast('success', 'Profile Created', `Welcome to OmniDoc Studio, ${name.trim()}!`);
   };
 
   const handleGuestEntry = () => {
@@ -87,6 +93,9 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
       storageUsedBytes: 0,
       isAuthenticated: true,
       rememberMe: false,
+      role: 'user',
+      planTier: 'free',
+      isLocalPrototype: true,
     };
 
     onAuthenticate(session);
@@ -188,9 +197,16 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
             </div>
 
             {/* Form Title */}
-            <div className="mb-6">
+            <div className="mb-4">
+              <div className="mb-3 p-3 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-[11px] leading-relaxed">
+                <div className="font-bold flex items-center gap-1.5 text-amber-800 mb-0.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Client-Side Evaluation Mode</span>
+                </div>
+                OmniDoc Studio executes locally in browser memory without an external backend auth service. Email &amp; preferences are stored privately on this device only.
+              </div>
               <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                {mode === 'signin' ? 'Welcome back to OmniDoc' : 'Create your free workspace'}
+                {mode === 'signin' ? 'Welcome to OmniDoc Studio' : 'Create your local workspace'}
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 {mode === 'signin'

@@ -15,6 +15,21 @@ export interface ConversionResult {
 }
 
 /**
+ * Escape text for safe embedding in HTML documents (XSS protection).
+ */
+export function escapeHtml(str: string): string {
+  if (typeof str !== 'string') {
+    str = String(str ?? '');
+  }
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Execute a real file conversion according to the registered conversion matrix
  */
 export async function executeFileConversion(
@@ -362,10 +377,11 @@ export async function executeFileConversion(
 
     if (targetFormat === 'html') {
       updateProgress(75, 'Generating semantic HTML table report...');
+      const escapedTitle = escapeHtml(baseName);
       const tableRows = parsed.data
         .map((row, rIdx) => {
           const tag = rIdx === 0 ? 'th' : 'td';
-          const cells = row.map((c) => `<${tag} style="border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left;">${String(c)}</${tag}>`).join('');
+          const cells = row.map((c) => `<${tag} style="border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left;">${escapeHtml(String(c ?? ''))}</${tag}>`).join('');
           return `<tr>${cells}</tr>`;
         })
         .join('\n');
@@ -373,7 +389,7 @@ export async function executeFileConversion(
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${baseName}</title>
+  <title>${escapedTitle}</title>
   <style>
     body { font-family: system-ui, sans-serif; margin: 40px; color: #1e293b; }
     h1 { margin-bottom: 20px; }
@@ -383,7 +399,7 @@ export async function executeFileConversion(
   </style>
 </head>
 <body>
-  <h1>${baseName}</h1>
+  <h1>${escapedTitle}</h1>
   <table>
     ${tableRows}
   </table>
@@ -466,10 +482,12 @@ export async function executeFileConversion(
     }
 
     if (targetFormat === 'html') {
-      updateProgress(70, 'Rendering HTML document...');
+      updateProgress(70, 'Rendering sanitized HTML document...');
       let bodyHtml = '';
       if (sourceFormat === 'md') {
-        bodyHtml = rawText
+        // Escape all HTML characters first to block XSS payloads
+        const sanitized = escapeHtml(rawText);
+        bodyHtml = sanitized
           .replace(/^# (.*$)/gim, '<h1>$1</h1>')
           .replace(/^## (.*$)/gim, '<h2>$1</h2>')
           .replace(/^### (.*$)/gim, '<h3>$1</h3>')
@@ -479,17 +497,19 @@ export async function executeFileConversion(
           .replace(/\n/gim, '<br>');
         bodyHtml = `<p>${bodyHtml}</p>`;
       } else {
-        bodyHtml = rawText.split('\n\n').map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('\n');
+        const sanitized = escapeHtml(rawText);
+        bodyHtml = sanitized.split('\n\n').map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('\n');
       }
+      const escapedTitle = escapeHtml(baseName);
       const htmlDoc = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${baseName}</title>
+  <title>${escapedTitle}</title>
   <style>body { font-family: system-ui, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #1e293b; }</style>
 </head>
 <body>
-  <h1>${baseName}</h1>
+  <h1>${escapedTitle}</h1>
   ${bodyHtml}
 </body>
 </html>`;

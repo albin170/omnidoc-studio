@@ -3,6 +3,7 @@ import {
   ConversionHistoryItem, 
   ConversionJob, 
   FileFormat, 
+  SlideItem,
   StoredProject, 
   TemplateItem, 
   WorkspaceTab 
@@ -36,7 +37,10 @@ import { AuthGateway } from './components/auth/AuthGateway';
 import { CommandPalette } from './components/common/CommandPalette';
 import { GlobalDropzone } from './components/common/GlobalDropzone';
 import { HelpShortcutsModal } from './components/common/HelpShortcutsModal';
-import { detectFileFormat, FORMAT_REGISTRY, formatFileSize } from './services/formatDetector';
+import { FORMAT_REGISTRY, formatFileSize, validateFileFormat } from './services/formatDetector';
+import { extractTextFromDocxFile } from './services/docxService';
+import { parseSpreadsheetFile } from './services/sheetService';
+import { extractTextFromPptxFile } from './services/pptxService';
 import { 
   Menu, 
   User as UserIcon, 
@@ -88,14 +92,20 @@ export const App: React.FC = () => {
   // Save current project from editor
   const handleSaveProject = useCallback((title: string, data: any, type: StoredProject['type']) => {
     try {
+      let normalizedData = data;
+      if (type === 'sheets') {
+        const gridData = data?.gridData || data?.data || (Array.isArray(data) ? data : undefined);
+        normalizedData = { gridData, data: gridData };
+      }
+
       const newProject: StoredProject = {
         id: `proj-${Date.now()}`,
         title: title || 'Untitled Project',
         type,
         updatedAt: Date.now(),
         createdAt: Date.now(),
-        sizeBytes: JSON.stringify(data).length,
-        data,
+        sizeBytes: JSON.stringify(normalizedData).length,
+        data: normalizedData,
       };
 
       saveProject(newProject);
@@ -134,7 +144,7 @@ export const App: React.FC = () => {
             handleSaveProject(slideState.title, { slides: slideState.slides }, 'slides');
             break;
           case 'sheets':
-            handleSaveProject(sheetState.title, { data: sheetState.data }, 'sheets');
+            handleSaveProject(sheetState.title, { gridData: sheetState.data }, 'sheets');
             break;
           case 'pdf':
             addToast('info', 'Save PDF', 'Use the Save button in the PDF Studio toolbar to save page annotations.');
@@ -174,7 +184,7 @@ export const App: React.FC = () => {
   };
 
   // Dispatch uploaded file to corresponding editor with robust error checks
-  const handleOpenFileInEditor = (file: File, format: FileFormat, targetTab?: WorkspaceTab) => {
+  const handleOpenFileInEditor = async (file: File, format: FileFormat, targetTab?: WorkspaceTab) => {
     if (!file || file.size === 0) {
       addToast('error', 'Invalid File', 'The selected file is empty (0 bytes).');
       return;
@@ -190,30 +200,108 @@ export const App: React.FC = () => {
       return;
     }
 
-    if (format === 'pdf') {
+    // Validate file integrity and content signatures
+    const validation = await validateFileFormat(file);
+    if (!validation.valid) {
+      addToast('error', 'File Validation Failed', validation.error || `"${file.name}" is corrupted or unsupported.`);
+      return;
+    }
+
+    const effectiveFormat = validation.format || format;
+
+    if (effectiveFormat === 'pdf') {
       setCurrentPdfFile(file);
       setActiveTab('pdf');
       addToast('info', 'PDF Studio Opened', file.name);
-    } else if (format === 'docx' || format === 'txt' || format === 'md' || format === 'html') {
-      setDocxState({
-        title: file.name.replace(/\.[^/.]+$/, ''),
-        content: '',
-      });
-      setActiveTab('docx');
-      addToast('info', 'Word Document Studio Opened', file.name);
-    } else if (format === 'pptx') {
-      setSlideState({
-        title: file.name.replace(/\.[^/.]+$/, ''),
-      });
-      setActiveTab('slides');
-      addToast('info', 'PowerPoint Studio Opened', file.name);
-    } else if (format === 'xlsx' || format === 'csv') {
-      setSheetState({
-        title: file.name.replace(/\.[^/.]+$/, ''),
-      });
-      setActiveTab('sheets');
-      addToast('info', 'Spreadsheet Studio Opened', file.name);
-    } else if (format === 'png' || format === 'jpg' || format === 'webp') {
+    } else if (effectiveFormat === 'docx') {
+      try {
+        const text = await extractTextFromDocxFile(file);
+        setDocxState({
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          content: text,
+        });
+        setActiveTab('docx');
+        addToast('info', 'Word Document Studio Opened', file.name);
+      } catch (err: any) {
+        addToast('error', 'Failed to Open DOCX', err.message || 'Could not parse document XML.');
+      }
+    } else if (effectiveFormat === 'txt' || effectiveFormat === 'md' || effectiveFormat === 'html') {
+      try {
+        const text = await file.text();
+        setDocxState({
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          content: text,
+        });
+        setActiveTab('docx');
+        addToast('info', 'Document Opened', file.name);
+      } catch (err: any) {
+        addToast('error', 'Failed to Open Text File', err.message || 'Unreadable text content.');
+      }
+    } else if (effectiveFormat === 'pptx') {
+      try {
+        const slideTexts = await extractTextFromPptxFile(file);
+        const parsedSlides: SlideItem[] = slideTexts.map((text, idx) => {
+          const lines = text.split('\n').filter(Boolean);
+          const title = lines[0] || `Slide ${idx + 1}`;
+          const body = lines.slice(1).join('\n') || '';
+          return {
+            id: `slide-${Date.now()}-${idx}`,
+            title,
+            bgColor: idx === 0 ? '#0f172a' : '#1e1b4b',
+            layout: idx === 0 ? 'title' : 'content',
+            elements: [
+              {
+                id: `el-title-${idx}`,
+                type: 'title',
+                content: title,
+                x: 10,
+                y: idx === 0 ? 25 : 10,
+                width: 80,
+                height: 20,
+                fontSize: idx === 0 ? 40 : 28,
+                fontColor: '#ffffff',
+              },
+              ...(body
+                ? [
+                    {
+                      id: `el-body-${idx}`,
+                      type: 'text' as const,
+                      content: body,
+                      x: 10,
+                      y: idx === 0 ? 55 : 35,
+                      width: 80,
+                      height: 50,
+                      fontSize: 16,
+                      fontColor: '#cbd5e1',
+                    },
+                  ]
+                : []),
+            ],
+          };
+        });
+
+        setSlideState({
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          slides: parsedSlides,
+        });
+        setActiveTab('slides');
+        addToast('info', 'PowerPoint Studio Opened', file.name);
+      } catch (err: any) {
+        addToast('error', 'Failed to Open PPTX', err.message || 'Could not parse presentation slides.');
+      }
+    } else if (effectiveFormat === 'xlsx' || effectiveFormat === 'csv') {
+      try {
+        const parsed = await parseSpreadsheetFile(file);
+        setSheetState({
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          data: parsed.data,
+        });
+        setActiveTab('sheets');
+        addToast('info', 'Spreadsheet Studio Opened', file.name);
+      } catch (err: any) {
+        addToast('error', 'Failed to Open Spreadsheet', err.message || 'Could not parse spreadsheet data.');
+      }
+    } else if (effectiveFormat === 'png' || effectiveFormat === 'jpg' || effectiveFormat === 'webp') {
       setCurrentImageFile(file);
       setActiveTab('image');
       addToast('info', 'Photo & Graphics Studio Opened', file.name);
@@ -223,10 +311,10 @@ export const App: React.FC = () => {
   };
 
   // Send files into Conversion Hub queue with error validation
-  const handleSendToConverter = (files: File[]) => {
+  const handleSendToConverter = async (files: File[]) => {
     if (!files || files.length === 0) return;
 
-    const validFiles: File[] = [];
+    const validFiles: { file: File; format: FileFormat }[] = [];
     for (const f of files) {
       if (f.size === 0) {
         addToast('error', 'Empty File Skipped', `"${f.name}" is 0 bytes.`);
@@ -236,21 +324,25 @@ export const App: React.FC = () => {
         addToast('warning', 'File Skipped', `"${f.name}" exceeds the 100MB limit.`);
         continue;
       }
-      validFiles.push(f);
+      const validation = await validateFileFormat(f);
+      if (!validation.valid || !validation.format) {
+        addToast('error', 'Unsupported or Corrupt File', validation.error || `"${f.name}" could not be identified.`);
+        continue;
+      }
+      validFiles.push({ file: f, format: validation.format });
     }
 
     if (validFiles.length === 0) return;
 
-    const newJobs: ConversionJob[] = validFiles.map((file) => {
-      const ext = file.name.split('.').pop()?.toLowerCase() as FileFormat;
-      const sourceFmt = FORMAT_REGISTRY[ext] ? ext : 'pdf';
-      const allowed = FORMAT_REGISTRY[sourceFmt]?.allowedConversions || ['pdf'];
+    const newJobs: ConversionJob[] = validFiles.map(({ file, format }) => {
+      const allowed = FORMAT_REGISTRY[format]?.allowedConversions || [];
+      const targetFormat = allowed[0] || (format === 'pdf' ? 'txt' : 'pdf');
 
       return {
         id: `job-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         sourceFile: file,
-        sourceFormat: sourceFmt,
-        targetFormat: allowed[0] || 'pdf',
+        sourceFormat: format,
+        targetFormat,
         status: 'queued',
         progress: 0,
         createdAt: Date.now(),
@@ -266,9 +358,9 @@ export const App: React.FC = () => {
   const handleGlobalFilesDropped = async (files: File[]) => {
     if (files.length === 1) {
       const file = files[0];
-      const format = await detectFileFormat(file);
-      if (format) {
-        handleOpenFileInEditor(file, format);
+      const validation = await validateFileFormat(file);
+      if (validation.valid && validation.format) {
+        handleOpenFileInEditor(file, validation.format);
       } else {
         handleSendToConverter([file]);
       }
@@ -320,9 +412,10 @@ export const App: React.FC = () => {
       });
       setActiveTab('slides');
     } else if (proj.type === 'sheets') {
+      const grid = proj.data?.gridData || proj.data?.data || (Array.isArray(proj.data) ? proj.data : undefined);
       setSheetState({
         title: proj.title,
-        data: proj.data?.gridData,
+        data: grid,
       });
       setActiveTab('sheets');
     } else if (proj.type === 'pdf') {
@@ -335,9 +428,13 @@ export const App: React.FC = () => {
 
   // Delete project
   const handleDeleteProject = (id: string) => {
-    deleteProject(id);
-    refreshStorageData();
-    addToast('warning', 'Project Deleted', 'Project removed from storage.');
+    try {
+      deleteProject(id);
+      refreshStorageData();
+      addToast('warning', 'Project Deleted', 'Project removed from storage.');
+    } catch (err: any) {
+      addToast('error', 'Delete Failed', err.message || 'Could not delete project from storage.');
+    }
   };
 
   const totalStorageBytes = projects.reduce((acc, p) => acc + (p.sizeBytes || 0), 0);

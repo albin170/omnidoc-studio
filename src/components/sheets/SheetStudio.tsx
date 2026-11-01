@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Upload, 
   DownloadCloud, 
@@ -45,6 +45,16 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
   const [selectedCell, setSelectedCell] = useState<{ r: number; c: number }>({ r: 0, c: 0 });
   const [formulaInput, setFormulaInput] = useState<string>('Category');
   const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    if (initialTitle) setSheetTitle(initialTitle);
+  }, [initialTitle]);
+
+  useEffect(() => {
+    if (initialData && Array.isArray(initialData) && initialData.length > 0) {
+      setGridData(initialData);
+    }
+  }, [initialData]);
 
   const rowCount = gridData.length;
   const colCount = Math.max(8, ...gridData.map((r) => r.length));

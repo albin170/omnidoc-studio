@@ -23,11 +23,12 @@ describe('Format Detector & Registry', () => {
     const detected = await detectFileFormat(fakePdf);
     expect(detected).toBe('pdf');
 
-    const fakeDocx = new File(['test'], 'proposal.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const pkHeader = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x00, 0x00]);
+    const fakeDocx = new File([pkHeader], 'proposal.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
     const detectedDocx = await detectFileFormat(fakeDocx);
     expect(detectedDocx).toBe('docx');
 
-    const fakeXlsx = new File(['test'], 'budget.xlsx');
+    const fakeXlsx = new File([pkHeader], 'budget.xlsx');
     const detectedXlsx = await detectFileFormat(fakeXlsx);
     expect(detectedXlsx).toBe('xlsx');
   });

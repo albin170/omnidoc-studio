@@ -409,7 +409,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
-                  <span>{totalProjectsCount} projects stored in browser database</span>
+                  <span>{totalProjectsCount} projects stored in browser local storage</span>
                   <span className="text-emerald-600 font-bold">100% Client-Side Free</span>
                 </div>
               </div>
@@ -422,7 +422,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-200">
                 <div className="space-y-0.5">
                   <div className="font-bold text-slate-900">Auto-Save Working Drafts</div>
-                  <div className="text-slate-500 text-[11px]">Automatically preserve edits to IndexedDB</div>
+                  <div className="text-slate-500 text-[11px]">Automatically preserve edits to browser local storage (localStorage)</div>
                 </div>
                 <input
                   type="checkbox"

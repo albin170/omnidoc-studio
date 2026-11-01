@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bold, 
   Italic, 
@@ -15,13 +15,11 @@ import {
   Search, 
   DownloadCloud, 
   Upload, 
-  Save, 
-  Sparkles, 
-  FileText,
-  Clock,
-  Eye
+  Save,
+  Clock
 } from 'lucide-react';
 import { createDocxBlob, convertTextOrDocxToPdf, extractTextFromDocxFile } from '../../services/docxService';
+import { escapeHtml } from '../../services/converter';
 import saveAs from 'file-saver';
 import confetti from 'canvas-confetti';
 
@@ -60,6 +58,15 @@ The core engine executes client-side WebAssembly and JavaScript engines to guara
   const [replaceQuery, setReplaceQuery] = useState('');
   const [exportFormat, setExportFormat] = useState<'docx' | 'pdf' | 'txt' | 'html'>('docx');
   const [isExporting, setIsExporting] = useState(false);
+
+  // Synchronize state when external file or project is loaded
+  useEffect(() => {
+    if (initialTitle) setDocTitle(initialTitle);
+  }, [initialTitle]);
+
+  useEffect(() => {
+    if (initialContent !== undefined) setContent(initialContent);
+  }, [initialContent]);
 
   // Statistics
   const wordsCount = content.trim().split(/\s+/).filter(Boolean).length;
@@ -117,7 +124,9 @@ The core engine executes client-side WebAssembly and JavaScript engines to guara
         const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
         saveAs(blob, `${docTitle}.txt`);
       } else if (exportFormat === 'html') {
-        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${docTitle}</title></head><body><h1>${docTitle}</h1>${content.split('\n\n').map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')}</body></html>`;
+        const escapedTitle = escapeHtml(docTitle);
+        const bodyContent = content.split('\n\n').map(p => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`).join('\n');
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapedTitle}</title></head><body><h1>${escapedTitle}</h1>${bodyContent}</body></html>`;
         const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
         saveAs(blob, `${docTitle}.html`);
       }
