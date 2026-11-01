@@ -5,8 +5,6 @@ import {
   RotateCw, 
   Trash2, 
   Copy, 
-  ArrowUp, 
-  ArrowDown, 
   DownloadCloud, 
   Type, 
   Highlighter, 
@@ -14,13 +12,9 @@ import {
   Stamp, 
   ZoomIn, 
   ZoomOut, 
-  Plus, 
   Save, 
   PenTool, 
-  Check, 
-  X,
-  FilePlus,
-  Layers
+  X
 } from 'lucide-react';
 import { PDFAnnotation } from '../../types';
 import { 
@@ -68,13 +62,6 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
   const signaturePadCanvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingSignatureRef = useRef(false);
 
-  // Load initial file if provided
-  useEffect(() => {
-    if (initialFile) {
-      loadFile(initialFile);
-    }
-  }, [initialFile]);
-
   const loadFile = async (file: File) => {
     try {
       setIsProcessing(true);
@@ -93,6 +80,13 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setIsProcessing(false);
     }
   };
+
+  // Load initial file if provided
+  useEffect(() => {
+    if (initialFile) {
+      loadFile(initialFile);
+    }
+  }, [initialFile]);
 
   // Render current page when page or zoom changes
   useEffect(() => {
@@ -444,6 +438,18 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             <span>Merge</span>
             <input type="file" accept=".pdf" className="hidden" onChange={handleMergePdfUpload} />
           </label>
+
+          {onSaveToProjects && (
+            <button
+              onClick={() => onSaveToProjects(fileName, { annotations, watermarkText, addPageNumbers, fileName })}
+              disabled={!pdfBytes}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+              title="Save PDF project state"
+            >
+              <Save className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Save</span>
+            </button>
+          )}
 
           <button
             onClick={handleExportPdf}

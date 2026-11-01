@@ -12,9 +12,8 @@ import {
   FolderArchive, 
   Settings, 
   ChevronDown,
-  ShieldCheck,
+  ShieldAlert,
   X,
-  User,
   Zap,
   Search,
   HelpCircle,
@@ -30,6 +29,7 @@ interface SidebarProps {
   projectCount?: number;
   userName?: string;
   avatarUrl?: string;
+  userRole?: string;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
   onOpenUserPanel?: () => void;
@@ -45,6 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   projectCount = 0,
   userName = 'Document Architect',
   avatarUrl,
+  userRole = 'user',
   isMobileOpen = false,
   onCloseMobile,
   onOpenUserPanel,
@@ -110,6 +111,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Settings & Privacy',
       icon: Settings,
     },
+    ...(userRole === 'admin'
+      ? [
+          {
+            tab: 'admin' as WorkspaceTab,
+            label: 'Admin Console',
+            icon: ShieldAlert,
+          },
+        ]
+      : []),
   ];
 
   const handleSelectTab = (tab: WorkspaceTab) => {

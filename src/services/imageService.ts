@@ -53,7 +53,6 @@ export function removeBackgroundAlgorithm(
   }
 
   // Calculate Euclidean distance to the closest background sample
-  const tolSq = tolerance * tolerance * 3;
   const featherRange = 25; // Gradual feathering
 
   for (let i = 0; i < data.length; i += 4) {

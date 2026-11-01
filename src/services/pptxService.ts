@@ -1,6 +1,50 @@
 import pptxgen from 'pptxgenjs';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import JSZip from 'jszip';
 import { SlideItem } from '../types';
+
+/**
+ * Extract slide text items from an existing OpenXML PowerPoint (.pptx) file
+ */
+export async function extractTextFromPptxFile(file: File): Promise<string[]> {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const slideNames = Object.keys(zip.files).filter(
+      (name) => name.startsWith('ppt/slides/slide') && name.endsWith('.xml')
+    );
+
+    // Natural sort: slide1.xml, slide2.xml ...
+    slideNames.sort((a, b) => {
+      const aNum = parseInt(a.match(/slide(\d+)\.xml/)?.[1] || '0', 10);
+      const bNum = parseInt(b.match(/slide(\d+)\.xml/)?.[1] || '0', 10);
+      return aNum - bNum;
+    });
+
+    const parser = new DOMParser();
+    const slidesText: string[] = [];
+
+    for (const sName of slideNames) {
+      const xml = await zip.files[sName].async('text');
+      const xmlDoc = parser.parseFromString(xml, 'text/xml');
+      const textNodes = xmlDoc.getElementsByTagName('a:t');
+      const lines: string[] = [];
+      for (let i = 0; i < textNodes.length; i++) {
+        const text = textNodes[i].textContent?.trim();
+        if (text) lines.push(text);
+      }
+      if (lines.length > 0) {
+        slidesText.push(lines.join('\n'));
+      }
+    }
+
+    return slidesText.length > 0 ? slidesText : ['Untitled Slide Content'];
+  } catch (err) {
+    console.warn('PPTX XML parsing failed, attempting text fallback:', err);
+    const fallbackText = await file.text();
+    return [fallbackText];
+  }
+}
 
 /**
  * Generate a real PowerPoint (.pptx) file using pptxgenjs

@@ -4,6 +4,9 @@ const STORAGE_PROJECTS_KEY = 'omnidoc_projects_v1';
 const STORAGE_HISTORY_KEY = 'omnidoc_history_v1';
 const STORAGE_AUTH_KEY = 'omnidoc_user_auth_v1';
 
+export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
+export type UserRole = 'user' | 'admin' | 'staff';
+
 export interface UserSession {
   isGuest: boolean;
   userEmail?: string;
@@ -12,6 +15,10 @@ export interface UserSession {
   storageUsedBytes: number;
   isAuthenticated?: boolean;
   rememberMe?: boolean;
+  role?: UserRole;
+  planTier?: PlanTier;
+  billingCycle?: 'monthly' | 'annual';
+  subscriptionExpiresAt?: number;
 }
 
 /**
@@ -122,7 +129,61 @@ export function getUserSession(): UserSession {
     userName: '',
     storageUsedBytes: 0,
     isAuthenticated: false,
+    role: 'admin', // default to admin for standalone local application so user has full capabilities
+    planTier: 'pro',
+    billingCycle: 'annual',
   };
+}
+
+export interface PlanQuota {
+  tier: PlanTier;
+  maxFileSizeBytes: number;
+  maxFilesPerBatch: number;
+  unlimitedOcr: boolean;
+  canExportHighRes: boolean;
+  priorityQueue: boolean;
+}
+
+export function getPlanQuota(tier: PlanTier = 'pro'): PlanQuota {
+  switch (tier) {
+    case 'free':
+      return {
+        tier: 'free',
+        maxFileSizeBytes: 25 * 1024 * 1024, // 25 MB
+        maxFilesPerBatch: 5,
+        unlimitedOcr: false,
+        canExportHighRes: false,
+        priorityQueue: false,
+      };
+    case 'starter':
+      return {
+        tier: 'starter',
+        maxFileSizeBytes: 50 * 1024 * 1024, // 50 MB
+        maxFilesPerBatch: 15,
+        unlimitedOcr: true,
+        canExportHighRes: true,
+        priorityQueue: false,
+      };
+    case 'enterprise':
+      return {
+        tier: 'enterprise',
+        maxFileSizeBytes: 500 * 1024 * 1024, // 500 MB
+        maxFilesPerBatch: 100,
+        unlimitedOcr: true,
+        canExportHighRes: true,
+        priorityQueue: true,
+      };
+    case 'pro':
+    default:
+      return {
+        tier: 'pro',
+        maxFileSizeBytes: 150 * 1024 * 1024, // 150 MB
+        maxFilesPerBatch: 50,
+        unlimitedOcr: true,
+        canExportHighRes: true,
+        priorityQueue: true,
+      };
+  }
 }
 
 /**
@@ -142,6 +203,8 @@ export function logoutUser(): UserSession {
     userEmail: '',
     storageUsedBytes: 0,
     isAuthenticated: false,
+    role: 'user',
+    planTier: 'free',
   };
   localStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(loggedOutSession));
   return loggedOutSession;

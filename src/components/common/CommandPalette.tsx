@@ -15,7 +15,8 @@ import {
   ArrowRight, 
   X,
   FileCheck,
-  Sparkles
+  Sparkles,
+  ShieldAlert
 } from 'lucide-react';
 import { WorkspaceTab } from '../../types';
 
@@ -142,6 +143,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       category: 'Tools',
       icon: Settings,
       tab: 'settings',
+    },
+    {
+      id: 'tool-admin',
+      title: 'Admin & Telemetry Console',
+      subtitle: 'Inspect WebAssembly drivers, system metrics and manage license roles',
+      category: 'Tools',
+      icon: ShieldAlert,
+      tab: 'admin',
     },
     // Actions
     {

@@ -15,6 +15,7 @@ import {
 import { ConversionJob, ConversionOptions, FileFormat } from '../../types';
 import { FORMAT_REGISTRY, formatFileSize } from '../../services/formatDetector';
 import { createBatchZipArchive, executeFileConversion } from '../../services/converter';
+import { addConversionHistoryItem } from '../../services/storageService';
 import saveAs from 'file-saver';
 import confetti from 'canvas-confetti';
 
@@ -22,12 +23,14 @@ interface ConversionHubProps {
   jobs: ConversionJob[];
   setJobs: React.Dispatch<React.SetStateAction<ConversionJob[]>>;
   onAddFiles: (files: File[]) => void;
+  onConversionCompleted?: () => void;
 }
 
 export const ConversionHub: React.FC<ConversionHubProps> = ({
   jobs,
   setJobs,
   onAddFiles,
+  onConversionCompleted,
 }) => {
   const [isProcessingAll, setIsProcessingAll] = useState(false);
   const [globalOptions, setGlobalOptions] = useState<ConversionOptions>({
@@ -73,6 +76,18 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
         )
       );
 
+      // Record to persistent conversion history (BUG-002 fix)
+      addConversionHistoryItem({
+        id: `conv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        sourceName: job.sourceFile.name,
+        sourceFormat: job.sourceFormat,
+        targetFormat: job.targetFormat,
+        sizeBytes: res.blob.size || job.sourceFile.size,
+        completedAt: Date.now(),
+        status: 'completed',
+      });
+      onConversionCompleted?.();
+
       confetti({ particleCount: 30, spread: 60, origin: { y: 0.85 } });
     } catch (err: any) {
       setJobs((prev) =>
@@ -86,6 +101,18 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
             : j
         )
       );
+
+      // Record failed conversion in history
+      addConversionHistoryItem({
+        id: `conv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        sourceName: job.sourceFile.name,
+        sourceFormat: job.sourceFormat,
+        targetFormat: job.targetFormat,
+        sizeBytes: job.sourceFile.size,
+        completedAt: Date.now(),
+        status: 'failed',
+      });
+      onConversionCompleted?.();
     }
   };
 

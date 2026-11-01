@@ -1,28 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { 
-  Image as ImageIcon, 
   Upload, 
   DownloadCloud, 
   Scissors, 
   Sparkles, 
   Sliders, 
-  RotateCw, 
-  FlipHorizontal, 
   Type, 
   Palette, 
   Save, 
-  Trash2, 
-  Layers,
-  FileCheck
+  Layers
 } from 'lucide-react';
 import { ImageAdjustments, ImageLayer } from '../../types';
 import { 
   applyAdjustmentsToCanvas, 
-  convertImageFormat, 
   convertImageToPdf, 
   removeBackgroundAlgorithm, 
-  renderLayersOnCanvas, 
-  replaceCanvasBackground 
+  renderLayersOnCanvas
 } from '../../services/imageService';
 import saveAs from 'file-saver';
 import confetti from 'canvas-confetti';
@@ -60,15 +53,6 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const processedCanvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  // Load initial file or generate placeholder canvas
-  useEffect(() => {
-    if (initialFile) {
-      loadImageFile(initialFile);
-    } else {
-      generateDemoArtwork();
-    }
-  }, [initialFile]);
 
   const loadImageFile = (file: File) => {
     setImageName(file.name);
@@ -108,6 +92,15 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
     img.onload = () => setSourceImage(img);
     img.src = demo.toDataURL();
   };
+
+  // Load initial file or generate placeholder canvas
+  useEffect(() => {
+    if (initialFile) {
+      loadImageFile(initialFile);
+    } else {
+      generateDemoArtwork();
+    }
+  }, [initialFile]);
 
   // Re-render canvas whenever source image, adjustments, background, or layers change
   useEffect(() => {
@@ -271,6 +264,17 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
             <Scissors className="w-3.5 h-3.5" />
             <span>Remove BG (AI)</span>
           </button>
+
+          {onSaveToProjects && (
+            <button
+              onClick={() => onSaveToProjects(imageName, { adjustments, hasBackgroundRemoved, bgReplacementType, bgValue, layers })}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+              title="Save Image Project"
+            >
+              <Save className="w-3.5 h-3.5 text-purple-400" />
+              <span>Save</span>
+            </button>
+          )}
 
           <div className="flex items-center bg-slate-800 rounded-lg p-0.5 text-xs">
             <select

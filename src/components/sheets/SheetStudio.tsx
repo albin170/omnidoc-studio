@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { 
-  Table as TableIcon, 
   Upload, 
   DownloadCloud, 
   Plus, 
   Minus, 
   Save, 
-  FileSpreadsheet, 
-  Calculator,
-  RotateCcw
+  Calculator
 } from 'lucide-react';
 import { 
   convertSpreadsheetToPdf, 
@@ -219,15 +216,24 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
         <div className="flex items-center gap-1 text-slate-400 text-xs">
           <button
             onClick={addRow}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 hover:text-white"
+            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 hover:text-white cursor-pointer"
             title="Add row"
           >
             <Plus className="w-3 h-3" />
             <span>Row</span>
           </button>
           <button
+            onClick={removeRow}
+            disabled={gridData.length <= 1}
+            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 hover:text-white disabled:opacity-30 cursor-pointer"
+            title="Remove row"
+          >
+            <Minus className="w-3 h-3" />
+            <span>Row</span>
+          </button>
+          <button
             onClick={addColumn}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 hover:text-white"
+            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 hover:text-white cursor-pointer"
             title="Add column"
           >
             <Plus className="w-3 h-3" />

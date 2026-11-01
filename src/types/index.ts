@@ -22,7 +22,8 @@ export type WorkspaceTab =
   | 'ocr' 
   | 'templates' 
   | 'projects' 
-  | 'settings';
+  | 'settings'
+  | 'admin';
 
 export type JobStatus = 
   | 'queued' 

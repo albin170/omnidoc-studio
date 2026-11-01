@@ -2,10 +2,11 @@ import JSZip from 'jszip';
 import { ConversionJob, ConversionOptions, FileFormat } from '../types';
 import { FORMAT_REGISTRY } from './formatDetector';
 import { extractTextFromPdf, renderPdfPagesToImages } from './pdfService';
-import { convertTextOrDocxToPdf, createDocxBlob, extractTextFromDocxFile } from './docxService';
+import { convertTextOrDocxToPdf, createDocxBlob, extractTextFromDocxFile, DocxContentItem } from './docxService';
 import { convertSpreadsheetToPdf, exportDataToCsvBlob, exportDataToXlsxBlob, parseSpreadsheetFile } from './sheetService';
 import { convertImageFormat, convertImageToPdf } from './imageService';
 import { performOcr } from './ocrService';
+import { convertSlidesToPdf, createPresentationBlob, extractTextFromPptxFile } from './pptxService';
 
 export interface ConversionResult {
   blob: Blob;
@@ -69,7 +70,7 @@ export async function executeFileConversion(
       updateProgress(35, 'Extracting document text stream...');
       const text = await extractTextFromPdf(arrayBuffer);
       updateProgress(65, 'Reconstructing Word paragraph hierarchies...');
-      const paragraphs = text.split('\n\n').filter(Boolean).map((p) => ({
+      const paragraphs: DocxContentItem[] = text.split('\n\n').filter(Boolean).map((p) => ({
         type: 'paragraph' as const,
         text: p,
       }));
@@ -79,6 +80,55 @@ export async function executeFileConversion(
         blob: docxBlob,
         fileName: `${baseName}.docx`,
         mimeType: FORMAT_REGISTRY.docx.mimeType,
+      };
+    }
+
+    if (targetFormat === 'pptx') {
+      updateProgress(35, 'Extracting PDF text for slide generation...');
+      const text = await extractTextFromPdf(arrayBuffer);
+      updateProgress(65, 'Generating presentation slide deck...');
+      const pages = text.split(/--- Page \d+ ---/).filter((p) => p.trim());
+      const slides = (pages.length > 0 ? pages : [text]).map((pageText, idx) => {
+        const lines = pageText.trim().split('\n').filter(Boolean);
+        const title = lines[0] || `Slide ${idx + 1}`;
+        const body = lines.slice(1).join('\n') || 'Extracted page content';
+        return {
+          id: `s-${idx + 1}`,
+          title,
+          bgColor: idx % 2 === 0 ? '#0f172a' : '#1e1b4b',
+          layout: 'content' as const,
+          elements: [
+            {
+              id: `el-t-${idx}`,
+              type: 'title' as const,
+              content: title.slice(0, 80),
+              x: 8,
+              y: 12,
+              width: 84,
+              height: 18,
+              fontSize: 28,
+              fontColor: '#ffffff',
+            },
+            {
+              id: `el-b-${idx}`,
+              type: 'text' as const,
+              content: body.slice(0, 600),
+              x: 8,
+              y: 35,
+              width: 84,
+              height: 55,
+              fontSize: 16,
+              fontColor: '#cbd5e1',
+            },
+          ],
+        };
+      });
+      const pptxBlob = await createPresentationBlob(baseName, slides);
+      updateProgress(100, 'PowerPoint presentation created');
+      return {
+        blob: pptxBlob,
+        fileName: `${baseName}.pptx`,
+        mimeType: FORMAT_REGISTRY.pptx.mimeType,
       };
     }
 
@@ -160,7 +210,122 @@ export async function executeFileConversion(
     }
   }
 
-  // 4. Spreadsheet (XLSX & CSV) Conversions
+  // 4. PowerPoint (PPTX) Conversions
+  if (sourceFormat === 'pptx') {
+    updateProgress(30, 'Parsing PowerPoint presentation slides XML...');
+    const slideTexts = await extractTextFromPptxFile(file);
+
+    if (targetFormat === 'txt') {
+      updateProgress(90, 'Formatting slide text notes...');
+      const combined = slideTexts.map((st, i) => `--- Slide ${i + 1} ---\n${st}`).join('\n\n');
+      return {
+        blob: new Blob([combined], { type: 'text/plain;charset=utf-8' }),
+        fileName: `${baseName}.txt`,
+        mimeType: 'text/plain',
+      };
+    }
+
+    if (targetFormat === 'docx') {
+      updateProgress(65, 'Structuring Word document hierarchy...');
+      const paragraphs: DocxContentItem[] = [];
+      slideTexts.forEach((st, idx) => {
+        paragraphs.push({ type: 'h2', text: `Slide ${idx + 1}` });
+        const lines = st.split('\n').filter(Boolean);
+        lines.forEach((line) => {
+          paragraphs.push({ type: 'paragraph', text: line });
+        });
+      });
+      const docxBlob = await createDocxBlob(baseName, paragraphs);
+      return {
+        blob: docxBlob,
+        fileName: `${baseName}.docx`,
+        mimeType: FORMAT_REGISTRY.docx.mimeType,
+      };
+    }
+
+    if (targetFormat === 'pdf') {
+      updateProgress(60, 'Rendering 16:9 presentation PDF...');
+      const slides = slideTexts.map((st, idx) => {
+        const lines = st.split('\n').filter(Boolean);
+        const title = lines[0] || `Slide ${idx + 1}`;
+        const body = lines.slice(1).join('\n') || 'Slide content';
+        return {
+          id: `s-${idx + 1}`,
+          title,
+          bgColor: '#0f172a',
+          layout: 'content' as const,
+          elements: [
+            {
+              id: `el-t-${idx}`,
+              type: 'title' as const,
+              content: title,
+              x: 8,
+              y: 12,
+              width: 84,
+              height: 18,
+              fontSize: 28,
+              fontColor: '#ffffff',
+            },
+            {
+              id: `el-b-${idx}`,
+              type: 'text' as const,
+              content: body,
+              x: 8,
+              y: 35,
+              width: 84,
+              height: 55,
+              fontSize: 16,
+              fontColor: '#cbd5e1',
+            },
+          ],
+        };
+      });
+      const pdfBytes = await convertSlidesToPdf(baseName, slides);
+      return {
+        blob: new Blob([pdfBytes as any], { type: 'application/pdf' }),
+        fileName: `${baseName}.pdf`,
+        mimeType: 'application/pdf',
+      };
+    }
+
+    if (targetFormat === 'png' || targetFormat === 'jpg') {
+      updateProgress(50, 'Converting slides to images...');
+      const slides = slideTexts.map((st, idx) => {
+        const lines = st.split('\n').filter(Boolean);
+        return {
+          id: `s-${idx + 1}`,
+          title: lines[0] || `Slide ${idx + 1}`,
+          bgColor: '#0f172a',
+          layout: 'content' as const,
+          elements: [
+            { id: `el-${idx}`, type: 'title' as const, content: lines[0] || `Slide ${idx + 1}`, x: 8, y: 12, width: 84, height: 18, fontSize: 28, fontColor: '#fff' },
+            { id: `el-b-${idx}`, type: 'text' as const, content: lines.slice(1).join('\n'), x: 8, y: 35, width: 84, height: 55, fontSize: 16, fontColor: '#cbd5e1' },
+          ],
+        };
+      });
+      const pdfBytes = await convertSlidesToPdf(baseName, slides);
+      const images = await renderPdfPagesToImages(pdfBytes.buffer as ArrayBuffer, targetFormat === 'png' ? 'png' : 'jpeg');
+      if (images.length === 1) {
+        return {
+          blob: images[0],
+          fileName: `${baseName}.${targetFormat}`,
+          mimeType: targetFormat === 'png' ? 'image/png' : 'image/jpeg',
+        };
+      }
+      const zip = new JSZip();
+      images.forEach((imgBlob, idx) => {
+        zip.file(`${baseName}_slide_${idx + 1}.${targetFormat}`, imgBlob);
+      });
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      return {
+        blob: zipBlob,
+        fileName: `${baseName}_slides.zip`,
+        mimeType: 'application/zip',
+      };
+    }
+  }
+
+  // 5. Spreadsheet (XLSX & CSV) Conversions
   if (sourceFormat === 'xlsx' || sourceFormat === 'csv') {
     updateProgress(35, 'Reading workbook cells and formulas...');
     const parsed = await parseSpreadsheetFile(file);
@@ -194,9 +359,55 @@ export async function executeFileConversion(
         mimeType: 'application/pdf',
       };
     }
+
+    if (targetFormat === 'html') {
+      updateProgress(75, 'Generating semantic HTML table report...');
+      const tableRows = parsed.data
+        .map((row, rIdx) => {
+          const tag = rIdx === 0 ? 'th' : 'td';
+          const cells = row.map((c) => `<${tag} style="border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left;">${String(c)}</${tag}>`).join('');
+          return `<tr>${cells}</tr>`;
+        })
+        .join('\n');
+      const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${baseName}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 40px; color: #1e293b; }
+    h1 { margin-bottom: 20px; }
+    table { border-collapse: collapse; width: 100%; max-width: 1200px; font-size: 14px; }
+    th { background: #f1f5f9; font-weight: bold; }
+    tr:nth-child(even) { background: #f8fafc; }
+  </style>
+</head>
+<body>
+  <h1>${baseName}</h1>
+  <table>
+    ${tableRows}
+  </table>
+</body>
+</html>`;
+      return {
+        blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }),
+        fileName: `${baseName}.html`,
+        mimeType: 'text/html',
+      };
+    }
+
+    if (targetFormat === 'txt') {
+      updateProgress(80, 'Formatting tabular text output...');
+      const txtContent = parsed.data.map((row) => row.join('\t')).join('\n');
+      return {
+        blob: new Blob([txtContent], { type: 'text/plain;charset=utf-8' }),
+        fileName: `${baseName}.txt`,
+        mimeType: 'text/plain',
+      };
+    }
   }
 
-  // 5. Image Conversions (PNG, JPG, WebP)
+  // 6. Image Conversions (PNG, JPG, WebP)
   if (['png', 'jpg', 'webp'].includes(sourceFormat)) {
     if (targetFormat === 'pdf') {
       updateProgress(50, 'Embedding high-res raster into PDF canvas...');
@@ -226,7 +437,7 @@ export async function executeFileConversion(
     }
   }
 
-  // 6. Text / Markdown / HTML Conversions
+  // 7. Text / Markdown / HTML Conversions
   if (['txt', 'md', 'html'].includes(sourceFormat)) {
     const rawText = await file.text();
 
@@ -242,7 +453,7 @@ export async function executeFileConversion(
 
     if (targetFormat === 'docx') {
       updateProgress(60, 'Structuring Word document paragraphs...');
-      const paragraphs = rawText.split('\n\n').filter(Boolean).map((p) => ({
+      const paragraphs: DocxContentItem[] = rawText.split('\n\n').filter(Boolean).map((p) => ({
         type: 'paragraph' as const,
         text: p,
       }));
@@ -253,9 +464,85 @@ export async function executeFileConversion(
         mimeType: FORMAT_REGISTRY.docx.mimeType,
       };
     }
+
+    if (targetFormat === 'html') {
+      updateProgress(70, 'Rendering HTML document...');
+      let bodyHtml = '';
+      if (sourceFormat === 'md') {
+        bodyHtml = rawText
+          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+          .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+          .replace(/\n\n/gim, '</p><p>')
+          .replace(/\n/gim, '<br>');
+        bodyHtml = `<p>${bodyHtml}</p>`;
+      } else {
+        bodyHtml = rawText.split('\n\n').map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('\n');
+      }
+      const htmlDoc = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${baseName}</title>
+  <style>body { font-family: system-ui, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #1e293b; }</style>
+</head>
+<body>
+  <h1>${baseName}</h1>
+  ${bodyHtml}
+</body>
+</html>`;
+      return {
+        blob: new Blob([htmlDoc], { type: 'text/html;charset=utf-8' }),
+        fileName: `${baseName}.html`,
+        mimeType: 'text/html',
+      };
+    }
+
+    if (targetFormat === 'txt') {
+      updateProgress(80, 'Cleaning plain text formatting...');
+      let cleaned = rawText;
+      if (sourceFormat === 'html') {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(rawText, 'text/html');
+        cleaned = doc.body.textContent || '';
+      }
+      return {
+        blob: new Blob([cleaned], { type: 'text/plain;charset=utf-8' }),
+        fileName: `${baseName}.txt`,
+        mimeType: 'text/plain',
+      };
+    }
+
+    if (targetFormat === 'pptx') {
+      updateProgress(65, 'Creating presentation slides from text...');
+      const sections = rawText.split(/\n(?=# )|\n\n---\n\n/).filter((s) => s.trim());
+      const slides = (sections.length > 0 ? sections : [rawText]).map((sec, idx) => {
+        const lines = sec.trim().split('\n').filter(Boolean);
+        const title = lines[0]?.replace(/^#+\s*/, '') || `Slide ${idx + 1}`;
+        const body = lines.slice(1).join('\n') || 'Content';
+        return {
+          id: `s-${idx + 1}`,
+          title,
+          bgColor: idx % 2 === 0 ? '#0f172a' : '#1e1b4b',
+          layout: 'content' as const,
+          elements: [
+            { id: `el-t-${idx}`, type: 'title' as const, content: title, x: 8, y: 12, width: 84, height: 18, fontSize: 28, fontColor: '#ffffff' },
+            { id: `el-b-${idx}`, type: 'text' as const, content: body.slice(0, 600), x: 8, y: 35, width: 84, height: 55, fontSize: 16, fontColor: '#cbd5e1' },
+          ],
+        };
+      });
+      const pptxBlob = await createPresentationBlob(baseName, slides);
+      return {
+        blob: pptxBlob,
+        fileName: `${baseName}.pptx`,
+        mimeType: FORMAT_REGISTRY.pptx.mimeType,
+      };
+    }
   }
 
-  // Fallback: If OCR requested or scanned document conversion
+  // 8. Fallback: If OCR requested or scanned document conversion
   if (targetFormat === 'txt' && ['png', 'jpg', 'webp'].includes(sourceFormat)) {
     updateProgress(30, 'Performing Optical Character Recognition (OCR)...');
     const ocrResult = await performOcr(file, options?.ocrLanguage || 'eng', (status, pct) => {

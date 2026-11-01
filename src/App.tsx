@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { 
   ConversionHistoryItem, 
   ConversionJob, 
@@ -28,6 +28,8 @@ import { ImageStudio } from './components/image/ImageStudio';
 import { OcrStudio } from './components/ocr/OcrStudio';
 import { TemplatesHub } from './components/templates/TemplatesHub';
 import { ProjectsManager } from './components/projects/ProjectsManager';
+import { SettingsHub } from './components/settings/SettingsHub';
+import { AdminConsole } from './components/admin/AdminConsole';
 import { Modals } from './components/common/Modals';
 import { UserPanel } from './components/user/UserPanel';
 import { AuthGateway } from './components/auth/AuthGateway';
@@ -37,12 +39,9 @@ import { HelpShortcutsModal } from './components/common/HelpShortcutsModal';
 import { detectFileFormat, FORMAT_REGISTRY, formatFileSize } from './services/formatDetector';
 import { 
   Menu, 
-  ShieldCheck, 
   User as UserIcon, 
-  ChevronLeft, 
   Search, 
   HelpCircle, 
-  Layers,
   ArrowLeft
 } from 'lucide-react';
 import { OmniDocLogo } from './components/common/OmniDocLogo';
@@ -53,8 +52,8 @@ export const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('dashboard');
   const [userSession, setUserSessionState] = useState<UserSession>(getUserSession());
-  const [projects, setProjects] = useState<StoredProject[]>([]);
-  const [history, setHistory] = useState<ConversionHistoryItem[]>([]);
+  const [projects, setProjects] = useState<StoredProject[]>(() => getStoredProjects());
+  const [history, setHistory] = useState<ConversionHistoryItem[]>(() => getConversionHistory());
   const [jobs, setJobs] = useState<ConversionJob[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
@@ -86,11 +85,28 @@ export const App: React.FC = () => {
     setHistory(getConversionHistory());
   };
 
-  useEffect(() => {
-    refreshStorageData();
-  }, []);
+  // Save current project from editor
+  const handleSaveProject = useCallback((title: string, data: any, type: StoredProject['type']) => {
+    try {
+      const newProject: StoredProject = {
+        id: `proj-${Date.now()}`,
+        title: title || 'Untitled Project',
+        type,
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+        sizeBytes: JSON.stringify(data).length,
+        data,
+      };
 
-  // Global Keyboard Shortcuts (Ctrl+K for search, Ctrl+D for dashboard, ? for help)
+      saveProject(newProject);
+      refreshStorageData();
+      addToast('success', 'Project Saved', `"${title}" has been saved locally.`);
+    } catch (err: any) {
+      addToast('error', 'Save Failed', err.message || 'Could not save project to local storage.');
+    }
+  }, [addToast]);
+
+  // Global Keyboard Shortcuts (Ctrl+K for search, Ctrl+D for dashboard, Ctrl+S for save, ? for help)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       // Toggle Command Palette with Ctrl+K or Cmd+K
@@ -107,6 +123,32 @@ export const App: React.FC = () => {
         return;
       }
 
+      // Quick save current workspace project with Ctrl+S or Cmd+S (BUG-005 fix)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        switch (activeTab) {
+          case 'docx':
+            handleSaveProject(docxState.title, { content: docxState.content }, 'docx');
+            break;
+          case 'slides':
+            handleSaveProject(slideState.title, { slides: slideState.slides }, 'slides');
+            break;
+          case 'sheets':
+            handleSaveProject(sheetState.title, { data: sheetState.data }, 'sheets');
+            break;
+          case 'pdf':
+            addToast('info', 'Save PDF', 'Use the Save button in the PDF Studio toolbar to save page annotations.');
+            break;
+          case 'image':
+            addToast('info', 'Save Graphics', 'Use the Save button in the Graphics Studio toolbar.');
+            break;
+          default:
+            addToast('info', 'Studio Workspace', 'All changes and conversions are saved directly to local memory.');
+            break;
+        }
+        return;
+      }
+
       // Open Help on '?' if user is not actively typing in an input or textarea
       const targetTag = (e.target as HTMLElement)?.tagName?.toLowerCase();
       const isInput = targetTag === 'input' || targetTag === 'textarea' || (e.target as HTMLElement)?.isContentEditable;
@@ -118,7 +160,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
+  }, [activeTab, docxState, slideState, sheetState, handleSaveProject, addToast]);
 
   const handleUpdateSession = (newSession: UserSession) => {
     setUserSessionState(newSession);
@@ -263,27 +305,6 @@ export const App: React.FC = () => {
     addToast('info', 'Template Loaded', template.title);
   };
 
-  // Save current project from editor
-  const handleSaveProject = (title: string, data: any, type: StoredProject['type']) => {
-    try {
-      const newProject: StoredProject = {
-        id: `proj-${Date.now()}`,
-        title: title || 'Untitled Project',
-        type,
-        updatedAt: Date.now(),
-        createdAt: Date.now(),
-        sizeBytes: JSON.stringify(data).length,
-        data,
-      };
-
-      saveProject(newProject);
-      refreshStorageData();
-      addToast('success', 'Project Saved', `"${title}" has been saved locally.`);
-    } catch (err: any) {
-      addToast('error', 'Save Failed', err.message || 'Could not save project to local storage.');
-    }
-  };
-
   // Load past project
   const handleLoadProject = (proj: StoredProject) => {
     if (proj.type === 'docx') {
@@ -334,6 +355,7 @@ export const App: React.FC = () => {
     templates: 'Starter Templates Gallery',
     projects: 'Projects & Conversion History',
     settings: 'Settings & Security',
+    admin: 'Admin & Telemetry Console',
   };
 
   // If user is unauthenticated (first-time visitor or logged out), render the Auth Gateway!
@@ -394,6 +416,7 @@ export const App: React.FC = () => {
         projectCount={projects.length}
         userName={userSession.userName || 'Document Architect'}
         avatarUrl={userSession.avatarUrl}
+        userRole={userSession.role || 'admin'}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
         onOpenUserPanel={() => setIsUserPanelOpen(true)}
@@ -448,6 +471,10 @@ export const App: React.FC = () => {
                 <option value="ocr">OCR Scanner</option>
                 <option value="templates">Templates</option>
                 <option value="projects">Projects</option>
+                <option value="settings">Settings &amp; Environment</option>
+                {userSession.role === 'admin' && (
+                  <option value="admin">Admin Console</option>
+                )}
               </select>
 
               <button
@@ -493,6 +520,7 @@ export const App: React.FC = () => {
             jobs={jobs}
             setJobs={setJobs}
             onAddFiles={handleSendToConverter}
+            onConversionCompleted={refreshStorageData}
           />
         )}
 
@@ -558,12 +586,18 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'settings' && (
-          <ProjectsManager
-            projects={projects}
-            history={history}
-            onLoadProject={handleLoadProject}
-            onDeleteProject={handleDeleteProject}
+          <SettingsHub
+            totalStorageBytes={totalStorageBytes}
+            totalProjectsCount={projects.length}
             onRefreshData={refreshStorageData}
+          />
+        )}
+
+        {activeTab === 'admin' && (
+          <AdminConsole
+            userSession={userSession}
+            onUpdateSession={handleUpdateSession}
+            totalStorageBytes={totalStorageBytes}
           />
         )}
       </main>
