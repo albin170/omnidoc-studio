@@ -61,3 +61,4 @@ The matrix below documents the exact verified input/output conversion routes:
 | **Digital Signature Stamps** | Yes | Yes | Yes (Vector + SVG) |
 | **Redaction Tool** | Standard Blackout | Standard Blackout | True Redaction + Metadata Purge |
 | **Admin Console Access** | No | Optional | Full Telemetry & Audit Logs |
+

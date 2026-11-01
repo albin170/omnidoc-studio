@@ -107,3 +107,4 @@
 - [ ] Configure `vite.config.ts` manual chunks to split monolithic vendor libraries into separate chunks.
 - [ ] Verify `npm run build` succeeds without warning of chunks > 500 kB.
 - [ ] Verify `npm run lint` finishes with 0 errors and clean output.
+

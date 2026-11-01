@@ -134,3 +134,4 @@ C:\Users\Dell\Documents\omnidoc-studio\
    - `localStorage` has a ~5–10MB browser limit. Saving large multi-page documents as base64 strings in `localStorage` can trigger `QuotaExceededError`. Structured persistence with IndexedDB or quota checks is essential.
 4. **Formula Evaluation Security**:
    - `evaluateCellFormula` in `sheetService.ts` executes arithmetic expressions via `Function('return (' + substituted + ')')`. While protected by regex `/^[0-9+\-*/. ()]+$/`, it must strictly maintain safe parsing to prevent arbitrary code execution.
+

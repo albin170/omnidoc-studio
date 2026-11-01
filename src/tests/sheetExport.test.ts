@@ -27,3 +27,4 @@ describe('Spreadsheet Export Capabilities', () => {
     expect(xlsxBlob.size).toBeGreaterThan(100); // Standard ZIP container overhead
   });
 });
+
