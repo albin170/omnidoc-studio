@@ -19,7 +19,10 @@ import {
   HelpCircle,
   LogOut,
   Sparkles,
-  GitCompare
+  GitCompare,
+  Boxes,
+  Binary,
+  GitCommit
 } from 'lucide-react';
 import { WorkspaceTab } from '../../types';
 import { OmniDocLogo } from './OmniDocLogo';
@@ -41,6 +44,9 @@ interface SidebarProps {
   onOpenDiff?: () => void;
   onOpenBatch?: () => void;
   onOpenAi?: () => void;
+  onOpenForensics?: () => void;
+  onOpenLineage?: () => void;
+  onOpenReceipts?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -60,12 +66,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenDiff,
   onOpenBatch,
   onOpenAi,
+  onOpenForensics,
+  onOpenLineage,
+  onOpenReceipts,
 }) => {
   const navItems = [
     {
       tab: 'dashboard' as WorkspaceTab,
       label: 'Dashboard',
       icon: LayoutDashboard,
+    },
+    {
+      tab: 'workflow' as WorkspaceTab,
+      label: 'Workflow Studio',
+      icon: Boxes,
+      badge: 'v2.1',
     },
     {
       tab: 'converter' as WorkspaceTab,
@@ -272,6 +287,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <Layers className="w-4 h-4 mb-0.5 text-blue-400" />
                 <span className="text-[9px] font-bold">Batch ZIP</span>
+              </button>
+            )}
+            {onOpenForensics && (
+              <button
+                onClick={onOpenForensics}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-all cursor-pointer"
+                title="Document Forensics & Threat Lab"
+              >
+                <Binary className="w-4 h-4 mb-0.5 text-amber-400" />
+                <span className="text-[9px] font-bold">Forensics</span>
+              </button>
+            )}
+            {onOpenLineage && (
+              <button
+                onClick={onOpenLineage}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/20 transition-all cursor-pointer"
+                title="Document Data Lineage"
+              >
+                <GitCommit className="w-4 h-4 mb-0.5 text-teal-400" />
+                <span className="text-[9px] font-bold">Lineage</span>
+              </button>
+            )}
+            {onOpenReceipts && (
+              <button
+                onClick={onOpenReceipts}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-300 border border-yellow-500/20 transition-all cursor-pointer"
+                title="Transformation Receipts & Certs"
+              >
+                <Boxes className="w-4 h-4 mb-0.5 text-yellow-400" />
+                <span className="text-[9px] font-bold">Receipts</span>
               </button>
             )}
           </div>

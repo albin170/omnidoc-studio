@@ -56,6 +56,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const commands: CommandItem[] = [
     // Studios
     {
+      id: 'studio-workflow',
+      title: 'Visual Workflow Studio',
+      subtitle: 'DAG node pipelines: intake, forensics screening, DNA fingerprinting, self-healing conversion & receipts',
+      category: 'Studios',
+      icon: Layers,
+      tab: 'workflow',
+      shortcut: 'V',
+    },
+    {
       id: 'studio-pdf',
       title: 'PDF Studio',
       subtitle: 'Edit text, annotate, rotate, split, merge & sign documents',

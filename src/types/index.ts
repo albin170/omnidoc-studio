@@ -23,7 +23,8 @@ export type WorkspaceTab =
   | 'templates' 
   | 'projects' 
   | 'settings'
-  | 'admin';
+  | 'admin'
+  | 'workflow';
 
 export type JobStatus = 
   | 'queued' 
@@ -246,4 +247,174 @@ export interface BatchJobItem {
   resultBlob?: Blob;
   outputName?: string;
 }
+
+// -------------------------------------------------------------
+// OmniDoc Studio Engineering Platform Types (v2.1 Innovation)
+// -------------------------------------------------------------
+
+// Feature 1: Document DNA
+export interface DocumentDnaProfile {
+  fileName: string;
+  format: FileFormat;
+  sha256: string;
+  sizeBytes: number;
+  wordCount: number;
+  characterCount: number;
+  pageOrSheetCount: number;
+  headingCount: number;
+  tableCount: number;
+  tableDimensions: { rows: number; cols: number }[];
+  imageCount: number;
+  formulaCount: number;
+  headings: string[];
+  metadata: {
+    title?: string;
+    author?: string;
+    creator?: string;
+    createdAt?: string;
+  };
+}
+
+export interface DnaFinding {
+  severity: 'error' | 'warning' | 'info';
+  category: 'content' | 'table' | 'formula' | 'layout' | 'image' | 'metadata';
+  message: string;
+  expected?: string | number;
+  actual?: string | number;
+}
+
+export interface DnaComparisonResult {
+  sourceDna: DocumentDnaProfile;
+  targetDna: DocumentDnaProfile;
+  integrityScore: number; // 0 - 100 heuristic fidelity metric
+  fidelityScore: number;
+  summary?: string;
+  errors: DnaFinding[];
+  warnings: DnaFinding[];
+  unverifiedProperties: string[];
+  fidelityRating: 'PRISTINE' | 'HIGH' | 'MODERATE' | 'DEGRADED';
+}
+
+// Feature 2: Self-Healing Conversion
+export interface SelfHealingResult {
+  primarySuccess: boolean;
+  recoveryAttempted: boolean;
+  strategyUsed: 'primary' | 'structured_fallback' | 'compact_table_scaling' | 'none';
+  proposedRepairDescription?: string;
+  beforeScore?: number;
+  afterScore?: number;
+  outputBlob: Blob;
+  outputFileName: string;
+  receiptId?: string;
+}
+
+// Feature 3: Visual Workflow Engine
+export type WorkflowNodeType = 
+  | 'upload' 
+  | 'detect' 
+  | 'dna' 
+  | 'validate' 
+  | 'forensics' 
+  | 'convert' 
+  | 'verify' 
+  | 'receipt' 
+  | 'export';
+
+export interface WorkflowNode {
+  id: string;
+  type: WorkflowNodeType;
+  title: string;
+  config: Record<string, any>;
+  x: number;
+  y: number;
+  status: 'idle' | 'running' | 'completed' | 'error' | 'skipped';
+  error?: string;
+}
+
+export interface WorkflowEdge {
+  id: string;
+  fromNodeId: string;
+  toNodeId: string;
+}
+
+export interface WorkflowDefinition {
+  id: string;
+  name: string;
+  description: string;
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+  updatedAt: number;
+}
+
+// Feature 4: Document Data Lineage
+export interface LineageFieldNode {
+  id: string;
+  fieldName: string;
+  extractedValue: string | number;
+  sourceFile: string;
+  sourceFileHash: string;
+  pageNumber?: number;
+  contextSnippet: string;
+  confidence: number; // 0.0 - 1.0 measurable metric
+  transformations: string[];
+  isFlaggedForReview: boolean;
+}
+
+export interface LineageManifest {
+  documentTitle: string;
+  documentHash: string;
+  generatedAt: number;
+  fields: LineageFieldNode[];
+}
+
+// Feature 5: Document Forensics
+export interface ForensicsFinding {
+  id: string;
+  level: 'INFO' | 'WARNING' | 'HIGH_RISK';
+  rule: string;
+  description: string;
+  technicalDetails?: string;
+}
+
+export interface ForensicsReport {
+  fileName: string;
+  declaredExtension: string;
+  actualFormat: string | null;
+  fileSizeBytes: number;
+  sha256: string;
+  findings: ForensicsFinding[];
+  overallRisk: 'LOW' | 'MEDIUM' | 'HIGH';
+  inspectedAt: number;
+  metadataSummary: Record<string, string>;
+  embeddedResourcesCount: number;
+}
+
+// Feature 6: Transformation Receipts
+export interface TransformationReceipt {
+  receiptId: string;
+  timestamp: string; // ISO-8601
+  source: {
+    fileName: string;
+    format: FileFormat;
+    sizeBytes: number;
+    sha256: string;
+  };
+  target: {
+    fileName: string;
+    format: FileFormat;
+    sizeBytes: number;
+    sha256: string;
+  };
+  toolchain: {
+    engine: string;
+    version: string;
+    libraries: Record<string, string>;
+  };
+  integrityScore: number;
+  warningCount: number;
+  errorCount: number;
+  executionDurationMs: number;
+  digitalSignature: string;
+}
+
 

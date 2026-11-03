@@ -26,7 +26,11 @@ import {
   Plus,
   Trash2,
   Clock,
-  Cpu
+  Cpu,
+  Boxes,
+  Binary,
+  GitCommit,
+  Activity
 } from 'lucide-react';
 import { ConversionHistoryItem, FileFormat, StoredProject, WorkspaceTab } from '../../types';
 import { detectFileFormat, formatFileSize, FORMAT_REGISTRY } from '../../services/formatDetector';
@@ -46,6 +50,9 @@ interface DashboardProps {
   onOpenSettings?: () => void;
   onOpenUserPanel?: () => void;
   onOpenCommandPalette?: () => void;
+  onOpenForensics?: () => void;
+  onOpenLineage?: () => void;
+  onOpenReceipts?: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -62,6 +69,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onOpenSettings,
   onOpenUserPanel,
   onOpenCommandPalette,
+  onOpenForensics,
+  onOpenLineage,
+  onOpenReceipts,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [detectedFileInfo, setDetectedFileInfo] = useState<{ file: File; format: FileFormat } | null>(null);
@@ -511,6 +521,116 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* 4b. Intelligent Document Engineering Platform Suite (v2.1) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Intelligent Document Engineering Suite
+            </h3>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200">
+              v2.1 ADVANCED
+            </span>
+          </div>
+          <button
+            onClick={() => setActiveTab('workflow')}
+            className="text-xs font-bold text-indigo-600 hover:text-indigo-700 cursor-pointer"
+          >
+            Open Workflow Studio →
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* Card 1: Visual Workflow Studio */}
+          <div
+            onClick={() => setActiveTab('workflow')}
+            className="glass-card glass-card-hover rounded-2xl p-4 cursor-pointer flex flex-col justify-between border border-indigo-100/80 bg-gradient-to-br from-indigo-50/50 to-white group"
+          >
+            <div>
+              <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 border border-indigo-200/60 flex items-center justify-center mb-2.5">
+                <Boxes className="w-4 h-4" />
+              </div>
+              <h4 className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                Visual Workflow Studio
+              </h4>
+              <p className="text-[10px] text-slate-500 mt-1 leading-snug">
+                DAG node pipelines: intake → forensics → DNA → self-healing conversion → verify → receipt.
+              </p>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-indigo-600">
+              <span>Interactive DAG Builder</span>
+              <span>Open Studio →</span>
+            </div>
+          </div>
+
+          {/* Card 2: Forensics Lab */}
+          <div
+            onClick={onOpenForensics}
+            className="glass-card glass-card-hover rounded-2xl p-4 cursor-pointer flex flex-col justify-between border border-amber-100/80 bg-gradient-to-br from-amber-50/50 to-white group"
+          >
+            <div>
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 border border-amber-200/60 flex items-center justify-center mb-2.5">
+                <Binary className="w-4 h-4" />
+              </div>
+              <h4 className="text-xs font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
+                Document Forensics Lab
+              </h4>
+              <p className="text-[10px] text-slate-500 mt-1 leading-snug">
+                Detect MIME extension spoofing, weaponized VBA macros, external links, and author leaks.
+              </p>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-amber-600">
+              <span>Security Screening</span>
+              <span>Launch Lab →</span>
+            </div>
+          </div>
+
+          {/* Card 3: Data Lineage & Provenance */}
+          <div
+            onClick={onOpenLineage}
+            className="glass-card glass-card-hover rounded-2xl p-4 cursor-pointer flex flex-col justify-between border border-teal-100/80 bg-gradient-to-br from-teal-50/50 to-white group"
+          >
+            <div>
+              <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 border border-teal-200/60 flex items-center justify-center mb-2.5">
+                <GitCommit className="w-4 h-4" />
+              </div>
+              <h4 className="text-xs font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
+                Data Lineage &amp; Provenance
+              </h4>
+              <p className="text-[10px] text-slate-500 mt-1 leading-snug">
+                Track extracted financial figures, dates, IDs with measurable confidence metrics and page anchors.
+              </p>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-teal-600">
+              <span>Traceable Metrics</span>
+              <span>Audit Lineage →</span>
+            </div>
+          </div>
+
+          {/* Card 4: Transformation Receipts */}
+          <div
+            onClick={onOpenReceipts}
+            className="glass-card glass-card-hover rounded-2xl p-4 cursor-pointer flex flex-col justify-between border border-yellow-100/80 bg-gradient-to-br from-yellow-50/50 to-white group"
+          >
+            <div>
+              <div className="w-9 h-9 rounded-xl bg-yellow-500/10 text-yellow-600 border border-yellow-200/60 flex items-center justify-center mb-2.5">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <h4 className="text-xs font-bold text-slate-900 group-hover:text-yellow-600 transition-colors">
+                Audit Receipts &amp; Certs
+              </h4>
+              <p className="text-[10px] text-slate-500 mt-1 leading-snug">
+                Verifiable cryptographic receipts containing dual SHA-256 hashes, engine versions, and HMAC signatures.
+              </p>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-yellow-600">
+              <span>Non-repudiable Proof</span>
+              <span>Inspect Certs →</span>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -44,6 +44,10 @@ import { extractTextFromPptxFile } from './services/pptxService';
 import { DocumentDiffModal } from './components/diff/DocumentDiffModal';
 import { BatchAutomationModal } from './components/converter/BatchAutomationModal';
 import { AiAssistantDrawer } from './components/ai/AiAssistantDrawer';
+import { VisualWorkflowStudio } from './components/workflow/VisualWorkflowStudio';
+import { DocumentForensicsModal } from './components/forensics/DocumentForensicsModal';
+import { DataLineageModal } from './components/lineage/DataLineageModal';
+import { TransformationReceiptModal } from './components/receipts/TransformationReceiptModal';
 import { 
   Menu, 
   User as UserIcon, 
@@ -91,6 +95,9 @@ export const App: React.FC = () => {
   const [isDiffOpen, setIsDiffOpen] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
+  const [isForensicsOpen, setIsForensicsOpen] = useState(false);
+  const [isLineageOpen, setIsLineageOpen] = useState(false);
+  const [isReceiptsOpen, setIsReceiptsOpen] = useState(false);
 
   // Extract current document content for AI Assistant & Revision Diff
   const currentDocumentContent = useMemo(() => {
@@ -477,6 +484,7 @@ export const App: React.FC = () => {
   // Friendly human readable tab names
   const studioTitles: Record<WorkspaceTab, string> = {
     dashboard: 'Workspace Dashboard',
+    workflow: 'Visual Workflow Studio',
     converter: 'Universal Conversion Hub',
     pdf: 'PDF Studio & Signatures',
     docx: 'Word Document Editor (DOCX)',
@@ -558,6 +566,9 @@ export const App: React.FC = () => {
         onOpenDiff={() => setIsDiffOpen(true)}
         onOpenBatch={() => setIsBatchOpen(true)}
         onOpenAi={() => setIsAiOpen(true)}
+        onOpenForensics={() => setIsForensicsOpen(true)}
+        onOpenLineage={() => setIsLineageOpen(true)}
+        onOpenReceipts={() => setIsReceiptsOpen(true)}
       />
 
       {/* Full-Size Dynamic Workspace Content Area */}
@@ -597,6 +608,7 @@ export const App: React.FC = () => {
                 title="Quick switch to another studio"
               >
                 <option value="dashboard">Dashboard</option>
+                <option value="workflow">Workflow Studio</option>
                 <option value="converter">Conversion Hub</option>
                 <option value="pdf">PDF Studio</option>
                 <option value="docx">Word (DOCX)</option>
@@ -674,7 +686,14 @@ export const App: React.FC = () => {
             onOpenSettings={() => setIsSettingsOpen(true)}
             onOpenUserPanel={() => setIsUserPanelOpen(true)}
             onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+            onOpenForensics={() => setIsForensicsOpen(true)}
+            onOpenLineage={() => setIsLineageOpen(true)}
+            onOpenReceipts={() => setIsReceiptsOpen(true)}
           />
+        )}
+
+        {activeTab === 'workflow' && (
+          <VisualWorkflowStudio onNotify={addToast} />
         )}
 
         {activeTab === 'converter' && (
@@ -813,6 +832,22 @@ export const App: React.FC = () => {
         onClose={() => setIsAiOpen(false)}
         documentContent={currentDocumentContent}
         documentTitle={currentDocumentTitle}
+      />
+
+      {/* OmniDoc v2.1 Intelligent Document Engineering Modals */}
+      <DocumentForensicsModal
+        isOpen={isForensicsOpen}
+        onClose={() => setIsForensicsOpen(false)}
+      />
+
+      <DataLineageModal
+        isOpen={isLineageOpen}
+        onClose={() => setIsLineageOpen(false)}
+      />
+
+      <TransformationReceiptModal
+        isOpen={isReceiptsOpen}
+        onClose={() => setIsReceiptsOpen(false)}
       />
 
       {/* Keyboard Shortcuts & Help Modal */}

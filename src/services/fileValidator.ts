@@ -217,3 +217,14 @@ async function validateTextDocument(file: File, format: FileFormat): Promise<Det
 
   return { valid: true, format };
 }
+
+/**
+ * Convenience alias for package-level validation
+ */
+export async function validateDocumentPackage(file: File): Promise<{ valid: boolean; message?: string }> {
+  const result = await validateDocumentStructure(file);
+  return {
+    valid: result.valid,
+    message: result.error || 'Validated successfully',
+  };
+}
