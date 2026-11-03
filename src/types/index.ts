@@ -185,3 +185,65 @@ export interface OCRResult {
   wordsCount: number;
   lines: string[];
 }
+
+// OmniDoc Studio v2.0 Platform & Advanced Intelligence Types
+export type StorageMode = 'local' | 'cloud';
+
+export interface ProjectVersion {
+  versionId: string;
+  projectId: string;
+  timestamp: number;
+  title: string;
+  note?: string;
+  data: any;
+  authorEmail?: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: number;
+  action: string;
+  userEmail: string;
+  details: string;
+  severity: 'info' | 'warn' | 'critical';
+}
+
+export interface DiffToken {
+  type: 'add' | 'del' | 'same';
+  text: string;
+}
+
+export interface DiffResult {
+  oldTitle: string;
+  newTitle: string;
+  tokens: DiffToken[];
+  stats: {
+    additions: number;
+    deletions: number;
+    unchanged: number;
+  };
+}
+
+export interface AiCitation {
+  pageNumber?: number;
+  snippet: string;
+}
+
+export interface AiAssistantMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+  citations?: AiCitation[];
+  suggestedActions?: string[];
+}
+
+export interface BatchJobItem {
+  file: File;
+  targetFormat: FileFormat;
+  status: 'pending' | 'processing' | 'done' | 'failed';
+  error?: string;
+  resultBlob?: Blob;
+  outputName?: string;
+}
+

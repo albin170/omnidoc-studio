@@ -21,18 +21,27 @@ export async function extractTextFromPptxFile(file: File): Promise<string[]> {
       return aNum - bNum;
     });
 
-    const parser = new DOMParser();
     const slidesText: string[] = [];
 
     for (const sName of slideNames) {
       const xml = await zip.files[sName].async('text');
-      const xmlDoc = parser.parseFromString(xml, 'text/xml');
-      const textNodes = xmlDoc.getElementsByTagName('a:t');
       const lines: string[] = [];
-      for (let i = 0; i < textNodes.length; i++) {
-        const text = textNodes[i].textContent?.trim();
-        if (text) lines.push(text);
+
+      if (typeof DOMParser !== 'undefined') {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xml, 'text/xml');
+        const textNodes = xmlDoc.getElementsByTagName('a:t');
+        for (let i = 0; i < textNodes.length; i++) {
+          const text = textNodes[i].textContent?.trim();
+          if (text) lines.push(text);
+        }
+      } else {
+        const tMatches = Array.from(xml.matchAll(/<a:t[^>]*>(.*?)<\/a:t>/gs))
+          .map((m) => m[1]?.trim())
+          .filter(Boolean);
+        lines.push(...tMatches);
       }
+
       if (lines.length > 0) {
         slidesText.push(lines.join('\n'));
       }

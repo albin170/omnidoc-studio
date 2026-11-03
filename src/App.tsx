@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { 
   ConversionHistoryItem, 
   ConversionJob, 
@@ -41,12 +41,18 @@ import { FORMAT_REGISTRY, formatFileSize, validateFileFormat } from './services/
 import { extractTextFromDocxFile } from './services/docxService';
 import { parseSpreadsheetFile } from './services/sheetService';
 import { extractTextFromPptxFile } from './services/pptxService';
+import { DocumentDiffModal } from './components/diff/DocumentDiffModal';
+import { BatchAutomationModal } from './components/converter/BatchAutomationModal';
+import { AiAssistantDrawer } from './components/ai/AiAssistantDrawer';
 import { 
   Menu, 
   User as UserIcon, 
   Search, 
   HelpCircle, 
-  ArrowLeft
+  ArrowLeft,
+  Sparkles,
+  GitCompare,
+  Layers
 } from 'lucide-react';
 import { OmniDocLogo } from './components/common/OmniDocLogo';
 import { useToast } from './services/toastService';
@@ -82,6 +88,35 @@ export const App: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isDiffOpen, setIsDiffOpen] = useState(false);
+  const [isBatchOpen, setIsBatchOpen] = useState(false);
+  const [isAiOpen, setIsAiOpen] = useState(false);
+
+  // Extract current document content for AI Assistant & Revision Diff
+  const currentDocumentContent = useMemo(() => {
+    if (activeTab === 'docx') return docxState.content;
+    if (activeTab === 'slides') {
+      return (
+        slideState.slides
+          ?.map(
+            (s: any) =>
+              s.title + '\n' + (s.elements?.map((e: any) => e.content).join('\n') || '')
+          )
+          .join('\n\n') || ''
+      );
+    }
+    if (activeTab === 'sheets') {
+      return sheetState.data?.map((row) => row.join(', ')).join('\n') || '';
+    }
+    return '';
+  }, [activeTab, docxState.content, slideState.slides, sheetState.data]);
+
+  const currentDocumentTitle = useMemo(() => {
+    if (activeTab === 'docx') return docxState.title;
+    if (activeTab === 'slides') return slideState.title;
+    if (activeTab === 'sheets') return sheetState.title;
+    return 'Active Document';
+  }, [activeTab, docxState.title, slideState.title, sheetState.title]);
 
   // Load projects & history on mount
   const refreshStorageData = () => {
@@ -520,6 +555,9 @@ export const App: React.FC = () => {
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenHelp={() => setIsHelpShortcutsOpen(true)}
         onLogout={handleLogout}
+        onOpenDiff={() => setIsDiffOpen(true)}
+        onOpenBatch={() => setIsBatchOpen(true)}
+        onOpenAi={() => setIsAiOpen(true)}
       />
 
       {/* Full-Size Dynamic Workspace Content Area */}
@@ -573,6 +611,33 @@ export const App: React.FC = () => {
                   <option value="admin">Admin Console</option>
                 )}
               </select>
+
+              <button
+                onClick={() => setIsAiOpen(true)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold border border-purple-200 cursor-pointer"
+                title="AI Document Assistant"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                <span className="hidden md:inline">AI Help</span>
+              </button>
+
+              <button
+                onClick={() => setIsDiffOpen(true)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200 cursor-pointer"
+                title="Compare Revisions & View Diffs"
+              >
+                <GitCompare className="w-3.5 h-3.5 text-indigo-600" />
+                <span className="hidden md:inline">Compare</span>
+              </button>
+
+              <button
+                onClick={() => setIsBatchOpen(true)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold border border-blue-200 cursor-pointer"
+                title="Batch Convert & ZIP Automation"
+              >
+                <Layers className="w-3.5 h-3.5 text-blue-600" />
+                <span className="hidden md:inline">Batch ZIP</span>
+              </button>
 
               <button
                 onClick={() => setIsCommandPaletteOpen(true)}
@@ -728,6 +793,26 @@ export const App: React.FC = () => {
           setActiveTab('sheets');
         }}
         onOpenHelp={() => setIsHelpShortcutsOpen(true)}
+      />
+
+      {/* OmniDoc v2.0 Platform Modals */}
+      <DocumentDiffModal
+        isOpen={isDiffOpen}
+        onClose={() => setIsDiffOpen(false)}
+        defaultOldText={currentDocumentContent}
+        defaultOldTitle={currentDocumentTitle}
+      />
+
+      <BatchAutomationModal
+        isOpen={isBatchOpen}
+        onClose={() => setIsBatchOpen(false)}
+      />
+
+      <AiAssistantDrawer
+        isOpen={isAiOpen}
+        onClose={() => setIsAiOpen(false)}
+        documentContent={currentDocumentContent}
+        documentTitle={currentDocumentTitle}
       />
 
       {/* Keyboard Shortcuts & Help Modal */}

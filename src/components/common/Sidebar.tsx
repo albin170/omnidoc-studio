@@ -17,7 +17,9 @@ import {
   Zap,
   Search,
   HelpCircle,
-  LogOut
+  LogOut,
+  Sparkles,
+  GitCompare
 } from 'lucide-react';
 import { WorkspaceTab } from '../../types';
 import { OmniDocLogo } from './OmniDocLogo';
@@ -36,6 +38,9 @@ interface SidebarProps {
   onOpenCommandPalette?: () => void;
   onOpenHelp?: () => void;
   onLogout?: () => void;
+  onOpenDiff?: () => void;
+  onOpenBatch?: () => void;
+  onOpenAi?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -52,6 +57,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenCommandPalette,
   onOpenHelp,
   onLogout,
+  onOpenDiff,
+  onOpenBatch,
+  onOpenAi,
 }) => {
   const navItems = [
     {
@@ -228,6 +236,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
               );
             })}
           </nav>
+        </div>
+
+        {/* Intelligence & Automation Quick Actions */}
+        <div className="pt-2 pb-1 space-y-1.5 border-t border-white/10 shrink-0">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2">
+            Intelligence &amp; Tools
+          </div>
+          <div className="grid grid-cols-3 gap-1.5 px-1">
+            {onOpenAi && (
+              <button
+                onClick={onOpenAi}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 transition-all cursor-pointer"
+                title="AI Document Assistant"
+              >
+                <Sparkles className="w-4 h-4 mb-0.5 text-purple-400" />
+                <span className="text-[9px] font-bold">AI Help</span>
+              </button>
+            )}
+            {onOpenDiff && (
+              <button
+                onClick={onOpenDiff}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 transition-all cursor-pointer"
+                title="Document Comparison (Diff)"
+              >
+                <GitCompare className="w-4 h-4 mb-0.5 text-indigo-400" />
+                <span className="text-[9px] font-bold">Compare</span>
+              </button>
+            )}
+            {onOpenBatch && (
+              <button
+                onClick={onOpenBatch}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/20 transition-all cursor-pointer"
+                title="Batch Convert & ZIP"
+              >
+                <Layers className="w-4 h-4 mb-0.5 text-blue-400" />
+                <span className="text-[9px] font-bold">Batch ZIP</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Bottom Profile & User Panel Trigger */}

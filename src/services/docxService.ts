@@ -138,22 +138,34 @@ export async function extractTextFromDocxFile(file: File): Promise<string> {
     }
 
     const xmlText = await docXmlFile.async('text');
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-    
-    // Extract paragraphs <w:p>
-    const paragraphs = xmlDoc.getElementsByTagName('w:p');
     const extractedLines: string[] = [];
 
-    for (let i = 0; i < paragraphs.length; i++) {
-      const p = paragraphs[i];
-      const textNodes = p.getElementsByTagName('w:t');
-      let pText = '';
-      for (let j = 0; j < textNodes.length; j++) {
-        pText += textNodes[j].textContent || '';
+    if (typeof DOMParser !== 'undefined') {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      
+      // Extract paragraphs <w:p>
+      const paragraphs = xmlDoc.getElementsByTagName('w:p');
+      for (let i = 0; i < paragraphs.length; i++) {
+        const p = paragraphs[i];
+        const textNodes = p.getElementsByTagName('w:t');
+        let pText = '';
+        for (let j = 0; j < textNodes.length; j++) {
+          pText += textNodes[j].textContent || '';
+        }
+        if (pText.trim()) {
+          extractedLines.push(pText);
+        }
       }
-      if (pText.trim()) {
-        extractedLines.push(pText);
+    } else {
+      // Regex extraction fallback for Node/headless environments
+      const pMatches = xmlText.match(/<w:p[\s>].*?<\/w:p>/gs) || [];
+      for (const pXml of pMatches) {
+        const tMatches = Array.from(pXml.matchAll(/<w:t[^>]*>(.*?)<\/w:t>/gs)).map((m) => m[1]);
+        const pText = tMatches.join('');
+        if (pText.trim()) {
+          extractedLines.push(pText);
+        }
       }
     }
 
