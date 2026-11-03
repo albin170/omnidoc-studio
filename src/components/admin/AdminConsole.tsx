@@ -15,6 +15,8 @@ import { formatFileSize } from '../../services/formatDetector';
 import { useToast } from '../../services/toastService';
 import saveAs from 'file-saver';
 
+const SESSION_START_DATE = new Date().toLocaleDateString();
+
 interface AdminConsoleProps {
   userSession: UserSession;
   onUpdateSession: (newSession: UserSession) => void;
@@ -387,7 +389,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 </div>
 
                 <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 space-y-2">
-                  <div className="text-slate-500">[Client Session Started: {new Date().toLocaleDateString()}]</div>
+                  <div className="text-slate-500">[Client Session Started: {SESSION_START_DATE}]</div>
                   <div className="text-emerald-400">[LOCAL] Browser storage active: {projects.length} saved project(s)</div>
                   <div className="text-indigo-400">[LOCAL] Conversion history active: {history.length} completed task(s)</div>
                   <div className="text-amber-400">[NOTICE] Central server logging: Unavailable (standalone client mode)</div>
