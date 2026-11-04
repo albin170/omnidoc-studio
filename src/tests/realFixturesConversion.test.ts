@@ -220,6 +220,10 @@ describe('Document Text Comparison & Change Analysis', () => {
 });
 
 describe('AI Document Intelligence', () => {
+  beforeEach(() => {
+    aiAssistantService.setConsent(true);
+  });
+
   const sampleDoc = `
 Strategic Growth Plan 2026
 

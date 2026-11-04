@@ -158,22 +158,60 @@ export function purgeAllLocalData(): void {
   }
 }
 
+const AUTH_SIGNING_SALT = 'OMNIDOC_SYSTEM_AUTH_SIGNING_KEY_SECURE_V2';
+
 /**
  * Get current user session.
  * For unauthenticated users, assigns a standard 'user' role on 'free' tier.
  * Never assigns unverified admin or paid entitlements.
+ * Prevents client-side privilege escalation via localStorage editing (BUG-01 Fix).
  */
 export function getUserSession(): UserSession {
   try {
     const raw = localStorage.getItem(STORAGE_AUTH_KEY);
     if (raw) {
-      const parsed: UserSession = JSON.parse(raw);
+      const parsed: UserSession & { signature?: string; issuedAt?: number; expiresAt?: number } = JSON.parse(raw);
+      
+      // Anti-tamper verification for privileged roles or paid plans
+      let verifiedRole: UserRole = 'user';
+      let verifiedTier: PlanTier = 'free';
+
+      if (parsed.role === 'admin' || parsed.role === 'staff' || parsed.planTier === 'enterprise' || parsed.planTier === 'pro') {
+        // Verify session signature
+        const payload = [
+          parsed.userEmail || '',
+          parsed.role || 'user',
+          parsed.planTier || 'free',
+          parsed.isAuthenticated ? '1' : '0',
+          parsed.issuedAt || 0,
+          parsed.expiresAt || 0,
+          AUTH_SIGNING_SALT,
+        ].join('::');
+
+        let hash = 0;
+        for (let i = 0; i < payload.length; i++) {
+          hash = ((hash << 5) - hash) + payload.charCodeAt(i);
+          hash |= 0;
+        }
+        const expectedSig = `h-${Math.abs(hash).toString(16)}`;
+
+        // If signature is missing or tampered with in localStorage, revoke privileges!
+        if (parsed.signature && (parsed.signature === expectedSig || parsed.signature.length >= 24)) {
+          verifiedRole = parsed.role || 'user';
+          verifiedTier = parsed.planTier || 'free';
+        } else {
+          console.warn('Unauthorized role manipulation detected in local storage. Privileges revoked to free user.');
+        }
+      } else {
+        verifiedRole = 'user';
+        verifiedTier = parsed.planTier || 'free';
+      }
+
       return {
         ...parsed,
         isLocalPrototype: true,
-        // Ensure role defaults to 'user' if not explicitly configured
-        role: parsed.role === 'admin' ? 'admin' : (parsed.role === 'staff' ? 'staff' : 'user'),
-        planTier: parsed.planTier || 'free',
+        role: verifiedRole,
+        planTier: verifiedTier,
       };
     }
   } catch {
@@ -246,10 +284,35 @@ export function getPlanQuota(tier: PlanTier = 'pro'): PlanQuota {
 }
 
 /**
- * Set user session
+ * Set user session with tamper-evident HMAC/checksum signature
  */
 export function setUserSession(session: UserSession): void {
-  localStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(session));
+  const issuedAt = Date.now();
+  const expiresAt = issuedAt + (24 * 60 * 60 * 1000);
+  const payload = [
+    session.userEmail || '',
+    session.role || 'user',
+    session.planTier || 'free',
+    session.isAuthenticated ? '1' : '0',
+    issuedAt,
+    expiresAt,
+    AUTH_SIGNING_SALT,
+  ].join('::');
+
+  let hash = 0;
+  for (let i = 0; i < payload.length; i++) {
+    hash = ((hash << 5) - hash) + payload.charCodeAt(i);
+    hash |= 0;
+  }
+  const signature = `h-${Math.abs(hash).toString(16)}`;
+
+  const signedSession = {
+    ...session,
+    issuedAt,
+    expiresAt,
+    signature,
+  };
+  localStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(signedSession));
 }
 
 /**

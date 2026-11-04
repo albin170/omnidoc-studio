@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { OmniDocLogo } from '../common/OmniDocLogo';
 import { UserSession } from '../../services/storageService';
+import { createSecureSession } from '../../services/authService';
 import { useToast } from '../../services/toastService';
 
 interface AuthGatewayProps {
@@ -33,53 +34,48 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
   const [specialty, setSpecialty] = useState('All-in-One Studio');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
       addToast('warning', 'Email Required', 'Please enter your email address to sign in.');
       return;
     }
 
-    const session: UserSession = {
-      isGuest: false,
-      userEmail: email.trim(),
-      userName: email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
-      storageUsedBytes: 0,
-      isAuthenticated: true,
-      rememberMe,
-      role: 'user',
-      planTier: 'free',
-      isLocalPrototype: true,
-    };
+    if (!/\S+@\S+\.\S+/.test(email.trim())) {
+      addToast('warning', 'Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      addToast('warning', 'Password Required', 'Password must be at least 6 characters.');
+      return;
+    }
+
+    const calculatedName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+    const session = await createSecureSession(email.trim(), calculatedName, 'user', 'free');
+    session.rememberMe = rememberMe;
 
     onAuthenticate(session);
-    addToast('success', 'Local Session Active', `Signed in as ${session.userName} (Local Prototype).`);
+    addToast('success', 'Session Authenticated', `Signed in as ${session.userName} (Local Sandbox Auth).`);
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       addToast('warning', 'Name Required', 'Please enter your name.');
       return;
     }
-    if (!email.trim()) {
-      addToast('warning', 'Email Required', 'Please enter your email address.');
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email.trim())) {
+      addToast('warning', 'Valid Email Required', 'Please enter a valid email address.');
+      return;
+    }
+    if (!password || password.length < 6) {
+      addToast('warning', 'Password Required', 'Password must be at least 6 characters.');
       return;
     }
 
-    const session: UserSession = {
-      isGuest: false,
-      userEmail: email.trim(),
-      userName: name.trim(),
-      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
-      storageUsedBytes: 0,
-      isAuthenticated: true,
-      rememberMe,
-      role: 'user',
-      planTier: 'free',
-      isLocalPrototype: true,
-    };
+    const session = await createSecureSession(email.trim(), name.trim(), 'user', 'free');
+    session.rememberMe = rememberMe;
 
     onAuthenticate(session);
     addToast('success', 'Profile Created', `Welcome to OmniDoc Studio, ${name.trim()}!`);

@@ -14,8 +14,9 @@ export interface ExtractedEntities {
 }
 
 /**
- * AI Document Intelligence Service
- * Processes documents with verifiable citations and strict privacy consent.
+ * Local Document Intelligence & Rule-Based Assistant Engine (BUG-05, BUG-06, BUG-07 Fix)
+ * Runs 100% locally in browser memory without sending document data to external cloud servers.
+ * Strictly enforces user processing consent before analyzing document contents.
  */
 class AiAssistantEngine {
   private consentGiven = false;
@@ -28,17 +29,34 @@ class AiAssistantEngine {
     return this.consentGiven;
   }
 
+  private assertConsent(): void {
+    if (!this.consentGiven) {
+      throw new Error('Privacy Guard: Document processing consent has not been granted. Please review and accept local document inspection permissions.');
+    }
+  }
+
   /**
    * Summarize document content with key takeaways and cited sections
    */
   public summarizeDocument(content: string, documentTitle: string): AiAssistantMessage {
-    const paragraphs = content.split('\n\n').filter((p) => p.trim().length > 20);
-    const wordCount = content.trim().split(/\s+/).length;
+    this.assertConsent();
 
-    const citations: AiCitation[] = paragraphs.slice(0, 3).map((p, idx) => ({
-      pageNumber: idx + 1,
-      snippet: p.slice(0, 150) + (p.length > 150 ? '...' : ''),
-    }));
+    const paragraphs = content.split('\n\n').filter((p) => p.trim().length > 20);
+    const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+
+    let cumulativeWords = 0;
+    const citations: AiCitation[] = paragraphs.slice(0, 3).map((p, idx) => {
+      const pWords = p.trim().split(/\s+/).length;
+      cumulativeWords += pWords;
+      const estimatedPage = Math.max(1, Math.ceil(cumulativeWords / 350));
+
+      return {
+        pageNumber: estimatedPage,
+        paragraphIndex: idx + 1,
+        sectionLabel: `Paragraph ${idx + 1} (~Page ${estimatedPage})`,
+        snippet: p.slice(0, 150) + (p.length > 150 ? '...' : ''),
+      };
+    });
 
     const lines = content.split('\n').filter((l) => l.trim().length > 0);
     const keyPoints = lines.slice(0, 4).map((l) => `- ${l.trim()}`).join('\n');
@@ -53,7 +71,7 @@ ${keyPoints || '- Core operational objectives defined in introductory section.'}
 - Review critical figures and ensure cross-departmental alignment.
 - Archive signed copy in project records.
 
-> *Notice: AI-generated analysis. Verify critical facts and figures against the original document.*`;
+> *Notice: Local rule-based semantic analysis. Verify critical facts and figures against the original document.*`;
 
     return {
       id: `ai-${Date.now()}`,
@@ -69,12 +87,16 @@ ${keyPoints || '- Core operational objectives defined in introductory section.'}
    * Question & Answering with verifiable citations
    */
   public answerQuestion(content: string, query: string): AiAssistantMessage {
+    this.assertConsent();
+
     const queryTerms = query.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
     const paragraphs = content.split('\n\n').filter(Boolean);
 
     let bestParagraph = '';
     let highestScore = 0;
     let matchedIndex = 0;
+    let wordOffsetBeforeMatch = 0;
+    let runningWords = 0;
 
     paragraphs.forEach((p, idx) => {
       const lower = p.toLowerCase();
@@ -86,16 +108,26 @@ ${keyPoints || '- Core operational objectives defined in introductory section.'}
         highestScore = score;
         bestParagraph = p;
         matchedIndex = idx;
+        wordOffsetBeforeMatch = runningWords;
       }
+      runningWords += p.split(/\s+/).length;
     });
 
+    const estimatedPage = Math.max(1, Math.ceil((wordOffsetBeforeMatch + 1) / 350));
     const citations: AiCitation[] = bestParagraph
-      ? [{ pageNumber: matchedIndex + 1, snippet: bestParagraph.slice(0, 200) + '...' }]
+      ? [
+          {
+            pageNumber: estimatedPage,
+            paragraphIndex: matchedIndex + 1,
+            sectionLabel: `Paragraph ${matchedIndex + 1} (~Page ${estimatedPage})`,
+            snippet: bestParagraph.slice(0, 200) + (bestParagraph.length > 200 ? '...' : ''),
+          },
+        ]
       : [];
 
     let answerText = '';
     if (highestScore > 0) {
-      answerText = `Based on passage ${matchedIndex + 1}:\n\n"${bestParagraph.trim()}"\n\n**Direct Answer**: The document addresses "${query}" above with explicit supporting context.`;
+      answerText = `Based on passage ${matchedIndex + 1} (~Page ${estimatedPage}):\n\n"${bestParagraph.trim()}"\n\n**Direct Answer**: The document addresses "${query}" above with explicit supporting context.`;
     } else {
       answerText = `I searched the document for terms related to "${query}", but did not find an exact direct match. You may review the full text or refine your search query.`;
     }
@@ -114,6 +146,8 @@ ${keyPoints || '- Core operational objectives defined in introductory section.'}
    * Extract dates, currencies/totals, and action items
    */
   public extractEntities(content: string): ExtractedEntities {
+    this.assertConsent();
+
     // Regex for dates (YYYY-MM-DD, DD/MM/YYYY, Month DD, YYYY)
     const dateRegex = /\b(?:\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4})\b/gi;
     const dates = Array.from(new Set(content.match(dateRegex) || [])).slice(0, 8);
@@ -146,6 +180,8 @@ ${keyPoints || '- Core operational objectives defined in introductory section.'}
    * Generate structured Markdown table from text lines
    */
   public generateTableFromText(content: string): string {
+    this.assertConsent();
+
     const lines = content.split('\n').filter((l) => l.trim().length > 0).slice(0, 10);
     const header = '| Item # | Description / Extracted Content | Category | Status |\n|:---:|:---|:---:|:---:|';
     const rows = lines.map((line, idx) => {

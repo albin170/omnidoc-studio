@@ -237,12 +237,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    if (targetTab) {
-      setActiveTab(targetTab);
-      return;
-    }
-
-    // Validate file integrity and content signatures
+    // Validate file integrity and content signatures first (BUG-16 Fix)
     const validation = await validateFileFormat(file);
     if (!validation.valid) {
       addToast('error', 'File Validation Failed', validation.error || `"${file.name}" is corrupted or unsupported.`);
@@ -250,6 +245,27 @@ export const App: React.FC = () => {
     }
 
     const effectiveFormat = validation.format || format;
+
+    // Verify targetTab compatibility if target tab explicitly requested
+    if (targetTab) {
+      const tabCompatMap: Record<string, FileFormat[]> = {
+        pdf: ['pdf'],
+        docx: ['docx', 'txt', 'md', 'html'],
+        slides: ['pptx'],
+        sheets: ['xlsx', 'csv'],
+        image: ['png', 'jpg', 'webp'],
+      };
+
+      const allowedFormats = tabCompatMap[targetTab];
+      if (allowedFormats && !allowedFormats.includes(effectiveFormat)) {
+        addToast(
+          'error',
+          'Incompatible Studio Format',
+          `Cannot open .${effectiveFormat} document in ${studioTitles[targetTab] || targetTab}. Please use the Universal Conversion Hub or the appropriate studio.`
+        );
+        return;
+      }
+    }
 
     if (effectiveFormat === 'pdf') {
       setCurrentPdfFile(file);

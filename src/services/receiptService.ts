@@ -2,7 +2,8 @@ import { TransformationReceipt, FileFormat } from '../types';
 import { computeFileHash } from './documentDnaService';
 
 const RECEIPTS_KEY = 'omnidoc_transformation_receipts_v2';
-const RECEIPT_SIGNING_SALT = 'OMNIDOC_RECEIPT_HMAC_SALT_2026';
+export const DEFAULT_HMAC_SECRET = 'OMNIDOC_ENTERPRISE_HMAC_SECRET_KEY_v2.1_2026';
+export const HMAC_ALGORITHM = 'HMAC-SHA256';
 
 export interface CreateReceiptParams {
   sourceFile: File | Blob;
@@ -15,6 +16,95 @@ export interface CreateReceiptParams {
   warningCount?: number;
   errorCount?: number;
   executionDurationMs?: number;
+  customSecret?: string;
+}
+
+/**
+ * Builds canonical serialization of receipt parameters for tamper-evident signing
+ */
+export function buildReceiptSignablePayload(data: {
+  receiptId: string;
+  timestamp: string;
+  sourceHash: string;
+  targetHash: string;
+  integrityScore: number;
+  executionDurationMs: number;
+  engine: string;
+  version: string;
+}): string {
+  return [
+    data.receiptId,
+    data.timestamp,
+    data.sourceHash,
+    data.targetHash,
+    data.integrityScore.toString(),
+    data.executionDurationMs.toString(),
+    data.engine,
+    data.version,
+  ].join('::');
+}
+
+/**
+ * Signs data using real Web Crypto HMAC-SHA-256 (BUG-02 Fix)
+ */
+export async function signWithHmacSha256(payload: string, secret: string = DEFAULT_HMAC_SECRET): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyBytes = encoder.encode(secret);
+  const dataBytes = encoder.encode(payload);
+
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyBytes,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign', 'verify']
+    );
+
+    const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, dataBytes);
+    return Array.from(new Uint8Array(signatureBuffer))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+
+  // Node.js test environment fallback using Node's crypto
+  if (typeof process !== 'undefined') {
+    try {
+      const nodeCrypto = await import('crypto');
+      return nodeCrypto.createHmac('sha256', keyBytes).update(dataBytes).digest('hex');
+    } catch {}
+  }
+
+  throw new Error('Cryptographic subsystem unavailable: SubtleCrypto or Node.js crypto required for HMAC signing.');
+}
+
+/**
+ * Verify HMAC-SHA-256 signature of a Transformation Receipt (BUG-02 Fix)
+ */
+export async function verifyTransformationReceipt(
+  receipt: TransformationReceipt,
+  secret: string = DEFAULT_HMAC_SECRET
+): Promise<boolean> {
+  if (!receipt || !receipt.digitalSignature) return false;
+
+  try {
+    const payload = buildReceiptSignablePayload({
+      receiptId: receipt.receiptId,
+      timestamp: receipt.timestamp,
+      sourceHash: receipt.source.sha256,
+      targetHash: receipt.target.sha256,
+      integrityScore: receipt.integrityScore,
+      executionDurationMs: receipt.executionDurationMs,
+      engine: receipt.toolchain.engine,
+      version: receipt.toolchain.version,
+    });
+
+    const expectedSignature = await signWithHmacSha256(payload, secret);
+    return expectedSignature.toLowerCase() === receipt.digitalSignature.toLowerCase();
+  } catch (err) {
+    console.warn('Verification of transformation receipt failed:', err);
+    return false;
+  }
 }
 
 /**
@@ -42,6 +132,7 @@ export async function createTransformationReceipt(
   let warningCount = 0;
   let errorCount = 0;
   let executionDurationMs = 0;
+  let customSecret: string | undefined;
 
   if (first && typeof first === 'object' && 'sourceFile' in first) {
     const p = first as CreateReceiptParams;
@@ -55,6 +146,7 @@ export async function createTransformationReceipt(
     warningCount = p.warningCount ?? 0;
     errorCount = p.errorCount ?? 0;
     executionDurationMs = p.executionDurationMs ?? 0;
+    customSecret = p.customSecret;
   } else {
     sourceBlob = first as (File | Blob);
     targetBlob = targetBlobArg || new Blob([]);
@@ -84,27 +176,18 @@ export async function createTransformationReceipt(
     },
   };
 
-  // Compute digital signature of receipt parameters
-  const payloadToSign = [
+  const payloadToSign = buildReceiptSignablePayload({
     receiptId,
-    now,
+    timestamp: now,
     sourceHash,
     targetHash,
     integrityScore,
     executionDurationMs,
-    RECEIPT_SIGNING_SALT,
-  ].join('::');
+    engine: toolchain.engine,
+    version: toolchain.version,
+  });
 
-  let signature = '';
-  if (typeof crypto !== 'undefined' && crypto.subtle) {
-    const encoder = new TextEncoder();
-    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(payloadToSign));
-    signature = Array.from(new Uint8Array(hashBuffer))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-  } else {
-    signature = `sig-${Math.abs(payloadToSign.length * 31).toString(16)}`;
-  }
+  const signature = await signWithHmacSha256(payloadToSign, customSecret || DEFAULT_HMAC_SECRET);
 
   const receipt: TransformationReceipt = {
     receiptId,
@@ -127,6 +210,8 @@ export async function createTransformationReceipt(
     errorCount,
     executionDurationMs,
     digitalSignature: signature,
+    signatureAlgorithm: HMAC_ALGORITHM,
+    verified: true,
   };
 
   return receipt;
@@ -168,6 +253,7 @@ export function formatReceiptMarkdown(receipt: TransformationReceipt): string {
 **Receipt ID**: \`${receipt.receiptId}\`  
 **Timestamp**: ${receipt.timestamp}  
 **Engine**: ${receipt.toolchain.engine} (v${receipt.toolchain.version})  
+**Signature Algorithm**: \`${receipt.signatureAlgorithm || HMAC_ALGORITHM}\`  
 **Integrity Fidelity Score**: **${receipt.integrityScore}%**  
 
 ---
@@ -192,6 +278,6 @@ export function formatReceiptMarkdown(receipt: TransformationReceipt): string {
 - **Processing Time**: ${receipt.executionDurationMs} ms
 - **HMAC-SHA256 Signature**: \`${receipt.digitalSignature}\`
 
-*Generated locally with non-repudiable zero-trust verification by OmniDoc Studio.*
+*Digitally authenticated with WebCrypto HMAC-SHA-256 by OmniDoc Studio.*
 `.trim();
 }

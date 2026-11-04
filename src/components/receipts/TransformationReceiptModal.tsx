@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { TransformationReceipt } from '../../types';
-import { getStoredReceipts, formatReceiptMarkdown } from '../../services/receiptService';
+import { getStoredReceipts, formatReceiptMarkdown, verifyTransformationReceipt } from '../../services/receiptService';
 import {
   Sparkles,
   Download,
   X,
   FileCheck,
   ShieldCheck,
+  ShieldAlert,
   Clock,
   Cpu,
   Layers,
   ArrowRight,
-  Hash
+  Hash,
+  CheckCircle2
 } from 'lucide-react';
 import { saveAs } from 'file-saver';
 
@@ -30,6 +32,7 @@ export const TransformationReceiptModal: React.FC<TransformationReceiptModalProp
   const [selectedReceipt, setSelectedReceipt] = useState<TransformationReceipt | null>(
     activeReceipt || null
   );
+  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
 
   useEffect(() => {
     if (isOpen) {
@@ -37,11 +40,19 @@ export const TransformationReceiptModal: React.FC<TransformationReceiptModalProp
       setReceipts(stored);
       if (activeReceipt) {
         setSelectedReceipt(activeReceipt);
+        setVerificationStatus('idle');
       } else if (stored.length > 0 && !selectedReceipt) {
         setSelectedReceipt(stored[0]);
+        setVerificationStatus('idle');
       }
     }
   }, [isOpen, activeReceipt]);
+
+  const handleVerifySignature = async () => {
+    if (!selectedReceipt) return;
+    const isValid = await verifyTransformationReceipt(selectedReceipt);
+    setVerificationStatus(isValid ? 'valid' : 'invalid');
+  };
 
   if (!isOpen) return null;
 
@@ -220,10 +231,32 @@ export const TransformationReceiptModal: React.FC<TransformationReceiptModalProp
                   </div>
 
                   <div>
-                    <span className="text-[10px] text-slate-500 uppercase font-mono">HMAC Digital Signature</span>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] text-slate-500 uppercase font-mono">WebCrypto HMAC-SHA256 Signature</span>
+                      <button
+                        onClick={handleVerifySignature}
+                        className="text-[10px] font-bold text-yellow-400 hover:text-yellow-300 underline cursor-pointer"
+                      >
+                        Verify Signature Integrity
+                      </button>
+                    </div>
                     <div className="p-2 rounded bg-black/40 font-mono text-[10px] text-yellow-300 select-text break-all">
                       {selectedReceipt.digitalSignature}
                     </div>
+
+                    {verificationStatus === 'valid' && (
+                      <div className="mt-2 flex items-center gap-1.5 p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Cryptographically Authenticated: WebCrypto HMAC signature matches canonical payload.</span>
+                      </div>
+                    )}
+
+                    {verificationStatus === 'invalid' && (
+                      <div className="mt-2 flex items-center gap-1.5 p-2 rounded-lg bg-red-950/40 border border-red-500/30 text-red-400 text-xs font-bold">
+                        <ShieldAlert className="w-4 h-4 text-red-400 shrink-0" />
+                        <span>Tamper Alert: Signature verification failed. Payload or hashes do not match.</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -257,3 +290,4 @@ export const TransformationReceiptModal: React.FC<TransformationReceiptModalProp
     </div>
   );
 };
+

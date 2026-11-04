@@ -227,6 +227,8 @@ export interface DiffResult {
 
 export interface AiCitation {
   pageNumber?: number;
+  paragraphIndex?: number;
+  sectionLabel?: string;
   snippet: string;
 }
 
@@ -299,6 +301,7 @@ export interface DnaComparisonResult {
 export interface SelfHealingResult {
   primarySuccess: boolean;
   recoveryAttempted: boolean;
+  recovered?: boolean;
   strategyUsed: 'primary' | 'structured_fallback' | 'compact_table_scaling' | 'none';
   proposedRepairDescription?: string;
   beforeScore?: number;
@@ -306,6 +309,9 @@ export interface SelfHealingResult {
   outputBlob: Blob;
   outputFileName: string;
   receiptId?: string;
+  primaryBlob?: Blob;
+  healedBlob?: Blob;
+  scoreDifference?: number;
 }
 
 // Feature 3: Visual Workflow Engine
@@ -415,6 +421,8 @@ export interface TransformationReceipt {
   errorCount: number;
   executionDurationMs: number;
   digitalSignature: string;
+  signatureAlgorithm?: string;
+  verified?: boolean;
 }
 
 

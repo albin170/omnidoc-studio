@@ -368,10 +368,10 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
               activeTool === 'redact' ? 'bg-red-600/30 text-red-300 border border-red-500/40' : 'hover:bg-slate-800 text-slate-300'
             }`}
-            title="Burn a black redaction rectangle over sensitive data"
+            title="Visual Redaction Overlay: Draws an opaque black box over visual content. (Note: Visual overlay; underlying PDF font text streams should be rasterized for destructive removal)"
           >
             <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
-            <span>Redact</span>
+            <span>Visual Redaction</span>
           </button>
 
           <button

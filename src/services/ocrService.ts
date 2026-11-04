@@ -14,6 +14,10 @@ export async function performOcr(
   const startTime = performance.now();
   let worker: any = null;
 
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    throw new Error('OCR requires an active internet connection to download and initialize Tesseract language models.');
+  }
+
   try {
     worker = await createWorker(language, 1, {
       logger: (m) => {
@@ -38,6 +42,11 @@ export async function performOcr(
       wordsCount: words.length,
       lines: lines.filter(Boolean),
     };
+  } catch (err: any) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new Error('OCR failed: Network connection lost while loading OCR worker assets.');
+    }
+    throw new Error(err?.message || 'Optical Character Recognition processing failed.');
   } finally {
     if (worker) {
       await worker.terminate();

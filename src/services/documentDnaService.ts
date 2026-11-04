@@ -309,9 +309,11 @@ export function compareDocumentDna(
     score -= 15;
   }
 
-  // Unverified properties
+  // Unverified properties (BUG-08 Fix: Honest disclosure of heuristic limits)
   unverifiedProperties.push('Font kerning and typographic rendering');
   unverifiedProperties.push('Color space chromatic fidelity');
+  unverifiedProperties.push('Inline formatting (bold/italic/underline character spans)');
+  unverifiedProperties.push('Exact visual paragraph flow and line wrap boundaries');
   if (targetDna.format === 'pdf') {
     unverifiedProperties.push('Screen reader accessibility tagging structure');
   }
@@ -328,7 +330,7 @@ export function compareDocumentDna(
     targetDna,
     integrityScore: finalScore,
     fidelityScore: finalScore,
-    summary: `${fidelityRating} fidelity (${finalScore}/100)`,
+    summary: `Heuristic structural comparison: ${fidelityRating} (${finalScore}/100) · Visual typography unverified`,
     errors,
     warnings,
     unverifiedProperties,

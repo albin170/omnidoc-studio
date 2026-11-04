@@ -31,7 +31,7 @@ async function detectMagicFormat(file: File | Blob): Promise<string | null> {
           if (zip.file('xl/workbook.xml')) return 'xlsx';
           if (zip.file('ppt/presentation.xml')) return 'pptx';
         } catch {}
-        return 'docx'; // Standard OpenXML / ZIP container
+        return 'zip'; // Generic ZIP container (BUG-09 Fix: not docx)
       }
       // Legacy OLE2
       if (bytes[0] === 0xd0 && bytes[1] === 0xcf && bytes[2] === 0x11 && bytes[3] === 0xe0) {
@@ -84,6 +84,21 @@ export async function inspectDocumentForensics(file: File): Promise<ForensicsRep
       const zip = await JSZip.loadAsync(buffer);
       const fileNames = Object.keys(zip.files);
       embeddedResourcesCount = fileNames.filter((f) => f.includes('/media/') || f.includes('/embeddings/')).length;
+
+      // Check for decompression bomb risk (BUG-10 Fix)
+      let totalUncompressedEstimate = 0;
+      for (const fName of fileNames) {
+        const fileEntry = zip.files[fName] as any;
+        totalUncompressedEstimate += fileEntry._data?.uncompressedSize || 0;
+      }
+      if (totalUncompressedEstimate > 75 * 1024 * 1024) {
+        findings.push({
+          id: 'f-decompression-bomb',
+          level: 'HIGH_RISK',
+          rule: 'ARCHIVE_DECOMPRESSION_BOMB_RISK',
+          description: `Archive expansion exceeds 75MB safe threshold (${(totalUncompressedEstimate / (1024 * 1024)).toFixed(1)}MB). High risk of memory exhaustion.`,
+        });
+      }
 
       // Check for macros (.bin files, vbaProject.bin)
       const hasVba = fileNames.some((f) => f.toLowerCase().includes('vbaproject.bin') || f.endsWith('.bin'));

@@ -10,7 +10,8 @@ import {
   createTransformationReceipt, 
   saveReceipt, 
   getStoredReceipts, 
-  formatReceiptMarkdown 
+  formatReceiptMarkdown,
+  verifyTransformationReceipt
 } from '../services/receiptService';
 import { 
   convertWithSelfHealing 
@@ -22,7 +23,8 @@ import {
 } from '../services/lineageService';
 import { 
   executeWorkflow, 
-  PRESET_WORKFLOWS 
+  PRESET_WORKFLOWS,
+  validateWorkflowDAG 
 } from '../services/workflowEngine';
 
 const storageMap = new Map<string, string>();
@@ -207,7 +209,7 @@ Unanchored Total Units: 450
 
       expect(report.fileName).toBe('invoice.pdf');
       expect(report.declaredExtension).toBe('pdf');
-      expect(report.actualFormat).toBe('docx'); // Zip-based office container
+      expect(report.actualFormat).toBe('zip'); // Accurately identified as zip, not falsely docx (BUG-09 Fix)
       expect(report.findings.some((f) => f.rule === 'FORMAT_EXTENSION_MISMATCH')).toBe(true);
       expect(report.overallRisk).toBe('HIGH');
     });
@@ -270,6 +272,15 @@ Unanchored Total Units: 450
       const stored = getStoredReceipts();
       expect(stored.some((r) => r.receiptId === receipt.receiptId)).toBe(true);
 
+      // Verify HMAC-SHA256 signature mathematically
+      const isValid = await verifyTransformationReceipt(receipt);
+      expect(isValid).toBe(true);
+
+      // Verify tampered receipt fails validation
+      const tamperedReceipt = { ...receipt, integrityScore: 40 };
+      const isTamperedValid = await verifyTransformationReceipt(tamperedReceipt);
+      expect(isTamperedValid).toBe(false);
+
       // Verify Markdown Certificate Output
       const markdown = formatReceiptMarkdown(receipt);
       expect(markdown).toContain('# OmniDoc Studio — Verifiable Transformation Certificate');
@@ -306,6 +317,49 @@ Unanchored Total Units: 450
       expect(context.success).toBe(true);
       expect(context.forensicsReport).toBeDefined();
       expect(context.forensicsReport?.overallRisk).toBe('LOW');
+    });
+
+    it('detects and rejects cyclic workflow definitions with descriptive DAG error', async () => {
+      const cyclicWorkflow = {
+        id: 'cyclic-test',
+        name: 'Cyclic Loop',
+        description: 'Invalid cycle',
+        nodes: [
+          { id: 'node-a', type: 'upload' as const, title: 'Node A', config: {}, x: 0, y: 0, status: 'idle' as const },
+          { id: 'node-b', type: 'detect' as const, title: 'Node B', config: {}, x: 100, y: 0, status: 'idle' as const },
+        ],
+        edges: [
+          { id: 'e1', fromNodeId: 'node-a', toNodeId: 'node-b' },
+          { id: 'e2', fromNodeId: 'node-b', toNodeId: 'node-a' }, // Direct loop!
+        ],
+        updatedAt: Date.now(),
+      };
+
+      const val = validateWorkflowDAG(cyclicWorkflow);
+      expect(val.isValid).toBe(false);
+      expect(val.error).toContain('Cyclic dependency detected');
+
+      await expect(
+        executeWorkflow(cyclicWorkflow, new Blob(['test']), 'doc.txt')
+      ).rejects.toThrow('Cyclic dependency detected');
+    });
+
+    it('halts execution on corrupt package and marks downstream nodes as skipped', async () => {
+      const statuses: Record<string, string> = {};
+      const workflow = PRESET_WORKFLOWS[1]; // includes validate node
+      // Pass an empty file or corrupt file to trigger validation failure
+      const corruptFile = new Blob([]);
+
+      const context = await executeWorkflow(workflow, corruptFile, 'corrupt.docx', {
+        onNodeStatusChange: (nodeId, status) => {
+          statuses[nodeId] = status;
+        },
+      });
+
+      expect(context.success).toBe(false);
+      expect(context.haltedAtNodeId).toBeDefined();
+      // Downstream nodes must be skipped
+      expect(Object.values(statuses)).toContain('skipped');
     });
   });
 });

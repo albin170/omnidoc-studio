@@ -39,7 +39,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
     {
       id: 'init-1',
       role: 'assistant',
-      content: `Hello! I am your OmniDoc AI Document Assistant. I can summarize "${documentTitle}", extract key dates & totals, answer targeted questions, and cite supporting passages.`,
+      content: `Hello! I am your OmniDoc Local Document Intelligence Assistant. I run 100% locally in your browser memory without sending document data to external cloud servers. I can summarize "${documentTitle}", extract key dates & totals, answer targeted questions, and cite supporting passages.`,
       timestamp: Date.now(),
       suggestedActions: ['Summarize Document', 'Extract Key Dates & Totals', 'Generate Markdown Table'],
     },
@@ -51,54 +51,68 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
     const val = e.target.checked;
     setHasConsent(val);
     aiAssistantService.setConsent(val);
-    addToast('info', val ? 'Privacy Consent Granted' : 'Consent Revoked', 'AI assistant processing preferences updated.');
+    addToast('info', val ? 'Privacy Consent Active' : 'Consent Revoked', 'Document processing permissions updated.');
   };
 
   const handleQuickAction = (action: string) => {
+    if (!hasConsent) {
+      addToast('warning', 'Privacy Consent Required', 'Please enable local document inspection consent above before analyzing text.');
+      return;
+    }
+
     if (!documentContent.trim()) {
       addToast('warning', 'Empty Document', 'Please open a document with text content to analyze.');
       return;
     }
 
-    if (action.includes('Summarize')) {
-      const summaryMsg = aiAssistantService.summarizeDocument(documentContent, documentTitle);
-      setMessages((prev) => [
-        ...prev,
-        { id: `u-${Date.now()}`, role: 'user', content: 'Please summarize this document with key findings.', timestamp: Date.now() },
-        summaryMsg,
-      ]);
-    } else if (action.includes('Extract')) {
-      const entities = aiAssistantService.extractEntities(documentContent);
-      const text = [
-        `### Extracted Document Entities & Action Items`,
-        `**Key Dates Identified (${entities.dates.length})**:`,
-        entities.dates.length > 0 ? entities.dates.map((d) => `- ${d}`).join('\n') : '- No explicit date patterns detected.',
-        ``,
-        `**Monetary Totals & Currencies (${entities.monetaryAmounts.length})**:`,
-        entities.monetaryAmounts.length > 0 ? entities.monetaryAmounts.map((m) => `- ${m}`).join('\n') : '- No explicit financial currency figures detected.',
-        ``,
-        `**Action Items & Obligations (${entities.actionItems.length})**:`,
-        entities.actionItems.map((a) => `- ${a}`).join('\n'),
-      ].join('\n');
+    try {
+      if (action.includes('Summarize')) {
+        const summaryMsg = aiAssistantService.summarizeDocument(documentContent, documentTitle);
+        setMessages((prev) => [
+          ...prev,
+          { id: `u-${Date.now()}`, role: 'user', content: 'Please summarize this document with key findings.', timestamp: Date.now() },
+          summaryMsg,
+        ]);
+      } else if (action.includes('Extract')) {
+        const entities = aiAssistantService.extractEntities(documentContent);
+        const text = [
+          `### Extracted Document Entities & Action Items`,
+          `**Key Dates Identified (${entities.dates.length})**:`,
+          entities.dates.length > 0 ? entities.dates.map((d) => `- ${d}`).join('\n') : '- No explicit date patterns detected.',
+          ``,
+          `**Monetary Totals & Currencies (${entities.monetaryAmounts.length})**:`,
+          entities.monetaryAmounts.length > 0 ? entities.monetaryAmounts.map((m) => `- ${m}`).join('\n') : '- No explicit financial currency figures detected.',
+          ``,
+          `**Action Items & Obligations (${entities.actionItems.length})**:`,
+          entities.actionItems.map((a) => `- ${a}`).join('\n'),
+        ].join('\n');
 
-      setMessages((prev) => [
-        ...prev,
-        { id: `u-${Date.now()}`, role: 'user', content: 'Extract key dates, amounts, and action items.', timestamp: Date.now() },
-        { id: `ai-${Date.now()}`, role: 'assistant', content: text, timestamp: Date.now() },
-      ]);
-    } else if (action.includes('Table')) {
-      const tableMarkdown = aiAssistantService.generateTableFromText(documentContent);
-      setMessages((prev) => [
-        ...prev,
-        { id: `u-${Date.now()}`, role: 'user', content: 'Convert key points into a structured Markdown table.', timestamp: Date.now() },
-        { id: `ai-${Date.now()}`, role: 'assistant', content: tableMarkdown, timestamp: Date.now() },
-      ]);
+        setMessages((prev) => [
+          ...prev,
+          { id: `u-${Date.now()}`, role: 'user', content: 'Extract key dates, amounts, and action items.', timestamp: Date.now() },
+          { id: `ai-${Date.now()}`, role: 'assistant', content: text, timestamp: Date.now() },
+        ]);
+      } else if (action.includes('Table')) {
+        const tableMarkdown = aiAssistantService.generateTableFromText(documentContent);
+        setMessages((prev) => [
+          ...prev,
+          { id: `u-${Date.now()}`, role: 'user', content: 'Convert key points into a structured Markdown table.', timestamp: Date.now() },
+          { id: `ai-${Date.now()}`, role: 'assistant', content: tableMarkdown, timestamp: Date.now() },
+        ]);
+      }
+    } catch (err: any) {
+      addToast('error', 'Analysis Error', err?.message || 'Could not process document.');
     }
   };
 
   const handleSendQuery = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
+
+    if (!hasConsent) {
+      addToast('warning', 'Privacy Consent Required', 'Please enable local document inspection consent above before asking questions.');
+      return;
+    }
 
     if (!documentContent.trim()) {
       addToast('warning', 'Empty Document', 'Active document has no text content to search.');
@@ -112,16 +126,20 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
       timestamp: Date.now(),
     };
 
-    const aiMsg = aiAssistantService.answerQuestion(documentContent, query);
-    setMessages((prev) => [...prev, userMsg, aiMsg]);
-    setQuery('');
+    try {
+      const aiMsg = aiAssistantService.answerQuestion(documentContent, query);
+      setMessages((prev) => [...prev, userMsg, aiMsg]);
+      setQuery('');
+    } catch (err: any) {
+      addToast('error', 'Search Error', err?.message || 'Could not search document.');
+    }
   };
 
   const handleCopy = (content: string, idx: number) => {
     navigator.clipboard.writeText(content);
     setCopiedIdx(idx);
     setTimeout(() => setCopiedIdx(null), 2000);
-    addToast('info', 'Copied to Clipboard', 'AI response text copied.');
+    addToast('info', 'Copied to Clipboard', 'Assistant text copied.');
   };
 
   return (
@@ -134,9 +152,9 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
           </div>
           <div>
             <h2 className="text-sm font-extrabold text-white flex items-center gap-1.5">
-              OmniDoc AI Assistant
+              Document Assistant
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold border border-purple-500/30">
-                v2.0
+                LOCAL PRIVACY
               </span>
             </h2>
             <p className="text-[11px] text-slate-400 truncate max-w-[220px]">
@@ -153,11 +171,11 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
         </button>
       </div>
 
-      {/* Privacy Notice & Consent Bar */}
+      {/* Privacy Notice & Consent Bar (BUG-06 Fix) */}
       <div className="p-3 bg-slate-950 border-b border-slate-800/80 text-[11px] text-slate-300 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>Local execution mode &bull; Zero tracking</span>
+          <span>Local Rule-Based Analysis &bull; Zero Cloud Upload</span>
         </div>
         <label className="flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200">
           <input
@@ -166,7 +184,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
             onChange={handleToggleConsent}
             className="w-3.5 h-3.5 accent-purple-600 rounded cursor-pointer"
           />
-          <span className="font-semibold text-[10px]">Permission active</span>
+          <span className="font-semibold text-[10px]">{hasConsent ? 'Consent Active' : 'Consent Required'}</span>
         </label>
       </div>
 
@@ -223,7 +241,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
                 {m.content}
               </div>
 
-              {/* Citations pill list */}
+              {/* Citations pill list (BUG-07 Fix) */}
               {m.citations && m.citations.length > 0 && (
                 <div className="mt-3 pt-2.5 border-t border-slate-800 space-y-1.5">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
@@ -235,7 +253,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
                       className="p-2 rounded-lg bg-slate-900 border border-slate-800/80 text-[11px] text-slate-300 font-mono"
                     >
                       <span className="text-purple-400 font-bold block mb-0.5">
-                        [Section / Page {c.pageNumber || 1}]
+                        [{c.sectionLabel || `Passage ${cIdx + 1}`}]
                       </span>
                       <span className="italic text-slate-400">&quot;{c.snippet}&quot;</span>
                     </div>
@@ -256,13 +274,14 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ask a question about this document..."
-          className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500"
+          placeholder={hasConsent ? "Search or ask a question..." : "Enable consent above to ask questions"}
+          disabled={!hasConsent}
+          className="flex-1 bg-slate-900 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 disabled:opacity-50"
         />
         <button
           type="submit"
-          className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/30 cursor-pointer disabled:opacity-40"
-          disabled={!query.trim()}
+          disabled={!hasConsent || !query.trim()}
+          className="p-2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:bg-slate-800 disabled:text-slate-600 text-white transition-colors cursor-pointer"
         >
           <Send className="w-4 h-4" />
         </button>

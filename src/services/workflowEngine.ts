@@ -41,6 +41,8 @@ export interface WorkflowExecutionContext {
   logs: WorkflowLogEntry[];
   success: boolean;
   totalDurationMs: number;
+  haltedAtNodeId?: string;
+  error?: string;
 }
 
 export const PRESET_WORKFLOWS: WorkflowDefinition[] = [
@@ -110,6 +112,55 @@ export const PRESET_WORKFLOWS: WorkflowDefinition[] = [
   }
 ];
 
+/**
+ * Validates that a workflow definition forms a valid Directed Acyclic Graph (DAG) (BUG-15 Fix)
+ */
+export function validateWorkflowDAG(workflow: WorkflowDefinition): { isValid: boolean; error?: string; sequence: WorkflowNode[] } {
+  const nodeMap = new Map(workflow.nodes.map((n) => [n.id, n]));
+  const inDegree = new Map<string, number>();
+  const outgoing = new Map<string, string[]>();
+
+  for (const node of workflow.nodes) {
+    inDegree.set(node.id, 0);
+    outgoing.set(node.id, []);
+  }
+
+  for (const edge of workflow.edges) {
+    if (!nodeMap.has(edge.fromNodeId) || !nodeMap.has(edge.toNodeId)) {
+      return { isValid: false, error: `Invalid edge references non-existent node: ${edge.fromNodeId} -> ${edge.toNodeId}`, sequence: [] };
+    }
+    inDegree.set(edge.toNodeId, (inDegree.get(edge.toNodeId) || 0) + 1);
+    outgoing.get(edge.fromNodeId)?.push(edge.toNodeId);
+  }
+
+  const queue: string[] = [];
+  inDegree.forEach((deg, id) => {
+    if (deg === 0) queue.push(id);
+  });
+
+  const executionOrder: WorkflowNode[] = [];
+  while (queue.length > 0) {
+    const currentId = queue.shift()!;
+    const node = nodeMap.get(currentId);
+    if (node) executionOrder.push(node);
+    for (const neighborId of outgoing.get(currentId) || []) {
+      const nextDeg = (inDegree.get(neighborId) || 1) - 1;
+      inDegree.set(neighborId, nextDeg);
+      if (nextDeg === 0) queue.push(neighborId);
+    }
+  }
+
+  if (executionOrder.length !== workflow.nodes.length) {
+    return {
+      isValid: false,
+      error: 'Cyclic dependency detected: Workflow graph contains circular loops and cannot be executed as a valid DAG.',
+      sequence: [],
+    };
+  }
+
+  return { isValid: true, sequence: executionOrder };
+}
+
 export async function executeWorkflow(
   workflow: WorkflowDefinition,
   file: File | Blob,
@@ -118,6 +169,7 @@ export async function executeWorkflow(
     targetFormat?: FileFormat;
     onNodeStatusChange?: (nodeId: string, status: WorkflowNode['status'], error?: string) => void;
     onLog?: (log: WorkflowLogEntry) => void;
+    strictSecurityPolicy?: boolean;
   }
 ): Promise<WorkflowExecutionContext> {
   const startTime = performance.now();
@@ -140,44 +192,20 @@ export async function executeWorkflow(
     options?.onLog?.(entry);
   };
 
-  // Topological sorting of nodes
-  const nodeMap = new Map(workflow.nodes.map((n) => [n.id, n]));
-  const inDegree = new Map<string, number>();
-  const outgoing = new Map<string, string[]>();
-
-  for (const node of workflow.nodes) {
-    inDegree.set(node.id, 0);
-    outgoing.set(node.id, []);
+  // Step 1: Validate DAG structure & reject cycles (BUG-15 Fix)
+  const dagValidation = validateWorkflowDAG(workflow);
+  if (!dagValidation.isValid) {
+    const errorMsg = dagValidation.error || 'Invalid workflow DAG structure';
+    context.success = false;
+    context.error = errorMsg;
+    addLog('workflow-init', errorMsg, 'error');
+    throw new Error(errorMsg);
   }
 
-  for (const edge of workflow.edges) {
-    if (inDegree.has(edge.toNodeId) && outgoing.has(edge.fromNodeId)) {
-      inDegree.set(edge.toNodeId, (inDegree.get(edge.toNodeId) || 0) + 1);
-      outgoing.get(edge.fromNodeId)?.push(edge.toNodeId);
-    }
-  }
+  const finalSequence = dagValidation.sequence;
 
-  const queue: string[] = [];
-  inDegree.forEach((deg, id) => {
-    if (deg === 0) queue.push(id);
-  });
-
-  const executionOrder: WorkflowNode[] = [];
-  while (queue.length > 0) {
-    const currentId = queue.shift()!;
-    const node = nodeMap.get(currentId);
-    if (node) executionOrder.push(node);
-    for (const neighborId of outgoing.get(currentId) || []) {
-      const nextDeg = (inDegree.get(neighborId) || 1) - 1;
-      inDegree.set(neighborId, nextDeg);
-      if (nextDeg === 0) queue.push(neighborId);
-    }
-  }
-
-  // If graph had cycles, fallback to original array order
-  const finalSequence = executionOrder.length === workflow.nodes.length ? executionOrder : workflow.nodes;
-
-  for (const node of finalSequence) {
+  for (let i = 0; i < finalSequence.length; i++) {
+    const node = finalSequence[i];
     options?.onNodeStatusChange?.(node.id, 'running');
     addLog(node.id, `Starting stage: ${node.title} (${node.type})`);
 
@@ -185,7 +213,7 @@ export async function executeWorkflow(
       switch (node.type) {
         case 'upload': {
           if (!context.inputFile || context.inputFile.size === 0) {
-            throw new Error('Input document is empty or missing');
+            throw new Error('Input document is empty or missing (0 bytes)');
           }
           addLog(node.id, `Loaded input document "${fileName}" (${(context.inputFile.size / 1024).toFixed(1)} KB)`);
           break;
@@ -194,6 +222,9 @@ export async function executeWorkflow(
         case 'detect': {
           const fileObj = context.inputFile instanceof File ? context.inputFile : new File([context.inputFile!], fileName);
           const detection = await validateFileFormat(fileObj);
+          if (!detection.valid && !detection.format) {
+            throw new Error(detection.error || 'File format is unrecognized or unsupported.');
+          }
           context.detectedFormat = detection.format || 'txt';
           addLog(node.id, `Detected format: ${context.detectedFormat.toUpperCase()}`);
           break;
@@ -203,10 +234,10 @@ export async function executeWorkflow(
           const fileObj = context.inputFile instanceof File ? context.inputFile : new File([context.inputFile!], fileName);
           const pkgValidation = await validateDocumentPackage(fileObj);
           if (!pkgValidation.valid) {
-            addLog(node.id, `Package issue: ${pkgValidation.message}`, 'warn');
-          } else {
-            addLog(node.id, 'Package structure and MIME signature validated successfully');
+            // BUG-15 Fix: halt execution if package is corrupt or weaponized
+            throw new Error(`Package integrity validation failed: ${pkgValidation.message || 'Corrupt archive structure'}`);
           }
+          addLog(node.id, 'Package structure and MIME signature validated successfully');
           break;
         }
 
@@ -214,7 +245,15 @@ export async function executeWorkflow(
           const fileObj = context.inputFile instanceof File ? context.inputFile : new File([context.inputFile!], fileName);
           const report = await inspectDocumentForensics(fileObj);
           context.forensicsReport = report;
-          addLog(node.id, `Forensic screening risk score: ${report.overallRisk} (${report.findings.length} findings)`, report.overallRisk === 'HIGH' ? 'warn' : 'info');
+          
+          if (report.overallRisk === 'HIGH') {
+            addLog(node.id, `High-risk threat detected: ${report.findings.map(f => f.rule).join(', ')}`, 'warn');
+            if (options?.strictSecurityPolicy) {
+              throw new Error(`Execution halted by strict security policy: High forensic risk document (${report.findings.length} findings).`);
+            }
+          } else {
+            addLog(node.id, `Forensic screening clean: Risk score ${report.overallRisk}`);
+          }
           break;
         }
 
@@ -244,7 +283,6 @@ export async function executeWorkflow(
               addLog(node.id, `Conversion verified: Fidelity Score ${comp.fidelityScore}% (${comp.summary})`, comp.fidelityScore < 60 ? 'warn' : 'info');
             }
           } else {
-            // Standalone Lineage / Verification path
             const lineage = await extractDocumentLineage(context.inputFile!, fileName);
             context.lineage = lineage;
             addLog(node.id, `Data lineage analyzed: ${lineage.fields.length} key fields tracked across document`);
@@ -254,20 +292,25 @@ export async function executeWorkflow(
 
         case 'receipt': {
           if (context.inputFile && context.convertedBlob) {
-            const receipt = await createTransformationReceipt(
-              context.inputFile,
-              context.convertedBlob,
-              fileName,
-              context.convertedFileName || `${fileName}.${context.targetFormat}`,
-              context.detectedFormat || 'docx',
-              context.targetFormat,
-              context.dnaComparison?.fidelityScore || 95,
-              context.dnaComparison?.errors.length || 0,
-              context.dnaComparison?.warnings.length || 0,
-              Math.round(performance.now() - startTime)
-            );
+            // BUG-14 Fix: Honest fidelity score assignment without substituting arbitrary fallback numbers
+            const measuredScore = context.dnaComparison?.fidelityScore ?? context.dnaComparison?.integrityScore ?? 0;
+            const errorCount = context.dnaComparison?.errors.length ?? 0;
+            const warningCount = context.dnaComparison?.warnings.length ?? 0;
+
+            const receipt = await createTransformationReceipt({
+              sourceFile: context.inputFile,
+              targetBlob: context.convertedBlob,
+              sourceFileName: fileName,
+              targetFileName: context.convertedFileName || `${fileName}.${context.targetFormat}`,
+              sourceFormat: context.detectedFormat || 'docx',
+              targetFormat: context.targetFormat,
+              integrityScore: measuredScore,
+              errorCount,
+              warningCount,
+              executionDurationMs: Math.round(performance.now() - startTime),
+            });
             context.receipt = receipt;
-            addLog(node.id, `Generated cryptographic receipt: ${receipt.receiptId} with HMAC signature`);
+            addLog(node.id, `Generated cryptographic receipt: ${receipt.receiptId} with HMAC signature (Fidelity: ${measuredScore}%)`);
           } else {
             addLog(node.id, 'Workflow audit receipt logged for document inspection');
           }
@@ -283,9 +326,18 @@ export async function executeWorkflow(
       options?.onNodeStatusChange?.(node.id, 'completed');
     } catch (err: any) {
       context.success = false;
+      context.haltedAtNodeId = node.id;
       const errorMsg = err?.message || String(err);
-      addLog(node.id, `Stage failed: ${errorMsg}`, 'error');
+      context.error = errorMsg;
+      addLog(node.id, `Stage halted: ${errorMsg}`, 'error');
       options?.onNodeStatusChange?.(node.id, 'error', errorMsg);
+
+      // BUG-15 Fix: Mark all remaining downstream dependent nodes as skipped
+      for (let j = i + 1; j < finalSequence.length; j++) {
+        const remainingNode = finalSequence[j];
+        options?.onNodeStatusChange?.(remainingNode.id, 'skipped');
+        addLog(remainingNode.id, 'Stage skipped due to upstream failure', 'warn');
+      }
       break;
     }
   }

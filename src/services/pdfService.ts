@@ -20,8 +20,15 @@ export interface PDFPageInfo {
  * Load a PDF document for rendering via PDF.js
  */
 export async function loadPdfForViewing(data: ArrayBuffer | Uint8Array) {
-  const loadingTask = pdfjsLib.getDocument({ data });
-  return await loadingTask.promise;
+  try {
+    const loadingTask = pdfjsLib.getDocument({ data });
+    return await loadingTask.promise;
+  } catch (err: any) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new Error('Failed to load PDF viewer: Network offline and worker assets could not be fetched.');
+    }
+    throw new Error(`Failed to load PDF: ${err?.message || 'Invalid or corrupted PDF file.'}`);
+  }
 }
 
 /**
@@ -258,7 +265,7 @@ export async function applyPdfModifications(
         opacity: ann.opacity ?? 1,
       });
     } else if (ann.type === 'redact') {
-      // True black redaction box
+      // Visual redaction overlay (BUG-13 Fix: Draws opaque black box covering coordinate region)
       page.drawRectangle({
         x: ann.x,
         y: pdfY - (ann.height || 20),
