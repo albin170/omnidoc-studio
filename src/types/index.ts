@@ -13,6 +13,7 @@ export type FileFormat =
 
 export type WorkspaceTab = 
   | 'dashboard' 
+  | 'autonomous'
   | 'converter' 
   | 'pdf' 
   | 'docx' 
@@ -25,6 +26,61 @@ export type WorkspaceTab =
   | 'settings'
   | 'admin'
   | 'workflow';
+
+export type ProcessingMode = 'local' | 'hybrid' | 'cloud';
+
+export interface AutonomousPlanNode {
+  id: string;
+  toolName: string;
+  description: string;
+  arguments: Record<string, any>;
+  dependsOn: string[];
+  status: 'pending' | 'running' | 'waiting_approval' | 'completed' | 'failed' | 'skipped';
+  requiresApproval: boolean;
+  result?: Record<string, any>;
+  error?: string;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+export interface AutonomousExecutionPlan {
+  planId: string;
+  objective: string;
+  nodes: AutonomousPlanNode[];
+  estimatedDurationSeconds: number;
+  isValidDag: boolean;
+}
+
+export interface ExtractedEvidenceField {
+  fieldName: string;
+  value: any;
+  status: 'confirmed' | 'inferred' | 'missing';
+  confidence: number;
+  pageNumber: number;
+  bbox?: { x: number; y: number; width: number; height: number };
+  validationFlags?: string[];
+}
+
+export interface AutonomousJob {
+  id: string;
+  title: string;
+  objective: string;
+  status: 'pending' | 'running' | 'awaiting_approval' | 'completed' | 'failed' | 'cancelled';
+  mode: ProcessingMode;
+  plan: AutonomousExecutionPlan;
+  currentStepIndex: number;
+  totalSteps: number;
+  extractedFields?: Record<string, ExtractedEvidenceField>;
+  generatedArtifacts?: { name: string; type: string; downloadUrl?: string; blob?: Blob }[];
+  verificationReport?: {
+    verified: boolean;
+    checksumMatched: boolean;
+    reopenedCleanly: boolean;
+    pageCountMatched: boolean;
+    notes: string;
+  };
+  createdAt: string;
+}
 
 export type JobStatus = 
   | 'queued' 

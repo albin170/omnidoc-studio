@@ -30,7 +30,7 @@ async function detectMagicFormat(file: File | Blob): Promise<string | null> {
           if (zip.file('word/document.xml')) return 'docx';
           if (zip.file('xl/workbook.xml')) return 'xlsx';
           if (zip.file('ppt/presentation.xml')) return 'pptx';
-        } catch {}
+        } catch { }
         return 'zip'; // Generic ZIP container (BUG-09 Fix: not docx)
       }
       // Legacy OLE2
@@ -38,7 +38,7 @@ async function detectMagicFormat(file: File | Blob): Promise<string | null> {
         return 'doc';
       }
     }
-  } catch {}
+  } catch { }
   return null;
 }
 
@@ -208,8 +208,8 @@ export async function inspectDocumentForensics(file: File): Promise<ForensicsRep
   const overallRisk: ForensicsReport['overallRisk'] = hasHighRisk
     ? 'HIGH'
     : hasWarning
-    ? 'MEDIUM'
-    : 'LOW';
+      ? 'MEDIUM'
+      : 'LOW';
 
   return {
     fileName: file.name,

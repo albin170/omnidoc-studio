@@ -48,6 +48,7 @@ import { VisualWorkflowStudio } from './components/workflow/VisualWorkflowStudio
 import { DocumentForensicsModal } from './components/forensics/DocumentForensicsModal';
 import { DataLineageModal } from './components/lineage/DataLineageModal';
 import { TransformationReceiptModal } from './components/receipts/TransformationReceiptModal';
+import { AutonomousWorkspace } from './components/autonomous/AutonomousWorkspace';
 import { 
   Menu, 
   User as UserIcon, 
@@ -500,6 +501,7 @@ export const App: React.FC = () => {
   // Friendly human readable tab names
   const studioTitles: Record<WorkspaceTab, string> = {
     dashboard: 'Workspace Dashboard',
+    autonomous: 'Autonomous Document Engineering Workspace 2.0',
     workflow: 'Visual Workflow Studio',
     converter: 'Universal Conversion Hub',
     pdf: 'PDF Studio & Signatures',
@@ -624,6 +626,7 @@ export const App: React.FC = () => {
                 title="Quick switch to another studio"
               >
                 <option value="dashboard">Dashboard</option>
+                <option value="autonomous">Autonomous Workspace 2.0</option>
                 <option value="workflow">Workflow Studio</option>
                 <option value="converter">Conversion Hub</option>
                 <option value="pdf">PDF Studio</option>
@@ -706,6 +709,10 @@ export const App: React.FC = () => {
             onOpenLineage={() => setIsLineageOpen(true)}
             onOpenReceipts={() => setIsReceiptsOpen(true)}
           />
+        )}
+
+        {activeTab === 'autonomous' && (
+          <AutonomousWorkspace />
         )}
 
         {activeTab === 'workflow' && (

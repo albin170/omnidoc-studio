@@ -1,6 +1,6 @@
-import { 
-  FileFormat, 
-  SelfHealingResult 
+import {
+  FileFormat,
+  SelfHealingResult
 } from '../types';
 import { generateDocumentDna, compareDocumentDna } from './documentDnaService';
 import { executeFileConversion } from './converter';

@@ -77,6 +77,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: LayoutDashboard,
     },
     {
+      tab: 'autonomous' as WorkspaceTab,
+      label: 'Autonomous 2.0',
+      icon: Sparkles,
+      badge: 'Agent',
+    },
+    {
       tab: 'workflow' as WorkspaceTab,
       label: 'Workflow Studio',
       icon: Boxes,
