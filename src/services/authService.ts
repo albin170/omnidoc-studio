@@ -2,7 +2,43 @@ import { UserRole, PlanTier, UserSession } from './storageService';
 import { AuditLogEntry } from '../types';
 
 const AUDIT_LOGS_KEY = 'omnidoc_audit_logs_v2';
-const AUTH_SECRET = 'OMNIDOC_SYSTEM_AUTH_SIGNING_KEY_SECURE_V2';
+
+let _cachedDeviceAuthSecret: string | null = null;
+
+export function getDeviceAuthSecret(): string {
+  if (_cachedDeviceAuthSecret) return _cachedDeviceAuthSecret;
+
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      const stored = window.sessionStorage.getItem('omnidoc_device_session_signing_secret');
+      if (stored && stored.length >= 32) {
+        _cachedDeviceAuthSecret = stored;
+        return stored;
+      }
+    } catch {}
+  }
+
+  const randomBytes = new Uint8Array(32);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(randomBytes);
+  } else {
+    for (let i = 0; i < 32; i++) randomBytes[i] = Math.floor(Math.random() * 256);
+  }
+
+  const generated = Array.from(randomBytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  _cachedDeviceAuthSecret = generated;
+
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      window.sessionStorage.setItem('omnidoc_device_session_signing_secret', generated);
+    } catch {}
+  }
+
+  return generated;
+}
 
 export interface SecureAuthSession extends UserSession {
   signature?: string;
@@ -23,7 +59,7 @@ export async function computeSessionSignature(session: Partial<SecureAuthSession
     session.isAuthenticated ? '1' : '0',
     session.issuedAt || 0,
     session.expiresAt || 0,
-    AUTH_SECRET,
+    getDeviceAuthSecret(),
   ].join('::');
 
   if (typeof crypto !== 'undefined' && crypto.subtle) {

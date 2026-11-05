@@ -96,6 +96,21 @@ class StorageVaultService:
         with open(abs_target, "rb") as f:
             return f.read()
 
+    def get_document_bytes(self, org_id: str, document_id: str) -> Tuple[str, bytes]:
+        """
+        Retrieves filename and file bytes for a document_id within the tenant vault.
+        """
+        tenant_dir = self._resolve_tenant_dir(org_id)
+        clean_doc_id = os.path.basename(document_id)
+        doc_dir = os.path.join(tenant_dir, clean_doc_id)
+        if os.path.exists(doc_dir) and os.path.isdir(doc_dir):
+            for fname in os.listdir(doc_dir):
+                fpath = os.path.join(doc_dir, fname)
+                if os.path.isfile(fpath) and not fname.endswith(".tmp"):
+                    with open(fpath, "rb") as f:
+                        return fname, f.read()
+        return "", b""
+
     def delete_file(self, org_id: str, storage_path: str) -> bool:
         tenant_dir = self._resolve_tenant_dir(org_id)
         abs_target = os.path.abspath(storage_path)

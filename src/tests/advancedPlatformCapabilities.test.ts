@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { autonomousService } from '../services/autonomousService';
 import { omniDocClient } from '../sdk/omnidocClient';
-import { sanitizeAndRedactPdf } from '../services/pdfSanitizerService';
 
 describe('OmniDoc 2.0 Advanced Platform Capabilities', () => {
   it('detects cross-document duplicates and conflicting monetary values', () => {
@@ -46,3 +45,4 @@ describe('OmniDoc 2.0 Advanced Platform Capabilities', () => {
     expect(omniDocClient).toBeDefined();
   });
 });
+

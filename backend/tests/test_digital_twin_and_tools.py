@@ -65,14 +65,24 @@ async def test_tool_registry_registration_and_execution():
 @pytest.mark.asyncio
 async def test_agent_plan_generation_and_cycle_detection():
     # Generate plan for Invoice Intelligence
+    # Multi-document plan should process every document (BUG-09 fix)
     plan = agent_service.generate_plan_for_objective(
         objective="Extract invoice details, reconcile taxes, and generate financial report",
         document_ids=["doc_inv_1", "doc_inv_2"]
     )
     assert plan.is_valid_dag is True
-    assert len(plan.nodes) == 6
+    # 2 documents * 3 steps (inspect, parse, extract) + duplicate check + report + verify = 9
+    assert len(plan.nodes) == 9
     assert plan.nodes[0].tool_name == "inspect_file"
     assert plan.nodes[-1].tool_name == "verify_output"
+
+    # Single-document plan creates 6 nodes
+    plan_single = agent_service.generate_plan_for_objective(
+        objective="Extract invoice details, reconcile taxes, and generate financial report",
+        document_ids=["doc_inv_1"]
+    )
+    assert plan_single.is_valid_dag is True
+    assert len(plan_single.nodes) == 6
 
     # Test Cycle Detection
     cyclic_nodes = [

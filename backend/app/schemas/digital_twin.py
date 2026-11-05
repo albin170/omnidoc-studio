@@ -8,6 +8,7 @@ class BoundingBox(BaseModel):
     width: float = Field(..., description="Box width")
     height: float = Field(..., description="Box height")
     unit: str = "pt"
+    is_estimated: bool = False
 
 class SourceEvidenceRef(BaseModel):
     evidence_id: str
@@ -15,7 +16,8 @@ class SourceEvidenceRef(BaseModel):
     bbox: BoundingBox
     extracted_text: str
     confidence: float = Field(..., ge=0.0, le=1.0)
-    extraction_method: str = "docling_ocr" # native_text, docling_ocr, rule_extractor
+    extraction_method: str = "native_text" # native_text, docling_ocr, rule_extractor
+    is_estimated: bool = False
 
 class HeadingBlock(BaseModel):
     level: int = 1

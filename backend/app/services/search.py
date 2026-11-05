@@ -95,3 +95,4 @@ class SemanticSearchService:
         )
 
 semantic_search_service = SemanticSearchService()
+

@@ -69,14 +69,72 @@ class DocumentParserService:
                     rotation=page.rotation or 0
                 ))
 
-                text = page.extract_text() or ""
-                lines = [line.strip() for line in text.split("\n") if line.strip()]
-                
+                # Extract real text fragments with exact coordinates via pypdf visitor (BUG-06 fix)
+                spans: list[dict] = []
+                def visitor_body(text: str, cm: list, tm: list, font_dict: dict, font_size: float):
+                    if text and text.strip():
+                        # tm is [a, b, c, d, e, f] where e=x, f=y in PDF coords (origin at bottom-left)
+                        raw_x = float(tm[4]) if len(tm) > 4 else 50.0
+                        raw_y = float(tm[5]) if len(tm) > 5 else 50.0
+                        fs = float(font_size or 12.0)
+                        # Convert to top-left origin
+                        top_y = max(0.0, h - raw_y - fs)
+                        spans.append({
+                            "text": text,
+                            "x": raw_x,
+                            "y": top_y,
+                            "font_size": fs,
+                            "width": len(text) * (fs * 0.55)
+                        })
+
+                full_text = page.extract_text(visitor_text=visitor_body) or ""
+                lines = [line.strip() for line in full_text.split("\n") if line.strip()]
+
+                # Group spans into lines by close vertical coordinates if available
+                has_native_geometry = len(spans) > 0
+
                 for line_idx, line in enumerate(lines):
                     p_order += 1
-                    # Estimate bounding box (reading order flow)
-                    estimated_y = 50.0 + (line_idx * 18.0)
-                    bbox = BoundingBox(x=50.0, y=min(estimated_y, h - 30.0), width=min(w - 100.0, len(line) * 7.0), height=14.0)
+                    
+                    if has_native_geometry:
+                        # Find spans that contribute to this line
+                        matching_spans = [s for s in spans if s["text"].strip() in line]
+                        if matching_spans:
+                            min_x = min(s["x"] for s in matching_spans)
+                            min_y = min(s["y"] for s in matching_spans)
+                            max_x = max(s["x"] + s["width"] for s in matching_spans)
+                            max_h = max(s["font_size"] for s in matching_spans)
+                            bbox = BoundingBox(
+                                x=round(min_x, 2),
+                                y=round(min_y, 2),
+                                width=round(max(max_x - min_x, len(line) * 6.5), 2),
+                                height=round(max_h, 2),
+                                is_estimated=False
+                            )
+                            confidence = 0.99
+                            method = "pypdf_stream_visitor"
+                        else:
+                            estimated_y = 50.0 + (line_idx * 18.0)
+                            bbox = BoundingBox(
+                                x=50.0,
+                                y=min(estimated_y, h - 30.0),
+                                width=min(w - 100.0, len(line) * 7.0),
+                                height=14.0,
+                                is_estimated=True
+                            )
+                            confidence = 0.85
+                            method = "heuristic_reading_order"
+                    else:
+                        estimated_y = 50.0 + (line_idx * 18.0)
+                        bbox = BoundingBox(
+                            x=50.0,
+                            y=min(estimated_y, h - 30.0),
+                            width=min(w - 100.0, len(line) * 7.0),
+                            height=14.0,
+                            is_estimated=True
+                        )
+                        confidence = 0.85
+                        method = "heuristic_reading_order"
                     
                     is_heading = len(line) < 60 and (line.isupper() or line.endswith(":") or line_idx == 0)
                     if is_heading:
@@ -95,14 +153,15 @@ class DocumentParserService:
                         bbox=bbox
                     ))
 
-                    # Add to evidence ledger
+                    # Add to evidence ledger with explicit extraction metadata
                     twin.evidence_ledger.append(SourceEvidenceRef(
                         evidence_id=f"ev_{page_num}_{p_order}",
                         page_number=page_num,
                         bbox=bbox,
                         extracted_text=line,
-                        confidence=0.98,
-                        extraction_method="pypdf_native_stream"
+                        confidence=confidence,
+                        extraction_method=method,
+                        is_estimated=bbox.is_estimated
                     ))
         except Exception as e:
             DocumentParserService._parse_fallback(twin, content)

@@ -113,6 +113,7 @@ export const AutonomousWorkspace: React.FC = () => {
       plan,
       currentStepIndex: 0,
       totalSteps: plan.nodes.length,
+      uploadedFiles,
       createdAt: new Date().toISOString(),
     };
 

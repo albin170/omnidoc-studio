@@ -31,12 +31,23 @@ async def upload_document(
             detail=f"Unsupported format '{ext}'. Allowed: {sorted(list(settings.ALLOWED_EXTENSIONS))}"
         )
 
-    content = await file.read()
-    if len(content) > settings.MAX_UPLOAD_SIZE_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="File exceeds 50MB storage limit"
-        )
+    # Bounded chunk streaming to prevent memory exhaustion (BUG-05 fix)
+    chunk_size = 64 * 1024
+    chunks: list[bytes] = []
+    total_bytes = 0
+    while True:
+        chunk = await file.read(chunk_size)
+        if not chunk:
+            break
+        total_bytes += len(chunk)
+        if total_bytes > settings.MAX_UPLOAD_SIZE_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File exceeds maximum allowed upload size ({settings.MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)}MB)"
+            )
+        chunks.append(chunk)
+
+    content = b"".join(chunks)
 
     doc_id = str(uuid.uuid4())
     storage_path, content_hash, file_size = await storage_vault.save_file(

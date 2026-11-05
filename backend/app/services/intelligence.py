@@ -155,3 +155,4 @@ class CrossDocumentIntelligenceService:
         )
 
 cross_doc_intelligence = CrossDocumentIntelligenceService()
+

@@ -115,3 +115,4 @@ class VersionChangeIntelligenceService:
         )
 
 version_intelligence = VersionChangeIntelligenceService()
+

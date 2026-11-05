@@ -104,3 +104,4 @@ class OmniDocClient:
             if r.status_code != 200:
                 raise OmniDocError(f"List tools failed: {r.text}")
             return r.json()
+

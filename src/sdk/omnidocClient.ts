@@ -1,8 +1,6 @@
 import {
   AutonomousJob,
-  AutonomousExecutionPlan,
-  ProcessingMode,
-  ExtractedEvidenceField
+  ProcessingMode
 } from '../types';
 
 export interface OmniDocClientConfig {
@@ -117,3 +115,4 @@ export class OmniDocApiClient {
 }
 
 export const omniDocClient = new OmniDocApiClient();
+

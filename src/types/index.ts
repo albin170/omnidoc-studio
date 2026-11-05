@@ -70,6 +70,8 @@ export interface AutonomousJob {
   plan: AutonomousExecutionPlan;
   currentStepIndex: number;
   totalSteps: number;
+  uploadedFiles?: File[];
+  remoteJobId?: string;
   extractedFields?: Record<string, ExtractedEvidenceField>;
   generatedArtifacts?: { name: string; type: string; downloadUrl?: string; blob?: Blob }[];
   verificationReport?: {

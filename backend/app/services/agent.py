@@ -21,43 +21,71 @@ class AutonomousAgentService:
         is_invoice_task = any(term in objective.lower() for term in ["invoice", "receipt", "bill", "vendor", "tax"])
 
         if is_invoice_task and document_ids:
-            # 1. Inspect Files
-            nodes.append(PlanNode(
-                id="step_1_inspect",
-                tool_name="inspect_file",
-                description="Validate invoice file headers, formats, and decompression safety limits",
-                arguments={"document_id": document_ids[0], "deep_forensics": True},
-                depends_on=[]
-            ))
+            if len(document_ids) == 1:
+                # Single-document execution pipeline
+                nodes.append(PlanNode(
+                    id="step_1_inspect",
+                    tool_name="inspect_file",
+                    description="Validate invoice file headers, formats, and decompression safety limits",
+                    arguments={"document_id": document_ids[0], "deep_forensics": True},
+                    depends_on=[]
+                ))
+                nodes.append(PlanNode(
+                    id="step_2_parse",
+                    tool_name="parse_document",
+                    description="Parse invoice page structure, reading order, and table boundaries",
+                    arguments={"document_id": document_ids[0], "extract_tables": True},
+                    depends_on=["step_1_inspect"]
+                ))
+                nodes.append(PlanNode(
+                    id="step_3_extract",
+                    tool_name="extract_fields",
+                    description="Extract vendor, invoice_number, date, tax, and total linked to bounding boxes",
+                    arguments={"document_id": document_ids[0], "target_fields": ["vendor", "invoice_number", "invoice_date", "tax", "total"]},
+                    depends_on=["step_2_parse"]
+                ))
+                last_extract_step_ids = ["step_3_extract"]
+            else:
+                # Multi-document execution pipeline covering ALL documents (BUG-09 Fix)
+                last_extract_step_ids = []
+                for idx, doc_id in enumerate(document_ids):
+                    insp_id = f"step_1_inspect_{idx}"
+                    parse_id = f"step_2_parse_{idx}"
+                    ext_id = f"step_3_extract_{idx}"
 
-            # 2. Parse Documents into Digital Twins
-            nodes.append(PlanNode(
-                id="step_2_parse",
-                tool_name="parse_document",
-                description="Parse invoice page structure, reading order, and table boundaries",
-                arguments={"document_id": document_ids[0], "extract_tables": True},
-                depends_on=["step_1_inspect"]
-            ))
+                    nodes.append(PlanNode(
+                        id=insp_id,
+                        tool_name="inspect_file",
+                        description=f"Validate file headers and safety limits for document {idx + 1}/{len(document_ids)} ({doc_id})",
+                        arguments={"document_id": doc_id, "deep_forensics": True},
+                        depends_on=[]
+                    ))
+                    nodes.append(PlanNode(
+                        id=parse_id,
+                        tool_name="parse_document",
+                        description=f"Parse structure and extract tables for document {idx + 1}/{len(document_ids)}",
+                        arguments={"document_id": doc_id, "extract_tables": True},
+                        depends_on=[insp_id]
+                    ))
+                    nodes.append(PlanNode(
+                        id=ext_id,
+                        tool_name="extract_fields",
+                        description=f"Extract vendor, invoice #, and totals for document {idx + 1}/{len(document_ids)}",
+                        arguments={"document_id": doc_id, "target_fields": ["vendor", "invoice_number", "invoice_date", "tax", "total"]},
+                        depends_on=[parse_id]
+                    ))
+                    last_extract_step_ids.append(ext_id)
 
-            # 3. Extract Invoice Fields with Coordinates
-            nodes.append(PlanNode(
-                id="step_3_extract",
-                tool_name="extract_fields",
-                description="Extract vendor, invoice_number, date, tax, and total linked to bounding boxes",
-                arguments={"document_id": document_ids[0], "target_fields": ["vendor", "invoice_number", "invoice_date", "tax", "total"]},
-                depends_on=["step_2_parse"]
-            ))
-
-            # 4. Check Duplicates & Anomalies
+            # Check Duplicates across all documents
             nodes.append(PlanNode(
                 id="step_4_check_duplicates",
                 tool_name="find_duplicates",
-                description="Identify cross-document collisions and duplicate invoice numbers",
+                description=f"Identify cross-document collisions and duplicate invoice numbers across {len(document_ids)} documents",
                 arguments={"document_ids": document_ids, "threshold": 0.90},
-                depends_on=["step_3_extract"]
+                depends_on=last_extract_step_ids
             ))
 
-            # 5. Generate Excel and Summary Reports
+            # Generate Report
             nodes.append(PlanNode(
                 id="step_5_generate_report",
                 tool_name="generate_report",
@@ -66,7 +94,7 @@ class AutonomousAgentService:
                 depends_on=["step_4_check_duplicates"]
             ))
 
-            # 6. Verify Output Files
+            # Verify Output Files
             nodes.append(PlanNode(
                 id="step_6_verify",
                 tool_name="verify_output",

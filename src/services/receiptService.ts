@@ -2,7 +2,50 @@ import { TransformationReceipt, FileFormat } from '../types';
 import { computeFileHash } from './documentDnaService';
 
 const RECEIPTS_KEY = 'omnidoc_transformation_receipts_v2';
-export const DEFAULT_HMAC_SECRET = 'OMNIDOC_ENTERPRISE_HMAC_SECRET_KEY_v2.1_2026';
+
+/**
+ * Dynamic ephemeral signing key management (BUG-02, BUG-16 & BUG-17 Remediation)
+ * Prevents embedding hardcoded cryptographic master secrets into client application bundles.
+ */
+let _cachedSessionHmacKey: string | null = null;
+
+export function getSessionHmacSecret(): string {
+  if (_cachedSessionHmacKey) return _cachedSessionHmacKey;
+
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      const stored = window.sessionStorage.getItem('omnidoc_ephemeral_receipt_key');
+      if (stored && stored.length >= 32) {
+        _cachedSessionHmacKey = stored;
+        return stored;
+      }
+    } catch {}
+  }
+
+  // Generate 256 bits of cryptographic entropy
+  const randomBytes = new Uint8Array(32);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(randomBytes);
+  } else {
+    for (let i = 0; i < 32; i++) randomBytes[i] = Math.floor(Math.random() * 256);
+  }
+
+  const generated = Array.from(randomBytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  _cachedSessionHmacKey = generated;
+
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    try {
+      window.sessionStorage.setItem('omnidoc_ephemeral_receipt_key', generated);
+    } catch {}
+  }
+
+  return generated;
+}
+
+export const DEFAULT_HMAC_SECRET = getSessionHmacSecret();
 export const HMAC_ALGORITHM = 'HMAC-SHA256';
 
 export interface CreateReceiptParams {
@@ -47,9 +90,10 @@ export function buildReceiptSignablePayload(data: {
 /**
  * Signs data using real Web Crypto HMAC-SHA-256 (BUG-02 Fix)
  */
-export async function signWithHmacSha256(payload: string, secret: string = DEFAULT_HMAC_SECRET): Promise<string> {
+export async function signWithHmacSha256(payload: string, secret?: string): Promise<string> {
+  const activeSecret = secret || getSessionHmacSecret();
   const encoder = new TextEncoder();
-  const keyBytes = encoder.encode(secret);
+  const keyBytes = encoder.encode(activeSecret);
   const dataBytes = encoder.encode(payload);
 
   if (typeof crypto !== 'undefined' && crypto.subtle) {
@@ -83,9 +127,10 @@ export async function signWithHmacSha256(payload: string, secret: string = DEFAU
  */
 export async function verifyTransformationReceipt(
   receipt: TransformationReceipt,
-  secret: string = DEFAULT_HMAC_SECRET
+  secret?: string
 ): Promise<boolean> {
   if (!receipt || !receipt.digitalSignature) return false;
+  const activeSecret = secret || getSessionHmacSecret();
 
   try {
     const payload = buildReceiptSignablePayload({
@@ -99,7 +144,7 @@ export async function verifyTransformationReceipt(
       version: receipt.toolchain.version,
     });
 
-    const expectedSignature = await signWithHmacSha256(payload, secret);
+    const expectedSignature = await signWithHmacSha256(payload, activeSecret);
     return expectedSignature.toLowerCase() === receipt.digitalSignature.toLowerCase();
   } catch (err) {
     console.warn('Verification of transformation receipt failed:', err);
@@ -187,7 +232,7 @@ export async function createTransformationReceipt(
     version: toolchain.version,
   });
 
-  const signature = await signWithHmacSha256(payloadToSign, customSecret || DEFAULT_HMAC_SECRET);
+  const signature = await signWithHmacSha256(payloadToSign, customSecret || getSessionHmacSecret());
 
   const receipt: TransformationReceipt = {
     receiptId,
