@@ -1,5 +1,6 @@
 from app.models.organization import Organization
 from app.models.user import User
+from app.models.consent import ConsentRecord
 from app.models.document import Document
 from app.models.job import Job
 from app.models.audit import AuditEvent
@@ -11,6 +12,7 @@ from app.models.workflow import Workflow
 __all__ = [
     "Organization",
     "User",
+    "ConsentRecord",
     "Document",
     "Job",
     "AuditEvent",
@@ -19,4 +21,3 @@ __all__ = [
     "DocumentComment",
     "Workflow"
 ]
-

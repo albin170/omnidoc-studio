@@ -8,7 +8,11 @@ async def test_developer_api_keys_and_simulation_and_workflows(client: AsyncClie
         "email": "dev_architect@omnidoc.io",
         "password": "StrongDevPassword2026!",
         "full_name": "Senior Architect",
-        "organization_name": "Architectural Systems Corp"
+        "organization_name": "Architectural Systems Corp",
+        "terms_accepted": True,
+        "privacy_accepted": True,
+        "ai_consent": True,
+        "marketing_consent": False
     }
     res_reg = await client.post("/api/v1/auth/register", json=reg_data)
     assert res_reg.status_code == 201
