@@ -22,7 +22,10 @@ import {
   GitCompare,
   Boxes,
   Binary,
-  GitCommit
+  GitCommit,
+  SlidersHorizontal,
+  Users,
+  Code2
 } from 'lucide-react';
 import { WorkspaceTab } from '../../types';
 import { OmniDocLogo } from './OmniDocLogo';
@@ -48,6 +51,9 @@ interface SidebarProps {
   onOpenLineage?: () => void;
   onOpenReceipts?: () => void;
   onOpenPrivacy?: () => void;
+  onOpenWhatIf?: () => void;
+  onOpenCollab?: () => void;
+  onOpenDeveloper?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -71,6 +77,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenLineage,
   onOpenReceipts,
   onOpenPrivacy,
+  onOpenWhatIf,
+  onOpenCollab,
+  onOpenDeveloper,
 }) => {
   const navItems = [
     {
@@ -335,6 +344,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <ShieldAlert className="w-4 h-4 mb-0.5 text-rose-400" />
                 <span className="text-[9px] font-bold">Privacy</span>
+              </button>
+            )}
+            {onOpenWhatIf && (
+              <button
+                onClick={onOpenWhatIf}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 transition-all cursor-pointer"
+                title="Document What-If Simulator"
+              >
+                <SlidersHorizontal className="w-4 h-4 mb-0.5 text-cyan-400" />
+                <span className="text-[9px] font-bold">What-If</span>
+              </button>
+            )}
+            {onOpenCollab && (
+              <button
+                onClick={onOpenCollab}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all cursor-pointer"
+                title="Team Workspace & Review Comments"
+              >
+                <Users className="w-4 h-4 mb-0.5 text-emerald-400" />
+                <span className="text-[9px] font-bold">Teams</span>
+              </button>
+            )}
+            {onOpenDeveloper && (
+              <button
+                onClick={onOpenDeveloper}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/20 transition-all cursor-pointer"
+                title="Developer Platform & REST API Keys"
+              >
+                <Code2 className="w-4 h-4 mb-0.5 text-sky-400" />
+                <span className="text-[9px] font-bold">Dev API</span>
               </button>
             )}
           </div>

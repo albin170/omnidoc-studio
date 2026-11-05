@@ -96,8 +96,10 @@ export async function signWithHmacSha256(payload: string, secret?: string): Prom
   const keyBytes = encoder.encode(activeSecret);
   const dataBytes = encoder.encode(payload);
 
-  if (typeof crypto !== 'undefined' && crypto.subtle) {
-    const cryptoKey = await crypto.subtle.importKey(
+  const webCrypto = typeof globalThis !== 'undefined' ? (globalThis as any).crypto : (typeof window !== 'undefined' ? (window as any).crypto : null);
+
+  if (webCrypto && webCrypto.subtle) {
+    const cryptoKey = await webCrypto.subtle.importKey(
       'raw',
       keyBytes,
       { name: 'HMAC', hash: 'SHA-256' },
@@ -105,21 +107,13 @@ export async function signWithHmacSha256(payload: string, secret?: string): Prom
       ['sign', 'verify']
     );
 
-    const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, dataBytes);
+    const signatureBuffer = await webCrypto.subtle.sign('HMAC', cryptoKey, dataBytes);
     return Array.from(new Uint8Array(signatureBuffer))
-      .map((b) => b.toString(16).padStart(2, '0'))
+      .map((b: number) => b.toString(16).padStart(2, '0'))
       .join('');
   }
 
-  // Node.js test environment fallback using Node's crypto
-  if (typeof process !== 'undefined') {
-    try {
-      const nodeCrypto = await import('crypto');
-      return nodeCrypto.createHmac('sha256', keyBytes).update(dataBytes).digest('hex');
-    } catch {}
-  }
-
-  throw new Error('Cryptographic subsystem unavailable: SubtleCrypto or Node.js crypto required for HMAC signing.');
+  throw new Error('Cryptographic subsystem unavailable: SubtleCrypto required for HMAC signing.');
 }
 
 /**

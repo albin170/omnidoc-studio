@@ -6,7 +6,20 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.database import engine, Base
 import app.models # Ensure all models are registered with metadata
-from app.api.v1 import auth, documents, jobs, tools, audit
+from app.api.v1 import (
+    auth,
+    documents,
+    jobs,
+    tools,
+    audit,
+    search,
+    organizations,
+    users,
+    admin,
+    developer,
+    workflows,
+    simulation
+)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -41,6 +54,13 @@ app.include_router(documents.router, prefix=settings.API_V1_STR)
 app.include_router(jobs.router, prefix=settings.API_V1_STR)
 app.include_router(tools.router, prefix=settings.API_V1_STR)
 app.include_router(audit.router, prefix=settings.API_V1_STR)
+app.include_router(search.router, prefix=settings.API_V1_STR)
+app.include_router(organizations.router, prefix=settings.API_V1_STR)
+app.include_router(users.router, prefix=settings.API_V1_STR)
+app.include_router(admin.router, prefix=settings.API_V1_STR)
+app.include_router(developer.router, prefix=settings.API_V1_STR)
+app.include_router(workflows.router, prefix=settings.API_V1_STR)
+app.include_router(simulation.router, prefix=settings.API_V1_STR)
 
 @app.get("/health", tags=["Health"])
 async def health_check():

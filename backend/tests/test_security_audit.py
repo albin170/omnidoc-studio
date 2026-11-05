@@ -29,3 +29,4 @@ def test_production_secret_key_enforcement():
         CORS_ORIGINS=["https://omnidoc-studio-jet.vercel.app"]
     )
     prod_good_settings.validate_production_security()
+

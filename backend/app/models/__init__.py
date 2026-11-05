@@ -4,6 +4,9 @@ from app.models.document import Document
 from app.models.job import Job
 from app.models.audit import AuditEvent
 from app.models.verification import VerificationReceipt
+from app.models.api_key import ApiKey
+from app.models.collaboration import DocumentComment
+from app.models.workflow import Workflow
 
 __all__ = [
     "Organization",
@@ -11,6 +14,9 @@ __all__ = [
     "Document",
     "Job",
     "AuditEvent",
-    "VerificationReceipt"
+    "VerificationReceipt",
+    "ApiKey",
+    "DocumentComment",
+    "Workflow"
 ]
 

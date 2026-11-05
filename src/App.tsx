@@ -50,6 +50,9 @@ import { DataLineageModal } from './components/lineage/DataLineageModal';
 import { TransformationReceiptModal } from './components/receipts/TransformationReceiptModal';
 import { AutonomousWorkspace } from './components/autonomous/AutonomousWorkspace';
 import { PrivacyGuardianModal } from './components/privacy/PrivacyGuardianModal';
+import { DocumentWhatIfModal } from './components/simulation/DocumentWhatIfModal';
+import { TeamWorkspaceModal } from './components/collaboration/TeamWorkspaceModal';
+import { DeveloperApiModal } from './components/developer/DeveloperApiModal';
 import { 
   Menu, 
   User as UserIcon, 
@@ -101,6 +104,9 @@ export const App: React.FC = () => {
   const [isLineageOpen, setIsLineageOpen] = useState(false);
   const [isReceiptsOpen, setIsReceiptsOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isWhatIfOpen, setIsWhatIfOpen] = useState(false);
+  const [isCollabOpen, setIsCollabOpen] = useState(false);
+  const [isDeveloperOpen, setIsDeveloperOpen] = useState(false);
 
   // Extract current document content for AI Assistant & Revision Diff
   const currentDocumentContent = useMemo(() => {
@@ -590,6 +596,9 @@ export const App: React.FC = () => {
         onOpenLineage={() => setIsLineageOpen(true)}
         onOpenReceipts={() => setIsReceiptsOpen(true)}
         onOpenPrivacy={() => setIsPrivacyOpen(true)}
+        onOpenWhatIf={() => setIsWhatIfOpen(true)}
+        onOpenCollab={() => setIsCollabOpen(true)}
+        onOpenDeveloper={() => setIsDeveloperOpen(true)}
       />
 
       {/* Full-Size Dynamic Workspace Content Area */}
@@ -711,6 +720,10 @@ export const App: React.FC = () => {
             onOpenForensics={() => setIsForensicsOpen(true)}
             onOpenLineage={() => setIsLineageOpen(true)}
             onOpenReceipts={() => setIsReceiptsOpen(true)}
+            onOpenWhatIf={() => setIsWhatIfOpen(true)}
+            onOpenCollab={() => setIsCollabOpen(true)}
+            onOpenDeveloper={() => setIsDeveloperOpen(true)}
+            userRole={userSession.role}
           />
         )}
 
@@ -880,6 +893,21 @@ export const App: React.FC = () => {
         isOpen={isPrivacyOpen}
         onClose={() => setIsPrivacyOpen(false)}
         pdfFile={currentPdfFile}
+      />
+
+      <DocumentWhatIfModal
+        isOpen={isWhatIfOpen}
+        onClose={() => setIsWhatIfOpen(false)}
+      />
+
+      <TeamWorkspaceModal
+        isOpen={isCollabOpen}
+        onClose={() => setIsCollabOpen(false)}
+      />
+
+      <DeveloperApiModal
+        isOpen={isDeveloperOpen}
+        onClose={() => setIsDeveloperOpen(false)}
       />
 
       {/* Keyboard Shortcuts & Help Modal */}
