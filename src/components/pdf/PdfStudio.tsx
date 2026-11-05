@@ -25,7 +25,23 @@ import {
   Redo2,
   Image as ImageIcon,
   MessageSquare,
-  Scissors
+  Scissors,
+  ChevronUp,
+  ChevronDown,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Layers,
+  ListTree,
+  Cpu,
+  AlertTriangle,
+  CheckCircle2,
+  Sliders,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
+  Maximize2
 } from 'lucide-react';
 import { PDFAnnotation, PdfTextEdit, PdfTextItem } from '../../types';
 import { 
@@ -39,8 +55,10 @@ import {
   renderPdfPageToCanvas, 
   rotatePdfPage, 
   splitPdfByRange, 
-  verifyPdfIntegrity 
+  verifyPdfIntegrity,
+  reorderPdfPages
 } from '../../services/pdfService';
+import { sanitizeAndRedactPdf, RedactionTarget } from '../../services/pdfSanitizerService';
 import saveAs from 'file-saver';
 import confetti from 'canvas-confetti';
 
@@ -62,6 +80,13 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
 
+  // 3-Panel Layout State
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
+  const [leftTab, setLeftTab] = useState<'pages' | 'outline'>('pages');
+  const [rightTab, setRightTab] = useState<'inspector' | 'annotations' | 'diagnostics'>('inspector');
+  const [outlineItems, setOutlineItems] = useState<any[]>([]);
+
   // Page text extraction & interactive editing (Module 4A)
   const [pageTextItems, setPageTextItems] = useState<PdfTextItem[]>([]);
   const [textEdits, setTextEdits] = useState<Record<string, PdfTextEdit>>({});
@@ -70,8 +95,10 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
   const [editDraftText, setEditDraftText] = useState<string>('');
   const [editFontSize, setEditFontSize] = useState<number>(14);
   const [editFontColor, setEditFontColor] = useState<string>('#000000');
+  const [editFontFamily, setEditFontFamily] = useState<'Helvetica' | 'TimesRoman' | 'Courier'>('Helvetica');
   const [editFontWeight, setEditFontWeight] = useState<'normal' | 'bold'>('normal');
   const [editFontStyle, setEditFontStyle] = useState<'normal' | 'italic'>('normal');
+  const [editTextAlign, setEditTextAlign] = useState<'left' | 'center' | 'right'>('left');
 
   // In-PDF Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -140,6 +167,15 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setSelectedTextItem(null);
       setEditingTextId(null);
       setSplitRange({ start: 1, end: doc.numPages });
+
+      // Extract outline/bookmarks if available
+      try {
+        const outline = await doc.getOutline();
+        setOutlineItems(outline || []);
+      } catch {
+        setOutlineItems([]);
+      }
+
       setStatusMessage('PDF loaded successfully');
     } catch (err: any) {
       console.error('Failed to load PDF:', err);
@@ -189,6 +225,45 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     const count = pageTextItems.filter((it) => it.str.toLowerCase().includes(q)).length;
     setSearchResultsCount(count);
   }, [searchQuery, pageTextItems]);
+
+  // Page reordering actions
+  const applyPageReorder = async (newOrder: number[], targetPage: number) => {
+    if (!pdfBytes) return;
+    try {
+      setIsProcessing(true);
+      saveToHistory();
+      const reorderedBytes = await reorderPdfPages(pdfBytes, newOrder);
+      const newBuffer = reorderedBytes.buffer as ArrayBuffer;
+      setPdfBytes(newBuffer);
+      const doc = await loadPdfForViewing(newBuffer);
+      setPdfJsDoc(doc);
+      setNumPages(doc.numPages);
+      setCurrentPage(Math.min(Math.max(1, targetPage), doc.numPages));
+      setStatusMessage('Page reordering applied');
+    } catch (err: any) {
+      alert('Failed to reorder pages: ' + err.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleMovePageUp = async (pageIdx: number) => {
+    if (pageIdx <= 0 || !pdfBytes) return;
+    const newOrder = Array.from({ length: numPages }, (_, i) => i);
+    const temp = newOrder[pageIdx];
+    newOrder[pageIdx] = newOrder[pageIdx - 1];
+    newOrder[pageIdx - 1] = temp;
+    await applyPageReorder(newOrder, pageIdx);
+  };
+
+  const handleMovePageDown = async (pageIdx: number) => {
+    if (pageIdx >= numPages - 1 || !pdfBytes) return;
+    const newOrder = Array.from({ length: numPages }, (_, i) => i);
+    const temp = newOrder[pageIdx];
+    newOrder[pageIdx] = newOrder[pageIdx + 1];
+    newOrder[pageIdx + 1] = temp;
+    await applyPageReorder(newOrder, pageIdx + 2);
+  };
 
   // Page manipulation actions
   const handleInsertBlankPage = async () => {
@@ -276,10 +351,14 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     setSelectedTextItem(item);
     const existing = textEdits[item.id];
     setEditDraftText(existing ? existing.newText : item.str);
-    setEditFontSize(existing?.fontSize || item.fontSize);
+    setEditFontSize(existing?.fontSize || item.fontSize || 14);
     setEditFontColor(existing?.fontColor || '#000000');
+    setEditFontFamily(existing?.fontFamily || 'Helvetica');
     setEditFontWeight(existing?.fontWeight || 'normal');
     setEditFontStyle(existing?.fontStyle || 'normal');
+    setEditTextAlign(existing?.textAlign || 'left');
+    setRightTab('inspector');
+    if (!isRightPanelOpen) setIsRightPanelOpen(true);
   };
 
   const handleDoubleClickTextItem = (item: PdfTextItem) => {
@@ -302,8 +381,10 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       height: selectedTextItem.height / zoomScale,
       fontSize: editFontSize,
       fontColor: editFontColor,
+      fontFamily: editFontFamily,
       fontWeight: editFontWeight,
       fontStyle: editFontStyle,
+      textAlign: editTextAlign,
       isDeleted: false,
     };
 
@@ -331,15 +412,15 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     setTextEdits((prev) => ({ ...prev, [selectedTextItem.id]: deleteEdit }));
     setEditingTextId(null);
     setSelectedTextItem(null);
-    setStatusMessage('Selected text removed');
+    setStatusMessage('Selected text removed with opaque clean patch');
   };
 
   const handleRedactSelectedText = () => {
     if (!selectedTextItem) return;
     saveToHistory();
 
-    // 1. Mark underlying text as deleted
-    const deleteEdit: PdfTextEdit = {
+    // 1. Mark underlying text as deleted & redacted
+    const redactEdit: PdfTextEdit = {
       id: selectedTextItem.id,
       pageIndex: currentPage - 1,
       originalText: selectedTextItem.str,
@@ -349,10 +430,11 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       width: selectedTextItem.width / zoomScale,
       height: selectedTextItem.height / zoomScale,
       isDeleted: true,
+      isRedaction: true,
     };
-    setTextEdits((prev) => ({ ...prev, [selectedTextItem.id]: deleteEdit }));
+    setTextEdits((prev) => ({ ...prev, [selectedTextItem.id]: redactEdit }));
 
-    // 2. Place opaque black redaction box
+    // 2. Place opaque black redaction box annotation
     setAnnotations((prev) => [
       ...prev,
       {
@@ -364,12 +446,13 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
         width: selectedTextItem.width / zoomScale,
         height: selectedTextItem.height / zoomScale,
         color: '#000000',
+        text: selectedTextItem.str,
       },
     ]);
 
     setSelectedTextItem(null);
     setEditingTextId(null);
-    setStatusMessage('Target text redacted & scrubbed from stream');
+    setStatusMessage('Target text redacted & added to stream scrubbing queue');
   };
 
   // Canvas click to place annotations
@@ -463,13 +546,13 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
           type: 'rectangle',
           x: clickX,
           y: clickY,
-          width: 140,
-          height: 60,
+          width: 120,
+          height: 80,
           color: '#3b82f6',
         },
       ]);
     } else if (activeTool === 'comment') {
-      const comment = prompt('Enter page comment / annotation:', 'Review Note');
+      const comment = prompt('Enter your document review comment:', 'Review feedback');
       if (comment) {
         setAnnotations((prev) => [
           ...prev,
@@ -480,8 +563,6 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             text: comment,
             x: clickX,
             y: clickY,
-            width: 24,
-            height: 24,
           },
         ]);
       }
@@ -490,7 +571,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     setActiveTool('select');
   };
 
-  // Signature Pad Handlers
+  // Signature drawing pad
   const startDrawingSignature = (e: React.MouseEvent<HTMLCanvasElement>) => {
     isDrawingSignatureRef.current = true;
     const canvas = signaturePadCanvasRef.current;
@@ -511,7 +592,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     const rect = canvas.getBoundingClientRect();
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = '#1e1b4b';
+    ctx.strokeStyle = '#000000';
     ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
     ctx.stroke();
   };
@@ -532,26 +613,25 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
         id: `sig-${Date.now()}`,
         pageIndex: currentPage - 1,
         type: 'signature',
-        dataUrl,
-        x: 100,
-        y: 200,
+        x: 50,
+        y: 100,
         width: 150,
         height: 60,
+        dataUrl,
       },
     ]);
 
     setIsSignatureModalOpen(false);
-    setStatusMessage('Signature placed on document');
+    setStatusMessage('Signature stamp attached to page. Drag or position as desired.');
   };
 
-  // Image insertion handler
   const handleInsertImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
       saveToHistory();
       setAnnotations((prev) => [
         ...prev,
@@ -559,19 +639,19 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
           id: `img-${Date.now()}`,
           pageIndex: currentPage - 1,
           type: 'image',
+          x: 60,
+          y: 80,
+          width: 180,
+          height: 120,
           dataUrl,
-          x: 100,
-          y: 150,
-          width: 140,
-          height: 90,
         },
       ]);
-      setStatusMessage('Image embedded onto page');
+      setStatusMessage(`Image "${file.name}" placed on page`);
     };
     reader.readAsDataURL(file);
   };
 
-  // Export & Save with verification
+  // Export & Save with verified destructive redaction + zero-leak verification
   const handleExportPdf = async () => {
     if (!pdfBytes) return;
     try {
@@ -579,11 +659,42 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setStatusMessage('Applying text replacements, redactions, and annotations...');
 
       const textEditsArray = Object.values(textEdits);
-      const modifiedBytes = await applyPdfModifications(pdfBytes, annotations, {
+      let modifiedBytes = await applyPdfModifications(pdfBytes, annotations, {
         watermarkText: watermarkText.trim() || undefined,
         addPageNumbers,
         textEdits: textEditsArray,
       });
+
+      // Collect all redactions for destructive sanitization
+      const redactionTargets: RedactionTarget[] = [];
+      annotations.filter((a) => a.type === 'redact').forEach((a) => {
+        redactionTargets.push({
+          pageNumber: a.pageIndex + 1,
+          x: a.x,
+          y: a.y,
+          width: a.width || 120,
+          height: a.height || 24,
+          textToRedact: a.text,
+        });
+      });
+      textEditsArray.filter((e) => e.isRedaction || e.isDeleted).forEach((e) => {
+        redactionTargets.push({
+          pageNumber: e.pageIndex + 1,
+          x: e.pdfX,
+          y: e.pdfY,
+          width: e.width,
+          height: e.height,
+          textToRedact: e.originalText,
+        });
+      });
+
+      let zeroLeakVerified = false;
+      if (redactionTargets.length > 0) {
+        setStatusMessage('Executing verified destructive redaction & metadata clearing...');
+        const sanitizationResult = await sanitizeAndRedactPdf(modifiedBytes, redactionTargets);
+        modifiedBytes = sanitizationResult.pdfBytes;
+        zeroLeakVerified = !sanitizationResult.report.residualTextFound;
+      }
 
       // Post-save verification: Reopen and check structural integrity (Module 4A)
       setStatusMessage('Reopening and verifying output PDF integrity...');
@@ -602,7 +713,9 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       const blob = new Blob([modifiedBytes as any], { type: 'application/pdf' });
       saveAs(blob, fileName.replace('.pdf', '_edited.pdf'));
       confetti({ particleCount: 50, spread: 60 });
-      setStatusMessage(`Verified: Reopened cleanly with ${verifyReport.pageCount} pages. Download started.`);
+      setStatusMessage(
+        `Verified: ${verifyReport.pageCount} pages.${zeroLeakVerified ? ' Zero-leak verification confirmed.' : ''} Download started.`
+      );
     } catch (err: any) {
       console.error('Failed to export PDF:', err);
       alert('PDF export failed: ' + err.message);
@@ -652,6 +765,12 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     }
   };
 
+  // Structural Diagnostic computations for current page
+  const pageFontNames = Array.from(new Set(pageTextItems.map((i) => i.fontName).filter(Boolean)));
+  const isScannedOrRasterPage = pageTextItems.length === 0;
+  const hasType3Fonts = pageFontNames.some((f) => (f || '').toLowerCase().includes('type3') || (f || '').toLowerCase().includes('raster'));
+  const activePageAnnotations = annotations.filter((a) => a.pageIndex === currentPage - 1);
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
       {/* 1. Primary Top Navigation & File Bar */}
@@ -661,10 +780,10 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             type="text"
             value={fileName}
             onChange={(e) => setFileName(e.target.value)}
-            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-[#8B7CFF] px-1 py-0.5 outline-none w-48 md:w-64 transition-colors"
+            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-[#8B7CFF] px-1 py-0.5 outline-none w-44 md:w-60 transition-colors"
             placeholder="Document Name"
           />
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30 whitespace-nowrap">
             PDF STUDIO PRO
           </span>
           {statusMessage && (
@@ -747,6 +866,17 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       {/* 2. Secondary Editing & Annotation Toolbar */}
       <div className="h-11 border-b border-white/10 bg-[#11152A]/60 backdrop-blur-xl px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-[#9BA3BD]">
         <div className="flex items-center gap-1.5 text-xs">
+          {/* Panel toggles */}
+          <button
+            onClick={() => setIsLeftPanelOpen(!isLeftPanelOpen)}
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+              isLeftPanelOpen ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border-[#8B7CFF]/30' : 'glass-card text-[#9BA3BD] hover:text-[#F4F5FF]'
+            }`}
+            title={isLeftPanelOpen ? 'Collapse Left Panel' : 'Expand Left Panel'}
+          >
+            {isLeftPanelOpen ? <PanelLeftClose className="w-3.5 h-3.5" /> : <PanelLeftOpen className="w-3.5 h-3.5" />}
+          </button>
+
           <button
             onClick={() => setActiveTool(activeTool === 'text' ? 'select' : 'text')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
@@ -755,7 +885,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             title="Add new text note"
           >
             <Type className="w-3.5 h-3.5" />
-            <span>Add Text</span>
+            <span className="hidden md:inline">Add Text</span>
           </button>
 
           <button
@@ -766,7 +896,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             title="Highlight region"
           >
             <Highlighter className="w-3.5 h-3.5 text-amber-400" />
-            <span>Highlight</span>
+            <span className="hidden md:inline">Highlight</span>
           </button>
 
           <button
@@ -777,7 +907,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             title="True Redaction: Blackout + Stream Scrubbing"
           >
             <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-            <span>Redact Area</span>
+            <span className="hidden md:inline">Redact</span>
           </button>
 
           <button
@@ -816,12 +946,12 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             title="Draw Signature"
           >
             <PenTool className="w-3.5 h-3.5 text-[#8B7CFF]" />
-            <span>Sign</span>
+            <span className="hidden lg:inline">Sign</span>
           </button>
 
           <label className="flex items-center gap-1 px-2 py-1 rounded-xl hover:bg-white/[0.06] text-[#9BA3BD] hover:text-[#F4F5FF] cursor-pointer transition-colors">
             <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Image</span>
+            <span className="hidden lg:inline">Image</span>
             <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleInsertImage} />
           </label>
 
@@ -843,39 +973,39 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
               const text = prompt('Enter watermark text (e.g. CONFIDENTIAL, DRAFT):', watermarkText || 'CONFIDENTIAL');
               if (text !== null) setWatermarkText(text);
             }}
-            className={`px-2 py-1 rounded-xl text-xs cursor-pointer transition-colors ${
+            className={`px-2 py-1 rounded-xl text-xs cursor-pointer transition-colors hidden sm:flex items-center gap-1 ${
               watermarkText ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
           >
-            <Stamp className="w-3.5 h-3.5 inline mr-1" />
-            <span>{watermarkText ? `Watermark: "${watermarkText}"` : 'Watermark'}</span>
+            <Stamp className="w-3.5 h-3.5 inline" />
+            <span>{watermarkText ? `"${watermarkText}"` : 'Watermark'}</span>
           </button>
 
           <button
             onClick={() => setAddPageNumbers(!addPageNumbers)}
-            className={`px-2 py-1 rounded-xl text-xs cursor-pointer transition-colors ${
+            className={`px-2 py-1 rounded-xl text-xs cursor-pointer transition-colors hidden sm:block ${
               addPageNumbers ? 'bg-[#42D6E8]/20 text-[#42D6E8] border border-[#42D6E8]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
           >
-            <span>Page Numbers: {addPageNumbers ? 'ON' : 'OFF'}</span>
+            <span>Pg #{addPageNumbers ? ': ON' : ''}</span>
           </button>
         </div>
 
-        {/* Right Search & Zoom Bar */}
+        {/* Right Search, Zoom & Panel Toggle */}
         <div className="flex items-center gap-2">
           {/* In-PDF Search */}
           <div className="flex items-center glass-card border-white/10 rounded-xl px-2.5 py-1 gap-1.5 text-xs text-[#F4F5FF]">
             <Search className="w-3.5 h-3.5 text-[#42D6E8]" />
             <input
               type="text"
-              placeholder="Search PDF text..."
+              placeholder="Search PDF..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent outline-none w-28 md:w-36 text-xs text-[#F4F5FF] placeholder:text-[#9BA3BD]/60"
+              className="bg-transparent outline-none w-20 md:w-32 text-xs text-[#F4F5FF] placeholder:text-[#9BA3BD]/60"
             />
             {searchQuery && (
               <span className="text-[10px] text-[#42D6E8] font-mono font-bold">
-                {searchResultsCount} found
+                {searchResultsCount}
               </span>
             )}
           </div>
@@ -889,7 +1019,13 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
-            <span className="px-2 font-mono text-[11px] text-[#F4F5FF]">{Math.round(zoomScale * 100)}%</span>
+            <button
+              onClick={() => setZoomScale(1.25)}
+              className="px-1.5 font-mono text-[11px] text-[#F4F5FF] hover:text-[#8B7CFF] transition-colors"
+              title="Reset Zoom"
+            >
+              {Math.round(zoomScale * 100)}%
+            </button>
             <button
               onClick={() => setZoomScale((s) => Math.min(2.5, s + 0.2))}
               className="p-1 hover:text-[#F4F5FF] cursor-pointer"
@@ -898,173 +1034,205 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
           </div>
+
+          <button
+            onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+              isRightPanelOpen ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border-[#8B7CFF]/30' : 'glass-card text-[#9BA3BD] hover:text-[#F4F5FF]'
+            }`}
+            title={isRightPanelOpen ? 'Collapse Right Inspector' : 'Expand Right Inspector'}
+          >
+            {isRightPanelOpen ? <PanelRightClose className="w-3.5 h-3.5" /> : <PanelRightOpen className="w-3.5 h-3.5" />}
+          </button>
         </div>
       </div>
 
-      {/* 3. Floating In-Place Text Editor Toolbar (when a text span is selected) */}
-      {selectedTextItem && (
-        <div className="bg-[#11152A]/95 backdrop-blur-2xl border-b border-[#8B7CFF]/40 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs text-[#F4F5FF] shadow-2xl animate-in fade-in">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold text-[#8B7CFF]">Editing Text:</span>
-            <input
-              type="text"
-              value={editDraftText}
-              onChange={(e) => setEditDraftText(e.target.value)}
-              placeholder="Edit text..."
-              className="px-2.5 py-1 rounded-xl glass-input text-[#F4F5FF] text-xs w-64 md:w-80 outline-none focus:border-[#8B7CFF]"
-            />
-            <button
-              onClick={commitTextEdit}
-              className="px-3 py-1 rounded-xl glass-btn-primary font-bold flex items-center gap-1 cursor-pointer"
-            >
-              <Check className="w-3.5 h-3.5" />
-              <span>Apply</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Font size */}
-            <div className="flex items-center gap-1">
-              <span className="text-[#9BA3BD]">Size:</span>
-              <input
-                type="number"
-                min={8}
-                max={72}
-                value={editFontSize}
-                onChange={(e) => setEditFontSize(Number(e.target.value))}
-                className="w-12 glass-input rounded-lg px-1.5 py-0.5 text-xs text-[#F4F5FF] text-center"
-              />
-            </div>
-
-            {/* Font color */}
-            <div className="flex items-center gap-1">
-              <span className="text-[#9BA3BD]">Color:</span>
-              <input
-                type="color"
-                value={editFontColor}
-                onChange={(e) => setEditFontColor(e.target.value)}
-                className="w-6 h-6 rounded border-0 bg-transparent cursor-pointer"
-              />
-            </div>
-
-            {/* Bold/Italic */}
-            <button
-              onClick={() => setEditFontWeight(editFontWeight === 'bold' ? 'normal' : 'bold')}
-              className={`px-2 py-0.5 rounded-lg font-bold ${editFontWeight === 'bold' ? 'bg-[#8B7CFF] text-[#080B18]' : 'glass-card text-[#9BA3BD]'}`}
-            >
-              B
-            </button>
-            <button
-              onClick={() => setEditFontStyle(editFontStyle === 'italic' ? 'normal' : 'italic')}
-              className={`px-2 py-0.5 rounded-lg italic font-serif ${editFontStyle === 'italic' ? 'bg-[#8B7CFF] text-[#080B18]' : 'glass-card text-[#9BA3BD]'}`}
-            >
-              I
-            </button>
-
-            {/* Redact or Delete */}
-            <button
-              onClick={handleRedactSelectedText}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/40 text-xs font-semibold cursor-pointer transition-colors"
-              title="Redact this exact word/phrase"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>Redact</span>
-            </button>
-
-            <button
-              onClick={handleDeleteSelectedText}
-              className="p-1 rounded-lg glass-card hover:bg-rose-500/20 text-[#9BA3BD] hover:text-rose-400 cursor-pointer transition-colors"
-              title="Delete text item"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={() => setSelectedTextItem(null)}
-              className="p-1 rounded-lg hover:bg-white/10 text-[#9BA3BD] transition-colors"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Main Body: Thumbnail Sidebar + Document Canvas Viewport */}
+      {/* 3. Main 3-Panel Workspace */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Page Thumbnails & Operations Strip */}
-        {pdfJsDoc && (
-          <div className="w-48 border-r border-white/10 bg-[#11152A]/40 backdrop-blur-xl p-3 overflow-y-auto space-y-3 shrink-0 hidden sm:block custom-scrollbar">
-            <div className="flex items-center justify-between pb-1 border-b border-white/10">
-              <span className="text-[11px] font-bold text-[#9BA3BD] uppercase tracking-wider">Pages ({numPages})</span>
+        {/* ========================================================= */}
+        {/* LEFT PANEL: Thumbnails, Reordering & Document Outline   */}
+        {/* ========================================================= */}
+        {isLeftPanelOpen && pdfJsDoc && (
+          <div className="w-56 border-r border-white/10 bg-[#11152A]/50 backdrop-blur-xl flex flex-col shrink-0 custom-scrollbar animate-in slide-in-from-left duration-200">
+            {/* Left Tabs: Pages / Outline */}
+            <div className="flex items-center border-b border-white/10 px-2 pt-2 gap-1 bg-[#080B18]/30">
               <button
-                onClick={handleInsertBlankPage}
-                className="p-1 rounded-lg glass-card hover:border-[#8B7CFF]/50 text-[#9BA3BD] hover:text-[#F4F5FF] transition-all"
-                title="Insert Blank Page after active page"
+                onClick={() => setLeftTab('pages')}
+                className={`flex-1 py-1.5 text-[11px] font-bold rounded-t-lg transition-colors flex items-center justify-center gap-1.5 ${
+                  leftTab === 'pages'
+                    ? 'bg-[#11152A]/80 text-[#8B7CFF] border-t-2 border-[#8B7CFF]'
+                    : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                }`}
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Layers className="w-3 h-3" />
+                <span>Pages ({numPages})</span>
+              </button>
+              <button
+                onClick={() => setLeftTab('outline')}
+                className={`flex-1 py-1.5 text-[11px] font-bold rounded-t-lg transition-colors flex items-center justify-center gap-1.5 ${
+                  leftTab === 'outline'
+                    ? 'bg-[#11152A]/80 text-[#8B7CFF] border-t-2 border-[#8B7CFF]'
+                    : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                }`}
+              >
+                <ListTree className="w-3 h-3" />
+                <span>Bookmarks</span>
               </button>
             </div>
 
-            {Array.from({ length: numPages }, (_, i) => i + 1).map((pNum) => (
-              <div
-                key={pNum}
-                onClick={() => setCurrentPage(pNum)}
-                className={`p-2.5 rounded-2xl border text-center transition-all cursor-pointer ${
-                  currentPage === pNum
-                    ? 'border-[#8B7CFF]/60 bg-[#8B7CFF]/15 shadow-lg shadow-[#8B7CFF]/20 glow-purple'
-                    : 'border-white/10 glass-card hover:border-white/20'
-                }`}
-              >
-                <div className="text-xs font-bold text-[#F4F5FF] mb-1.5 flex items-center justify-between">
-                  <span>Page {pNum}</span>
-                  {currentPage === pNum && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#8B7CFF] glow-purple" />
-                  )}
+            {leftTab === 'pages' ? (
+              <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+                <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                  <span className="text-[10px] font-bold text-[#9BA3BD] uppercase tracking-wider">Page Order</span>
+                  <button
+                    onClick={handleInsertBlankPage}
+                    className="p-1 rounded-lg glass-card hover:border-[#8B7CFF]/50 text-[#9BA3BD] hover:text-[#F4F5FF] transition-all flex items-center gap-1 text-[10px] px-2"
+                    title="Insert Blank Page after active page"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Blank</span>
+                  </button>
                 </div>
 
-                <div className="flex items-center justify-center gap-1 text-[#9BA3BD]">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRotateCurrentPage(pNum - 1, 90);
-                    }}
-                    className="p-1 rounded-lg hover:bg-white/10 hover:text-[#F4F5FF] transition-colors"
-                    title="Rotate page 90°"
+                {Array.from({ length: numPages }, (_, i) => i + 1).map((pNum, idx) => (
+                  <div
+                    key={pNum}
+                    onClick={() => setCurrentPage(pNum)}
+                    className={`p-2.5 rounded-2xl border text-center transition-all cursor-pointer ${
+                      currentPage === pNum
+                        ? 'border-[#8B7CFF]/60 bg-[#8B7CFF]/15 shadow-lg shadow-[#8B7CFF]/20 glow-purple'
+                        : 'border-white/10 glass-card hover:border-white/20'
+                    }`}
                   >
-                    <RotateCw className="w-3 h-3" />
-                  </button>
+                    <div className="text-xs font-bold text-[#F4F5FF] mb-2 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-4 h-4 rounded-full bg-white/10 text-[10px] flex items-center justify-center">
+                          {pNum}
+                        </span>
+                        <span>Page {pNum}</span>
+                      </span>
+                      {currentPage === pNum && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#8B7CFF] glow-purple" />
+                      )}
+                    </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDuplicateCurrentPage(pNum - 1);
-                    }}
-                    className="p-1 rounded-lg hover:bg-white/10 hover:text-[#F4F5FF] transition-colors"
-                    title="Duplicate page"
-                  >
-                    <Copy className="w-3 h-3" />
-                  </button>
+                    {/* Reorder and Page Operation Controls */}
+                    <div className="flex items-center justify-between gap-1 text-[#9BA3BD] pt-1 border-t border-white/5">
+                      <div className="flex items-center gap-0.5">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMovePageUp(idx);
+                          }}
+                          disabled={idx === 0}
+                          className="p-1 rounded hover:bg-white/10 disabled:opacity-20 hover:text-[#F4F5FF] transition-colors"
+                          title="Move page up"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMovePageDown(idx);
+                          }}
+                          disabled={idx === numPages - 1}
+                          className="p-1 rounded hover:bg-white/10 disabled:opacity-20 hover:text-[#F4F5FF] transition-colors"
+                          title="Move page down"
+                        >
+                          <ChevronDown className="w-3 h-3" />
+                        </button>
+                      </div>
 
-                  {numPages > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteCurrentPage(pNum - 1);
-                      }}
-                      className="p-1 rounded-lg hover:bg-rose-500/20 text-[#9BA3BD] hover:text-rose-400 transition-colors"
-                      title="Delete page"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRotateCurrentPage(pNum - 1, 90);
+                          }}
+                          className="p-1 rounded hover:bg-white/10 hover:text-[#F4F5FF] transition-colors"
+                          title="Rotate 90°"
+                        >
+                          <RotateCw className="w-3 h-3" />
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDuplicateCurrentPage(pNum - 1);
+                          }}
+                          className="p-1 rounded hover:bg-white/10 hover:text-[#F4F5FF] transition-colors"
+                          title="Duplicate page"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
+
+                        {numPages > 1 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCurrentPage(pNum - 1);
+                            }}
+                            className="p-1 rounded hover:bg-rose-500/20 text-[#9BA3BD] hover:text-rose-400 transition-colors"
+                            title="Delete page"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="flex-1 overflow-y-auto p-3 custom-scrollbar text-xs">
+                {outlineItems.length === 0 ? (
+                  <div className="text-center py-8 text-[#9BA3BD] space-y-2">
+                    <ListTree className="w-8 h-8 mx-auto opacity-40 text-[#8B7CFF]" />
+                    <p className="text-[11px]">No bookmarks or table of contents found in this PDF.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {outlineItems.map((item, i) => (
+                      <button
+                        key={i}
+                        onClick={async () => {
+                          if (item.dest && pdfJsDoc) {
+                            try {
+                              let explicitDest = item.dest;
+                              if (typeof explicitDest === 'string') {
+                                explicitDest = await pdfJsDoc.getDestination(explicitDest);
+                              }
+                              if (Array.isArray(explicitDest) && explicitDest.length > 0) {
+                                const ref = explicitDest[0];
+                                if (typeof ref === 'object' && ref !== null) {
+                                  const pIdx = await pdfJsDoc.getPageIndex(ref);
+                                  setCurrentPage(pIdx + 1);
+                                } else if (typeof ref === 'number') {
+                                  setCurrentPage(ref + 1);
+                                }
+                              }
+                            } catch (e) {
+                              console.warn('Navigation failed:', e);
+                            }
+                          }
+                        }}
+                        className="w-full text-left p-2 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] transition-all block truncate text-[11px]"
+                        title={item.title}
+                      >
+                        • {item.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Viewport Canvas with Interactive Text Layer */}
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center items-start bg-[#080B18]/60 custom-scrollbar">
+        {/* ========================================================= */}
+        {/* CENTER PANEL: Large Canvas Viewport & Interactive Layer   */}
+        {/* ========================================================= */}
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center items-start bg-[#080B18]/60 custom-scrollbar relative">
           {!pdfJsDoc ? (
             <div className="max-w-md w-full my-auto text-center p-8 rounded-[24px] glass-panel border border-dashed border-white/15 space-y-4 shadow-2xl">
               <div className="w-16 h-16 mx-auto rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 glow-rose">
@@ -1073,7 +1241,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
               <div>
                 <h3 className="text-lg font-bold text-[#F4F5FF]">No PDF Loaded</h3>
                 <p className="text-xs text-[#9BA3BD] mt-1 leading-relaxed">
-                  Upload an existing PDF document to edit existing text, redact sensitive terms, add annotations, signatures, and manage pages.
+                  Upload an existing PDF document to edit text, apply verified destructive redactions, add signatures, and reorganize pages in the 3-panel studio.
                 </p>
               </div>
               <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl glass-btn-primary text-xs font-semibold cursor-pointer shadow-lg shadow-[#8B7CFF]/25">
@@ -1089,7 +1257,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             </div>
           ) : (
             <div className="relative shadow-2xl rounded-xl overflow-hidden border border-white/20 bg-white">
-              {/* Interactive Cursor Banner when a tool is armed */}
+              {/* Interactive Tool Banner */}
               {activeTool !== 'select' && (
                 <div className="absolute top-3 left-3 z-30 px-3 py-1 rounded-full bg-slate-900/90 text-white text-[11px] font-semibold border border-indigo-500/40 shadow-lg flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
@@ -1097,14 +1265,14 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                 </div>
               )}
 
-              {/* Underlying Rendered Canvas */}
+              {/* Rendered Canvas */}
               <canvas
                 ref={canvasRef}
                 onClick={handleCanvasClick}
                 className={`block ${activeTool !== 'select' ? 'cursor-crosshair' : 'cursor-default'}`}
               />
 
-              {/* Module 4A: Genuine Selectable & Clickable PDF Text Layer */}
+              {/* Interactive PDF Text Layer */}
               <div className="absolute inset-0 z-10 pointer-events-auto">
                 {pageTextItems.map((item) => {
                   const edit = textEdits[item.id];
@@ -1112,8 +1280,8 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                   const isSelected = selectedTextItem?.id === item.id;
                   const displayText = edit ? (edit.isDeleted ? '' : edit.newText) : item.str;
                   const isDeleted = edit?.isDeleted;
+                  const isRedaction = edit?.isRedaction;
 
-                  // In-PDF Search Match
                   const isSearchMatch = searchQuery.trim() && item.str.toLowerCase().includes(searchQuery.toLowerCase());
 
                   if (isDeleted) {
@@ -1126,9 +1294,9 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                           top: item.viewportY,
                           width: item.width,
                           height: item.height,
-                          backgroundColor: '#ffffff',
+                          backgroundColor: isRedaction ? '#000000' : '#ffffff',
                         }}
-                        className="opacity-95"
+                        className={isRedaction ? 'opacity-100' : 'opacity-95'}
                       />
                     );
                   }
@@ -1176,6 +1344,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                             color: editFontColor || '#000000',
                             fontWeight: editFontWeight,
                             fontStyle: editFontStyle,
+                            textAlign: editTextAlign,
                           }}
                         />
                       ) : (
@@ -1185,6 +1354,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                             color: edit ? (edit.fontColor || '#000000') : 'transparent',
                             fontWeight: edit?.fontWeight || 'normal',
                             fontStyle: edit?.fontStyle || 'normal',
+                            textAlign: edit?.textAlign || 'left',
                           }}
                           className={`block truncate ${edit ? 'text-slate-900' : 'text-transparent group-hover:text-slate-900/30'}`}
                         >
@@ -1196,7 +1366,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                 })}
               </div>
 
-              {/* Render dynamic annotations (redactions, highlights, signatures, images) */}
+              {/* Dynamic Annotations Layer */}
               {annotations
                 .filter((ann) => ann.pageIndex === currentPage - 1)
                 .map((ann) => (
@@ -1252,6 +1422,409 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             </div>
           )}
         </div>
+
+        {/* ========================================================= */}
+        {/* RIGHT PANEL: Inspector, Annotations & Structural Detector */}
+        {/* ========================================================= */}
+        {isRightPanelOpen && pdfJsDoc && (
+          <div className="w-72 border-l border-white/10 bg-[#11152A]/60 backdrop-blur-2xl flex flex-col shrink-0 custom-scrollbar animate-in slide-in-from-right duration-200">
+            {/* Right Tabs */}
+            <div className="flex items-center border-b border-white/10 px-2 pt-2 gap-1 bg-[#080B18]/30">
+              <button
+                onClick={() => setRightTab('inspector')}
+                className={`flex-1 py-1.5 text-[11px] font-bold rounded-t-lg transition-colors flex items-center justify-center gap-1 ${
+                  rightTab === 'inspector'
+                    ? 'bg-[#11152A]/90 text-[#8B7CFF] border-t-2 border-[#8B7CFF]'
+                    : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                }`}
+              >
+                <Sliders className="w-3 h-3" />
+                <span>Properties</span>
+              </button>
+              <button
+                onClick={() => setRightTab('annotations')}
+                className={`flex-1 py-1.5 text-[11px] font-bold rounded-t-lg transition-colors flex items-center justify-center gap-1 ${
+                  rightTab === 'annotations'
+                    ? 'bg-[#11152A]/90 text-[#8B7CFF] border-t-2 border-[#8B7CFF]'
+                    : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                }`}
+              >
+                <Layers className="w-3 h-3" />
+                <span>Annos ({activePageAnnotations.length})</span>
+              </button>
+              <button
+                onClick={() => setRightTab('diagnostics')}
+                className={`flex-1 py-1.5 text-[11px] font-bold rounded-t-lg transition-colors flex items-center justify-center gap-1 ${
+                  rightTab === 'diagnostics'
+                    ? 'bg-[#11152A]/90 text-[#42D6E8] border-t-2 border-[#42D6E8]'
+                    : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                }`}
+              >
+                <Cpu className="w-3 h-3" />
+                <span>Structure</span>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar text-xs">
+              {/* TAB 1: PROPERTIES / INSPECTOR */}
+              {rightTab === 'inspector' && (
+                <>
+                  {selectedTextItem ? (
+                    <div className="space-y-3.5">
+                      <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                        <span className="text-[11px] font-bold text-[#8B7CFF] uppercase tracking-wider">
+                          Selected Text Run
+                        </span>
+                        <button
+                          onClick={() => setSelectedTextItem(null)}
+                          className="p-1 rounded-lg hover:bg-white/10 text-[#9BA3BD] hover:text-[#F4F5FF]"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      {/* Text Replacement Input */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-[#9BA3BD] uppercase tracking-wider font-semibold">
+                          Replacement Text
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={editDraftText}
+                          onChange={(e) => setEditDraftText(e.target.value)}
+                          className="w-full px-2.5 py-1.5 rounded-xl glass-input text-[#F4F5FF] text-xs resize-none outline-none focus:border-[#8B7CFF]"
+                          placeholder="Edit text..."
+                        />
+                      </div>
+
+                      {/* Font Family */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-[#9BA3BD] uppercase tracking-wider font-semibold">
+                          Font Family
+                        </label>
+                        <select
+                          value={editFontFamily}
+                          onChange={(e) => setEditFontFamily(e.target.value as any)}
+                          className="w-full px-2 py-1.5 rounded-xl glass-input text-[#F4F5FF] text-xs outline-none bg-[#11152A]"
+                        >
+                          <option value="Helvetica">Helvetica (Sans-Serif)</option>
+                          <option value="TimesRoman">Times Roman (Serif)</option>
+                          <option value="Courier">Courier (Monospace)</option>
+                        </select>
+                      </div>
+
+                      {/* Font Size & Weight & Style */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-[#9BA3BD] uppercase tracking-wider font-semibold">
+                            Size (pt)
+                          </label>
+                          <input
+                            type="number"
+                            min={6}
+                            max={72}
+                            value={editFontSize}
+                            onChange={(e) => setEditFontSize(Number(e.target.value))}
+                            className="w-full px-2 py-1.5 rounded-xl glass-input text-[#F4F5FF] text-xs text-center"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-[#9BA3BD] uppercase tracking-wider font-semibold">
+                            Style
+                          </label>
+                          <div className="flex items-center gap-1 pt-0.5">
+                            <button
+                              onClick={() => setEditFontWeight(editFontWeight === 'bold' ? 'normal' : 'bold')}
+                              className={`flex-1 py-1 rounded-lg font-bold border transition-all ${
+                                editFontWeight === 'bold'
+                                  ? 'bg-[#8B7CFF] text-[#080B18] border-[#8B7CFF]'
+                                  : 'glass-card border-white/10 text-[#9BA3BD]'
+                              }`}
+                            >
+                              B
+                            </button>
+                            <button
+                              onClick={() => setEditFontStyle(editFontStyle === 'italic' ? 'normal' : 'italic')}
+                              className={`flex-1 py-1 rounded-lg italic font-serif border transition-all ${
+                                editFontStyle === 'italic'
+                                  ? 'bg-[#8B7CFF] text-[#080B18] border-[#8B7CFF]'
+                                  : 'glass-card border-white/10 text-[#9BA3BD]'
+                              }`}
+                            >
+                              I
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Text Alignment */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-[#9BA3BD] uppercase tracking-wider font-semibold">
+                          Alignment
+                        </label>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setEditTextAlign('left')}
+                            className={`flex-1 py-1 rounded-lg flex items-center justify-center border transition-all ${
+                              editTextAlign === 'left' ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border-[#8B7CFF]/40' : 'glass-card border-white/10 text-[#9BA3BD]'
+                            }`}
+                          >
+                            <AlignLeft className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setEditTextAlign('center')}
+                            className={`flex-1 py-1 rounded-lg flex items-center justify-center border transition-all ${
+                              editTextAlign === 'center' ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border-[#8B7CFF]/40' : 'glass-card border-white/10 text-[#9BA3BD]'
+                            }`}
+                          >
+                            <AlignCenter className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setEditTextAlign('right')}
+                            className={`flex-1 py-1 rounded-lg flex items-center justify-center border transition-all ${
+                              editTextAlign === 'right' ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border-[#8B7CFF]/40' : 'glass-card border-white/10 text-[#9BA3BD]'
+                            }`}
+                          >
+                            <AlignRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Font Color */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-[#9BA3BD] uppercase tracking-wider font-semibold">
+                          Color
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={editFontColor}
+                            onChange={(e) => setEditFontColor(e.target.value)}
+                            className="w-8 h-8 rounded-lg border-0 bg-transparent cursor-pointer shrink-0"
+                          />
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {['#000000', '#334155', '#ef4444', '#3b82f6', '#10b981', '#8b5cf6'].map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => setEditFontColor(c)}
+                                style={{ backgroundColor: c }}
+                                className="w-5 h-5 rounded-md border border-white/20 transition-transform hover:scale-110"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="space-y-2 pt-2 border-t border-white/10">
+                        <button
+                          onClick={commitTextEdit}
+                          className="w-full py-2 rounded-xl glass-btn-primary font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-[#8B7CFF]/20"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Apply Text Modification</span>
+                        </button>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={handleRedactSelectedText}
+                            className="py-1.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                            title="Destructive blackout + stream scrubbing"
+                          >
+                            <ShieldAlert className="w-3 h-3" />
+                            <span>Redact</span>
+                          </button>
+                          <button
+                            onClick={handleDeleteSelectedText}
+                            className="py-1.5 px-2 rounded-xl glass-card hover:bg-rose-500/20 text-[#9BA3BD] hover:text-rose-400 text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                            title="Remove text"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="p-3.5 rounded-2xl glass-card border-white/10 space-y-2">
+                        <div className="flex items-center gap-2 text-[#8B7CFF] font-bold text-xs">
+                          <Sliders className="w-3.5 h-3.5" />
+                          <span>Document Overview</span>
+                        </div>
+                        <div className="space-y-1.5 text-[11px] text-[#9BA3BD]">
+                          <div className="flex justify-between">
+                            <span>File Name:</span>
+                            <span className="text-[#F4F5FF] font-medium truncate max-w-[120px]">{fileName}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Total Pages:</span>
+                            <span className="text-[#F4F5FF] font-medium">{numPages}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Active Page:</span>
+                            <span className="text-[#8B7CFF] font-bold">Page {currentPage}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Text Elements:</span>
+                            <span className="text-[#42D6E8] font-bold">{pageTextItems.length}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-2xl glass-card border-dashed border-white/15 text-[#9BA3BD] space-y-1.5 text-center">
+                        <p className="font-semibold text-[#F4F5FF] text-[11px]">Select Text to Edit</p>
+                        <p className="text-[10px] leading-relaxed">
+                          Click or double-click any word or phrase on the document canvas to open typography controls and destructive redaction.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* TAB 2: ANNOTATIONS LIST */}
+              {rightTab === 'annotations' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-1 border-b border-white/10">
+                    <span className="text-[11px] font-bold text-[#8B7CFF] uppercase tracking-wider">
+                      Page {currentPage} Annotations
+                    </span>
+                    {activePageAnnotations.length > 0 && (
+                      <button
+                        onClick={() => {
+                          saveToHistory();
+                          setAnnotations((prev) => prev.filter((a) => a.pageIndex !== currentPage - 1));
+                        }}
+                        className="text-[10px] text-rose-400 hover:underline"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+
+                  {activePageAnnotations.length === 0 ? (
+                    <div className="text-center py-6 text-[#9BA3BD] space-y-1.5">
+                      <Layers className="w-6 h-6 mx-auto opacity-40 text-[#8B7CFF]" />
+                      <p className="text-[11px]">No annotations on this page.</p>
+                      <p className="text-[10px]">Use the top toolbar to place highlights, text, or redactions.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {activePageAnnotations.map((ann) => (
+                        <div
+                          key={ann.id}
+                          className="p-2.5 rounded-xl glass-card border-white/10 flex items-center justify-between gap-2"
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                              ann.type === 'redact' ? 'bg-rose-500/20 text-rose-300' :
+                              ann.type === 'highlight' ? 'bg-amber-400/20 text-amber-300' :
+                              ann.type === 'signature' ? 'bg-purple-500/20 text-purple-300' :
+                              'bg-blue-500/20 text-blue-300'
+                            }`}>
+                              {ann.type}
+                            </span>
+                            <span className="text-[11px] text-[#F4F5FF] truncate">
+                              {ann.text || `${Math.round(ann.x)}, ${Math.round(ann.y)}`}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              saveToHistory();
+                              setAnnotations((prev) => prev.filter((a) => a.id !== ann.id));
+                            }}
+                            className="p-1 rounded hover:bg-rose-500/20 text-[#9BA3BD] hover:text-rose-400 transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 3: STRUCTURAL LIMITATION DETECTOR */}
+              {rightTab === 'diagnostics' && (
+                <div className="space-y-3.5">
+                  <div className="flex items-center gap-2 pb-1 border-b border-white/10">
+                    <Cpu className="w-3.5 h-3.5 text-[#42D6E8]" />
+                    <span className="text-[11px] font-bold text-[#42D6E8] uppercase tracking-wider">
+                      Structural Limitation Detector
+                    </span>
+                  </div>
+
+                  {/* Classification Card */}
+                  <div className={`p-3 rounded-2xl border ${
+                    isScannedOrRasterPage
+                      ? 'border-amber-500/40 bg-amber-500/10'
+                      : 'border-emerald-500/40 bg-emerald-500/10'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      {isScannedOrRasterPage ? (
+                        <AlertTriangle className="w-4 h-4 text-amber-400" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      )}
+                      <span className="font-bold text-xs text-[#F4F5FF]">
+                        {isScannedOrRasterPage ? 'Raster Scanned Page' : 'Selectable Vector Text Stream'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-[#9BA3BD] leading-relaxed">
+                      {isScannedOrRasterPage
+                        ? 'This page contains flat raster bitmap image streams. Vector text spans cannot be directly edited. Use OCR in OmniDoc to transcribe this scanned page before vector replacement.'
+                        : `Found ${pageTextItems.length} selectable text runs on Page ${currentPage}. In-place vector replacement and redaction are fully supported.`}
+                    </p>
+                  </div>
+
+                  {/* Fonts Detected */}
+                  <div className="p-3 rounded-2xl glass-card border-white/10 space-y-2">
+                    <span className="text-[10px] font-bold text-[#9BA3BD] uppercase tracking-wider block">
+                      Detected Fonts on Page
+                    </span>
+                    {pageFontNames.length === 0 ? (
+                      <span className="text-[11px] text-[#9BA3BD] italic">No font streams embedded</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {pageFontNames.map((fn, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-mono text-[#F4F5FF]"
+                          >
+                            {fn}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Type 3 Warning */}
+                  {hasType3Fonts && (
+                    <div className="p-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 space-y-1">
+                      <div className="flex items-center gap-1.5 text-rose-300 font-bold text-[11px]">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>Type3 Custom Glyph Stream</span>
+                      </div>
+                      <p className="text-[10px] text-[#9BA3BD] leading-relaxed">
+                        This page utilizes embedded Type3 or rasterized glyph sets without standard Unicode mapping. Direct editing may substitute with standard Helvetica/Times.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Technical Integrity Disclosure */}
+                  <div className="p-3 rounded-2xl glass-card border-white/5 text-[10px] text-[#9BA3BD] space-y-1.5">
+                    <span className="font-bold text-[#F4F5FF] block">Architectural Honesty Disclosure</span>
+                    <p className="leading-relaxed">
+                      PDF is a fixed-geometry output format, not a reflowing document like HTML or DOCX. OmniDoc Studio applies sub-pixel vector patches and permanent stream redactions with zero-leak verification, preserving document layout fidelity without degrading print quality.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Signature Modal */}

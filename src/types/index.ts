@@ -115,6 +115,7 @@ export interface ConversionOptions {
   slideTheme?: string;
   sheetDelimiter?: string;
   compressionLevel?: 'low' | 'medium' | 'high';
+  signal?: AbortSignal;
 }
 
 export interface StoredProject {
@@ -177,6 +178,7 @@ export interface PdfTextEdit {
   height: number;
   fontSize?: number;
   fontColor?: string;
+  fontFamily?: 'Helvetica' | 'TimesRoman' | 'Courier';
   fontWeight?: 'normal' | 'bold';
   fontStyle?: 'normal' | 'italic';
   textAlign?: 'left' | 'center' | 'right';
