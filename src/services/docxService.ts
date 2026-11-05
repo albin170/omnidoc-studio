@@ -21,6 +21,45 @@ export interface DocxContentItem {
 }
 
 /**
+ * Sanitize rich-text HTML against DOM XSS vectors while preserving semantic document structure
+ */
+export function sanitizeHtml(html: string): string {
+  if (!html) return '';
+
+  if (typeof DOMParser !== 'undefined') {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Remove executable or unsafe elements
+    const disallowed = doc.querySelectorAll('script, iframe, object, embed, link, meta, applet, base');
+    disallowed.forEach((node) => node.remove());
+
+    // Clean all element attributes
+    const allElements = doc.querySelectorAll('*');
+    allElements.forEach((el) => {
+      const attrs = Array.from(el.attributes);
+      for (const attr of attrs) {
+        const name = attr.name.toLowerCase();
+        const val = attr.value.trim().toLowerCase();
+        // Remove event handlers or javascript: hrefs
+        if (name.startsWith('on') || val.startsWith('javascript:') || val.startsWith('vbscript:')) {
+          el.removeAttribute(attr.name);
+        }
+      }
+    });
+
+    return doc.body.innerHTML;
+  }
+
+  // Regex fallback for non-browser / node environments
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/\son\w+\s*=\s*(?:'[^']*'|"[^"]*"|[^\s>]+)/gi, '')
+    .replace(/href\s*=\s*['"]?javascript:[^'">\s]+/gi, 'href="#"');
+}
+
+/**
  * Generate a real DOCX file blob from document structure
  */
 export async function createDocxBlob(title: string, items: DocxContentItem[]): Promise<Blob> {

@@ -123,6 +123,40 @@ export function exportMultiSheetWorkbookToBlob(
     if (!sheetData) continue;
     const cleanData = sanitizeWorkbookData(sheetData);
     const ws = XLSX.utils.aoa_to_sheet(cleanData);
+
+    // Compute automatic column widths so columns are never cramped
+    const colWidths: { wch: number }[] = [];
+    const maxCols = Math.max(0, ...cleanData.map((r) => Array.isArray(r) ? r.length : 0));
+    for (let c = 0; c < maxCols; c++) {
+      let maxLen = 10;
+      for (let r = 0; r < Math.min(cleanData.length, 100); r++) {
+        const val = cleanData[r]?.[c];
+        if (val !== undefined && val !== null) {
+          const s = String(val);
+          if (s.length > maxLen) maxLen = Math.min(s.length + 3, 50);
+        }
+      }
+      colWidths.push({ wch: maxLen });
+    }
+    ws['!cols'] = colWidths;
+
+    // Enrich cells with real Excel formulas and pre-calculated cached values
+    for (let r = 0; r < cleanData.length; r++) {
+      if (!Array.isArray(cleanData[r])) continue;
+      for (let c = 0; c < cleanData[r].length; c++) {
+        const val = cleanData[r][c];
+        if (typeof val === 'string' && val.startsWith('=')) {
+          const cellRef = XLSX.utils.encode_cell({ r, c });
+          if (ws[cellRef]) {
+            const computed = evaluateCellFormula(val, cleanData);
+            ws[cellRef].f = val.substring(1);
+            ws[cellRef].v = typeof computed === 'number' ? computed : String(computed);
+            ws[cellRef].t = typeof computed === 'number' ? 'n' : 's';
+          }
+        }
+      }
+    }
+
     // Excel sheet name limit is 31 characters
     XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31));
   }
@@ -135,13 +169,7 @@ export function exportMultiSheetWorkbookToBlob(
  * Convert 2D array back to an XLSX workbook blob
  */
 export function exportDataToXlsxBlob(data: (string | number)[][], sheetName = 'Sheet1'): Blob {
-  const cleanData = sanitizeWorkbookData(data);
-  const ws = XLSX.utils.aoa_to_sheet(cleanData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
-  
-  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  return new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  return exportMultiSheetWorkbookToBlob({ [sheetName]: data });
 }
 
 /**

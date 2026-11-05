@@ -26,7 +26,8 @@ import {
   createDocxBlob, 
   convertTextOrDocxToPdf, 
   extractTextFromDocxFile,
-  htmlToDocxItems
+  htmlToDocxItems,
+  sanitizeHtml
 } from '../../services/docxService';
 import { escapeHtml } from '../../services/converter';
 import saveAs from 'file-saver';
@@ -95,7 +96,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
     if (editorRef.current) {
       if (initialContent) {
         if (initialContent.includes('<') && initialContent.includes('>')) {
-          editorRef.current.innerHTML = initialContent;
+          editorRef.current.innerHTML = sanitizeHtml(initialContent);
         } else {
           // Plain text / markdown to paragraphs
           const paragraphs = initialContent
@@ -217,7 +218,8 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
         const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
         saveAs(blob, `${docTitle}.txt`);
       } else if (exportFormat === 'html') {
-        const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(docTitle)}</title></head><body style="font-family:sans-serif;max-width:800px;margin:40px auto;line-height:1.6;"><h1>${escapeHtml(docTitle)}</h1>${html}</body></html>`;
+        const cleanBody = sanitizeHtml(html);
+        const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(docTitle)}</title></head><body style="font-family:sans-serif;max-width:800px;margin:40px auto;line-height:1.6;"><h1>${escapeHtml(docTitle)}</h1>${cleanBody}</body></html>`;
         const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
         saveAs(blob, `${docTitle}.html`);
       }
