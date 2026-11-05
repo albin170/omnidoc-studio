@@ -287,25 +287,25 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
       {/* Top Header */}
-      <div className="h-14 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
         <div className="flex items-center gap-3">
           <input
             type="text"
             value={deckTitle}
             onChange={(e) => setDeckTitle(e.target.value)}
-            className="bg-transparent text-sm font-bold text-white border-b border-transparent hover:border-slate-700 focus:border-amber-500 px-1 py-0.5 outline-none w-52 md:w-64"
+            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-amber-400 px-1 py-0.5 outline-none w-52 md:w-64 transition-colors"
             placeholder="Presentation Title"
           />
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-semibold border border-amber-500/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-semibold border border-amber-400/30">
             PPTX 16:9
           </span>
         </div>
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-amber-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
             <Upload className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Import PPTX</span>
             <input type="file" accept=".pptx" className="hidden" onChange={handleImportPptx} />
@@ -314,16 +314,16 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(deckTitle, { slides })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
             >
-              <Save className="w-3.5 h-3.5 text-indigo-400" />
+              <Save className="w-3.5 h-3.5 text-[#8B7CFF]" />
               <span>Save</span>
             </button>
           )}
 
           <button
             onClick={() => setIsPresenting(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-semibold border border-slate-700 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-amber-400/50 text-amber-300 text-xs font-semibold cursor-pointer transition-all"
           >
             <Play className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
             <span>Present</span>
@@ -332,16 +332,16 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
           <button
             onClick={handleExportPdf}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-rose-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
           >
-            <DownloadCloud className="w-3.5 h-3.5 text-red-400" />
+            <DownloadCloud className="w-3.5 h-3.5 text-rose-400" />
             <span>PDF</span>
           </button>
 
           <button
             onClick={handleExportPptx}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow-md shadow-amber-600/30 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#8B7CFF]/20 cursor-pointer"
           >
             <DownloadCloud className="w-3.5 h-3.5" />
             <span>Export .PPTX</span>
@@ -352,12 +352,12 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
       {/* Main Studio Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Slide Thumbnails */}
-        <div className="w-56 border-r border-slate-800 bg-slate-900/40 p-3 overflow-y-auto space-y-3 shrink-0 hidden sm:block">
-          <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+        <div className="w-56 border-r border-white/10 bg-[#11152A]/40 backdrop-blur-xl p-3 overflow-y-auto space-y-3 shrink-0 hidden sm:block custom-scrollbar">
+          <div className="flex items-center justify-between text-xs font-bold text-[#9BA3BD] uppercase tracking-wider mb-2">
             <span>Slides ({slides.length})</span>
             <button
               onClick={addSlide}
-              className="p-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white"
+              className="p-1 rounded-lg glass-btn-primary text-white"
               title="Add Slide"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -368,13 +368,13 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
             <div
               key={s.id}
               onClick={() => setActiveSlideIndex(idx)}
-              className={`p-2 rounded-xl border text-left transition-all cursor-pointer group ${
+              className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer group ${
                 activeSlideIndex === idx
-                  ? 'border-amber-500 bg-amber-500/10 shadow-md ring-1 ring-amber-500/40'
-                  : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                  ? 'border-amber-400/60 bg-amber-400/15 shadow-lg shadow-amber-400/20'
+                  : 'border-white/10 glass-card hover:border-white/20'
               }`}
             >
-              <div className="flex items-center justify-between text-[11px] font-bold text-slate-300 mb-1">
+              <div className="flex items-center justify-between text-[11px] font-bold text-[#F4F5FF] mb-1">
                 <span>Slide {idx + 1}</span>
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
@@ -415,7 +415,7 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
                         e.stopPropagation();
                         deleteSlide(idx);
                       }}
-                      className="p-0.5 hover:text-red-400"
+                      className="p-0.5 hover:text-rose-400"
                       title="Delete slide"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -426,13 +426,13 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
 
               {/* Mini Preview Box */}
               <div
-                className="w-full h-18 rounded-lg border border-slate-700/60 p-1.5 overflow-hidden text-[8px] flex flex-col justify-between"
+                className="w-full h-18 rounded-xl border border-white/15 p-1.5 overflow-hidden text-[8px] flex flex-col justify-between shadow-sm"
                 style={{ backgroundColor: s.bgColor }}
               >
-                <div className="font-bold truncate text-white">
+                <div className="font-bold truncate text-[#F4F5FF]">
                   {s.elements.find((e) => e.type === 'title')?.content || 'Untitled'}
                 </div>
-                <div className="text-slate-400 truncate">
+                <div className="text-[#9BA3BD] truncate">
                   {s.elements.find((e) => e.type === 'text')?.content?.split('\n')[0] || ''}
                 </div>
               </div>
@@ -441,9 +441,9 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
         </div>
 
         {/* Center Canvas / Active Slide Viewport */}
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center justify-center bg-slate-950">
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center justify-center bg-[#080B18]/60 custom-scrollbar">
           {/* Slide Theme Palettes */}
-          <div className="mb-4 flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800 text-xs text-slate-300">
+          <div className="mb-4 flex items-center gap-2 glass-card px-3.5 py-1.5 rounded-2xl border-white/10 text-xs text-[#9BA3BD]">
             <Palette className="w-3.5 h-3.5 text-amber-400" />
             <span>Theme:</span>
             {[
@@ -457,7 +457,7 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
                 key={th.color}
                 onClick={() => updateSlideBgColor(th.color)}
                 className={`w-5 h-5 rounded-full border cursor-pointer transition-transform hover:scale-110 ${
-                  activeSlide.bgColor === th.color ? 'ring-2 ring-amber-400 border-white' : 'border-slate-700'
+                  activeSlide.bgColor === th.color ? 'ring-2 ring-amber-400 border-white' : 'border-white/20'
                 }`}
                 style={{ backgroundColor: th.color }}
                 title={th.label}
@@ -467,7 +467,7 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
 
           {/* 16:9 Aspect Ratio Slide Canvas */}
           <div
-            className="w-full max-w-4xl aspect-[16/9] rounded-2xl border border-slate-700 shadow-2xl p-8 md:p-14 flex flex-col justify-between relative overflow-hidden transition-colors"
+            className="w-full max-w-4xl aspect-[16/9] rounded-3xl border border-white/20 shadow-2xl p-8 md:p-14 flex flex-col justify-between relative overflow-hidden transition-colors"
             style={{ backgroundColor: activeSlide.bgColor }}
           >
             {activeSlide.elements.map((el) => {

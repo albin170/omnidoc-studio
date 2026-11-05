@@ -161,23 +161,23 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
   const selectedNode = activeWorkflow.nodes.find((n: WorkflowNode) => n.id === selectedNodeId);
 
   return (
-    <div className="flex-1 h-full flex flex-col overflow-hidden bg-slate-950 text-slate-100 select-none">
+    <div className="flex-1 h-full flex flex-col overflow-hidden bg-[#080B18]/60 text-[#F4F5FF] select-none">
       {/* Studio Header Toolbar */}
-      <div className="h-16 px-6 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md flex items-center justify-between shrink-0">
+      <div className="h-16 px-6 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+          <div className="p-2 rounded-xl bg-[#8B7CFF]/15 border border-[#8B7CFF]/30 text-[#8B7CFF]">
             <Layers className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-base text-white tracking-tight">
+              <h1 className="font-extrabold text-base text-[#F4F5FF] tracking-tight">
                 Visual Workflow Studio
               </h1>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30">
                 v2.1 DAG ENGINE
               </span>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#9BA3BD]">
               Interactive node pipeline for zero-trust document processing &amp; self-healing verification
             </p>
           </div>
@@ -189,10 +189,10 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
             value={selectedWorkflowId}
             onChange={(e) => handleSelectPreset(e.target.value)}
             disabled={isExecuting}
-            className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 outline-none hover:border-slate-600 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-xl glass-input text-xs font-semibold text-[#F4F5FF] outline-none cursor-pointer"
           >
             {PRESET_WORKFLOWS.map((preset) => (
-              <option key={preset.id} value={preset.id}>
+              <option key={preset.id} value={preset.id} className="bg-[#11152A] text-white">
                 {preset.name}
               </option>
             ))}
@@ -208,9 +208,9 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isExecuting}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#F4F5FF] text-xs font-bold transition-all cursor-pointer"
           >
-            <Upload className="w-3.5 h-3.5 text-blue-400" />
+            <Upload className="w-3.5 h-3.5 text-[#42D6E8]" />
             <span>{selectedFile ? selectedFile.name.slice(0, 18) + '...' : 'Select File'}</span>
           </button>
 
@@ -219,13 +219,13 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
             value={targetFormat}
             onChange={(e) => setTargetFormat(e.target.value as FileFormat)}
             disabled={isExecuting}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 outline-none"
+            className="px-2.5 py-1.5 rounded-xl glass-input text-xs font-bold text-[#F4F5FF] outline-none cursor-pointer"
           >
-            <option value="pdf">Target: PDF</option>
-            <option value="docx">Target: DOCX</option>
-            <option value="txt">Target: TXT</option>
-            <option value="html">Target: HTML</option>
-            <option value="csv">Target: CSV</option>
+            <option value="pdf" className="bg-[#11152A] text-white">Target: PDF</option>
+            <option value="docx" className="bg-[#11152A] text-white">Target: DOCX</option>
+            <option value="txt" className="bg-[#11152A] text-white">Target: TXT</option>
+            <option value="html" className="bg-[#11152A] text-white">Target: HTML</option>
+            <option value="csv" className="bg-[#11152A] text-white">Target: CSV</option>
           </select>
 
           {/* Run Pipeline Button */}
@@ -234,8 +234,8 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
             disabled={isExecuting || !selectedFile}
             className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-extrabold shadow-lg transition-all cursor-pointer ${
               isExecuting || !selectedFile
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-indigo-500/20'
+                ? 'glass-card opacity-50 text-[#9BA3BD] cursor-not-allowed'
+                : 'glass-btn-primary glow-purple'
             }`}
           >
             {isExecuting ? (

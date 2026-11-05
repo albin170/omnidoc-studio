@@ -51,29 +51,29 @@ export const DeveloperApiModal: React.FC<DeveloperApiModalProps> = ({ isOpen, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[88vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#080B18]/80 backdrop-blur-xl animate-fade-in">
+      <div className="glass-panel border-white/15 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[88vh] text-[#F4F5FF]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               <Code2 className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-100">Developer API &amp; Microservices Platform</h3>
+                <h3 className="text-sm font-bold text-[#F4F5FF]">Developer API &amp; Microservices Platform</h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   OPENAPI V3 COMPLIANT
                 </span>
               </div>
-              <p className="text-xs text-slate-400 truncate max-w-md">
+              <p className="text-xs text-[#9BA3BD] truncate max-w-md">
                 Direct programmatic access to document parsing, verification, and autonomous agent workflows.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-[#9BA3BD] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -91,11 +91,11 @@ export const DeveloperApiModal: React.FC<DeveloperApiModalProps> = ({ isOpen, on
               <p className="text-[11px] text-amber-200/80">
                 This token will never be displayed again. For security, only the key hash is stored on the server.
               </p>
-              <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-amber-500/40">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-black/40 border border-amber-500/40">
                 <code className="text-xs font-mono text-amber-300 select-all">{newlyCreatedSecret}</code>
                 <button
                   onClick={() => copyToClipboard(newlyCreatedSecret)}
-                  className="px-2.5 py-1 text-xs font-semibold rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 flex items-center gap-1"
+                  className="px-2.5 py-1 text-xs font-semibold rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 flex items-center gap-1 cursor-pointer"
                 >
                   {copiedKey ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedKey ? 'Copied' : 'Copy'}</span>
@@ -107,10 +107,10 @@ export const DeveloperApiModal: React.FC<DeveloperApiModalProps> = ({ isOpen, on
           {/* Active API Keys List */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Active API Keys</span>
+              <span className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider">Active API Keys</span>
               <button
                 onClick={() => setShowCreateForm(!showCreateForm)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg glass-btn-primary text-white text-xs font-semibold transition-all cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Generate New Key</span>
@@ -119,19 +119,19 @@ export const DeveloperApiModal: React.FC<DeveloperApiModalProps> = ({ isOpen, on
 
             {/* Create Form */}
             {showCreateForm && (
-              <form onSubmit={handleCreate} className="p-4 rounded-xl bg-slate-950 border border-emerald-500/30 space-y-3">
-                <div className="text-xs font-bold text-slate-200">New Scoped API Key</div>
+              <form onSubmit={handleCreate} className="p-4 rounded-xl bg-white/[0.03] border border-emerald-500/30 space-y-3">
+                <div className="text-xs font-bold text-[#F4F5FF]">New Scoped API Key</div>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     placeholder="Key Label (e.g. Automated Invoice Ingestion)"
                     value={newKeyName}
                     onChange={(e) => setNewKeyName(e.target.value)}
-                    className="flex-1 px-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="flex-1 px-3 py-1.5 text-xs bg-white/[0.04] border border-white/15 rounded-lg text-[#F4F5FF] placeholder:text-[#9BA3BD]/50 focus:outline-none focus:border-emerald-400"
                   />
                   <button
                     type="submit"
-                    className="px-4 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-500"
+                    className="px-4 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-500 cursor-pointer"
                   >
                     Generate
                   </button>
@@ -143,16 +143,16 @@ export const DeveloperApiModal: React.FC<DeveloperApiModalProps> = ({ isOpen, on
               {keys.map((k) => (
                 <div
                   key={k.id}
-                  className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between"
+                  className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-200">{k.name}</span>
-                      <code className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                      <span className="text-xs font-bold text-[#F4F5FF]">{k.name}</span>
+                      <code className="text-[11px] font-mono text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded border border-emerald-500/30">
                         {k.prefix}
                       </code>
                     </div>
-                    <div className="flex items-center gap-3 text-[10px] text-slate-400">
+                    <div className="flex items-center gap-3 text-[10px] text-[#9BA3BD]">
                       <span>Rate Limit: {k.rateLimitRpm} req/min</span>
                       <span>• Created: {k.createdAt}</span>
                       {k.lastUsedAt && <span>• Last Active: {k.lastUsedAt}</span>}
@@ -160,7 +160,7 @@ export const DeveloperApiModal: React.FC<DeveloperApiModalProps> = ({ isOpen, on
                   </div>
                   <button
                     onClick={() => handleDelete(k.id)}
-                    className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition-colors"
+                    className="p-1.5 text-[#9BA3BD] hover:text-rose-400 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
                     title="Revoke Key"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -173,16 +173,16 @@ export const DeveloperApiModal: React.FC<DeveloperApiModalProps> = ({ isOpen, on
           {/* Quickstart SDK Code Snippets */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Quickstart Integration</span>
-              <div className="flex gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[11px]">
+              <span className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider">Quickstart Integration</span>
+              <div className="flex gap-1 bg-white/[0.04] p-0.5 rounded-lg border border-white/10 text-[11px]">
                 {(['curl', 'python', 'ts'] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveCodeTab(tab)}
-                    className={`px-2.5 py-1 rounded-md font-semibold capitalize transition-all ${
+                    className={`px-2.5 py-1 rounded-md font-semibold capitalize transition-all cursor-pointer ${
                       activeCodeTab === tab
                         ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'text-slate-400 hover:text-slate-200'
+                        : 'text-[#9BA3BD] hover:text-white'
                     }`}
                   >
                     {tab === 'ts' ? 'TypeScript' : tab === 'curl' ? 'cURL' : 'Python SDK'}
@@ -191,7 +191,7 @@ export const DeveloperApiModal: React.FC<DeveloperApiModalProps> = ({ isOpen, on
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs overflow-x-auto text-slate-300">
+            <div className="p-4 rounded-xl bg-black/40 border border-white/10 font-mono text-xs overflow-x-auto text-[#F4F5FF]">
               {activeCodeTab === 'curl' && (
                 <pre>{`curl -X POST "http://localhost:8000/api/v1/documents/upload" \\
   -H "Authorization: Bearer $OMNIDOC_API_KEY" \\
@@ -225,7 +225,7 @@ const job = await omniDocClient.submitJob(
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between text-xs">
+        <div className="px-6 py-3 border-t border-white/10 bg-white/[0.02] flex items-center justify-between text-xs">
           <a
             href="http://localhost:8000/api/v1/docs"
             target="_blank"
@@ -237,7 +237,7 @@ const job = await omniDocClient.submitJob(
           </a>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold"
+            className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-[#F4F5FF] font-semibold border border-white/10 cursor-pointer transition-colors"
           >
             Done
           </button>

@@ -108,13 +108,14 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
           0x5d, 0x3e, 0x3e, 0x0a, 0x65, 0x6e, 0x64, 0x6f, 0x62, 0x6a, 0x0a, 0x78, 0x72, 0x65, 0x66,
           0x0a, 0x30, 0x20, 0x34, 0x0a, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
           0x20, 0x36, 0x35, 0x35, 0x33, 0x35, 0x20, 0x66, 0x0d, 0x0a, 0x30, 0x30, 0x30, 0x30, 0x30,
-          0x30, 0x30, 0x30, 0x31, 0x35, 0x20, 0x30, 0x30, 0x30, 0x30, 0x30, 0x20, 0x6e, 0x0d, 0x0a,
-          0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x36, 0x38, 0x20, 0x30, 0x30, 0x30, 0x30,
-          0x30, 0x20, 0x6e, 0x0d, 0x0a, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x32, 0x35,
-          0x20, 0x30, 0x30, 0x30, 0x30, 0x30, 0x20, 0x6e, 0x0d, 0x0a, 0x74, 0x72, 0x61, 0x69, 0x6c,
-          0x65, 0x72, 0x0a, 0x3c, 0x3c, 0x2f, 0x53, 0x69, 0x7a, 0x65, 0x20, 0x34, 0x2f, 0x52, 0x6f,
-          0x6f, 0x74, 0x20, 0x31, 0x20, 0x30, 0x20, 0x52, 0x3e, 0x3e, 0x0a, 0x73, 0x74, 0x61, 0x72,
-          0x74, 0x78, 0x72, 0x65, 0x66, 0x0a, 0x31, 0x39, 0x35, 0x0a, 0x25, 0x25, 0x45, 0x4f, 0x46,
+          0x30, 0x30, 0x30, 0x30, 0x31, 0x35, 0x20, 0x30, 0x30, 0x30, 0x30, 0x30, 0x20, 0x6e, 0x0d,
+          0x0a, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x36, 0x38, 0x20, 0x30, 0x30, 0x30,
+          0x30, 0x30, 0x20, 0x6e, 0x0d, 0x0a, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x32,
+          0x35, 0x20, 0x30, 0x30, 0x30, 0x30, 0x30, 0x20, 0x6e, 0x0d, 0x0a, 0x74, 0x72, 0x61, 0x69,
+          0x6c, 0x65, 0x72, 0x0a, 0x3c, 0x3c, 0x2f, 0x53, 0x69, 0x7a, 0x65, 0x20, 0x34, 0x2f, 0x52,
+          0x6f, 0x6f, 0x74, 0x20, 0x31, 0x20, 0x30, 0x20, 0x52, 0x3e, 0x3e, 0x0a, 0x73, 0x74, 0x61,
+          0x72, 0x74, 0x78, 0x72, 0x65, 0x66, 0x0a, 0x31, 0x39, 0x35, 0x0a, 0x25, 0x25, 0x45, 0x4f,
+          0x46,
         ]);
         arrayBuffer = emptyPdf.buffer as ArrayBuffer;
       }
@@ -148,26 +149,26 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#080B18]/80 backdrop-blur-xl animate-fadeIn">
+      <div className="glass-panel border-white/15 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] text-[#F4F5FF]">
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-6 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400">
+            <div className="p-2.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400">
               <ShieldAlert className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-[#F4F5FF] flex items-center gap-2">
                 Privacy Guardian &amp; Verified Redaction Engine
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#9BA3BD]">
                 Automated PII detection, font stream destruction, and mathematical zero-leak verification.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-[#9BA3BD] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -176,9 +177,9 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
         {/* Content */}
         <div className="p-6 overflow-y-auto space-y-6">
           {/* Status Alert Banner */}
-          <div className="bg-amber-950/20 border border-amber-500/30 rounded-2xl p-4 flex items-start gap-3">
+          <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-4 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-            <div className="text-xs text-slate-300 space-y-1">
+            <div className="text-xs text-[#9BA3BD] space-y-1">
               <span className="font-bold text-amber-300">True Content Sanitization Guarantee</span>
               <p>
                 Unlike visual black-box overlays which leave underlying text character streams inside the PDF,
@@ -190,10 +191,10 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
           {/* Detected PII Entities List */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider">
                 Detected Sensitive PII Entities ({detectedItems.filter((i) => i.selected).length} Selected)
               </h4>
-              <span className="text-xs text-slate-400">Rule-based regex &amp; coordinate matcher</span>
+              <span className="text-xs text-[#9BA3BD]/70">Rule-based regex &amp; coordinate matcher</span>
             </div>
 
             <div className="space-y-2">
@@ -203,8 +204,8 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
                   onClick={() => toggleItem(item.id)}
                   className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                     item.selected
-                      ? 'bg-rose-950/20 border-rose-500/40'
-                      : 'bg-slate-950/50 border-slate-800 opacity-60'
+                      ? 'bg-rose-950/30 border-rose-500/40'
+                      : 'bg-white/[0.02] border-white/10 opacity-60'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -212,16 +213,16 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
                       type="checkbox"
                       checked={item.selected}
                       onChange={() => {}}
-                      className="rounded border-slate-700 text-rose-600 focus:ring-0 cursor-pointer"
+                      className="rounded border-white/20 text-rose-500 focus:ring-0 cursor-pointer accent-rose-500"
                     />
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
                           {item.type}
                         </span>
-                        <span className="text-xs font-mono font-bold text-white">{item.value}</span>
+                        <span className="text-xs font-mono font-bold text-[#F4F5FF]">{item.value}</span>
                       </div>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-[#9BA3BD]">
                         Page {item.pageNumber} · Coordinates [{item.x}, {item.y}, {item.width}x{item.height}]
                       </span>
                     </div>
@@ -243,31 +244,31 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
                     Cryptographic Redaction Verification Receipt
                   </h4>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   VERIFIED ZERO-LEAK
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
-                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Redactions Applied</span>
-                  <span className="font-bold text-white text-sm">{verificationReport.redactionsApplied}</span>
+                <div className="bg-black/30 p-2.5 rounded-xl border border-white/10">
+                  <span className="text-[#9BA3BD] block text-[10px]">Redactions Applied</span>
+                  <span className="font-bold text-[#F4F5FF] text-sm">{verificationReport.redactionsApplied}</span>
                 </div>
-                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Metadata Cleared</span>
+                <div className="bg-black/30 p-2.5 rounded-xl border border-white/10">
+                  <span className="text-[#9BA3BD] block text-[10px]">Metadata Cleared</span>
                   <span className="font-bold text-emerald-400 text-sm">
                     {verificationReport.metadataCleared ? 'YES (100%)' : 'NO'}
                   </span>
                 </div>
-                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Residual Text Matches</span>
+                <div className="bg-black/30 p-2.5 rounded-xl border border-white/10">
+                  <span className="text-[#9BA3BD] block text-[10px]">Residual Text Matches</span>
                   <span className="font-bold text-emerald-400 text-sm">
                     {verificationReport.residualTextFound ? 'FAIL' : '0 (CLEAN)'}
                   </span>
                 </div>
-                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Pages Sanitized</span>
-                  <span className="font-bold text-white text-sm">{verificationReport.totalPagesSanitized}</span>
+                <div className="bg-black/30 p-2.5 rounded-xl border border-white/10">
+                  <span className="text-[#9BA3BD] block text-[10px]">Pages Sanitized</span>
+                  <span className="font-bold text-[#F4F5FF] text-sm">{verificationReport.totalPagesSanitized}</span>
                 </div>
               </div>
             </div>
@@ -275,10 +276,10 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-slate-800 flex items-center justify-between bg-slate-900/40">
+        <div className="p-6 border-t border-white/10 flex items-center justify-between bg-white/[0.02]">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-[#9BA3BD] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -298,7 +299,7 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
                 disabled={isSanitizing || detectedItems.filter((i) => i.selected).length === 0}
                 className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-xs font-bold text-white shadow-lg transition-all ${
                   isSanitizing
-                    ? 'bg-slate-800 cursor-not-allowed text-slate-500'
+                    ? 'bg-white/10 cursor-not-allowed text-[#9BA3BD]'
                     : 'bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 shadow-rose-900/30 cursor-pointer'
                 }`}
               >
@@ -321,4 +322,3 @@ export const PrivacyGuardianModal: React.FC<PrivacyGuardianModalProps> = ({
     </div>
   );
 };
-

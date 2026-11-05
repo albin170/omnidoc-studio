@@ -66,29 +66,29 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#080B18]/80 backdrop-blur-xl animate-fade-in">
+      <div className="glass-panel border-white/15 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] text-[#F4F5FF]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+            <div className="w-9 h-9 rounded-xl bg-[#8B7CFF]/15 border border-[#8B7CFF]/30 flex items-center justify-center text-[#8B7CFF]">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-100">Document What-If Simulator</h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                <h3 className="text-sm font-bold text-[#F4F5FF]">Document What-If Simulator</h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30">
                   SIMULATION PREDICTION
                 </span>
               </div>
-              <p className="text-xs text-slate-400 truncate max-w-md">
+              <p className="text-xs text-[#9BA3BD] truncate max-w-md">
                 Predict layout shifts, page overflows, and visual volume changes before altering originals.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-[#9BA3BD] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -99,13 +99,13 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
           {/* Controls Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Font Size Slider */}
-            <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-2">
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-violet-400" />
+                <span className="font-semibold text-[#F4F5FF] flex items-center gap-1.5">
+                  <Sliders className="w-3.5 h-3.5 text-[#8B7CFF]" />
                   Font Scale Delta
                 </span>
-                <span className="font-mono font-bold text-violet-400">
+                <span className="font-mono font-bold text-[#8B7CFF]">
                   {fontSizeDelta > 0 ? `+${fontSizeDelta}` : fontSizeDelta} pt
                 </span>
               </div>
@@ -120,9 +120,9 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
                   setFontSizeDelta(val);
                   handleSimulate(val, removeCols, targetLang, targetLimit);
                 }}
-                className="w-full accent-violet-500 cursor-pointer"
+                className="w-full accent-[#8B7CFF] cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-slate-400">
+              <div className="flex justify-between text-[10px] text-[#9BA3BD]">
                 <span>-3 pt (Compact)</span>
                 <span>0 pt (Original)</span>
                 <span>+3 pt (Enlarge)</span>
@@ -130,10 +130,10 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
             </div>
 
             {/* Translation Target */}
-            <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-2">
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Languages className="w-3.5 h-3.5 text-blue-400" />
+                <span className="font-semibold text-[#F4F5FF] flex items-center gap-1.5">
+                  <Languages className="w-3.5 h-3.5 text-[#42D6E8]" />
                   Target Language Expansion
                 </span>
               </div>
@@ -144,7 +144,7 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
                   setTargetLang(val);
                   handleSimulate(fontSizeDelta, removeCols, val, targetLimit);
                 }}
-                className="w-full px-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="w-full px-3 py-1.5 text-xs bg-[#11152A] border border-white/15 rounded-lg text-[#F4F5FF] focus:outline-none focus:border-[#8B7CFF]"
               >
                 <option value="">No Translation (1.0x)</option>
                 <option value="de">German (+28% expansion)</option>
@@ -152,19 +152,19 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
                 <option value="es">Spanish (+24% expansion)</option>
                 <option value="ru">Russian (+20% expansion)</option>
               </select>
-              <div className="text-[10px] text-slate-400">
+              <div className="text-[10px] text-[#9BA3BD]">
                 Accounts for natural lexical length expansion.
               </div>
             </div>
 
             {/* Remove Table Columns */}
-            <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-2">
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="font-semibold text-[#F4F5FF] flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-[#42D6E8]" />
                   Remove Table Columns
                 </span>
-                <span className="font-mono font-bold text-emerald-400">{removeCols} col(s)</span>
+                <span className="font-mono font-bold text-[#42D6E8]">{removeCols} col(s)</span>
               </div>
               <div className="flex gap-2">
                 {[0, 1, 2, 3].map((num) => (
@@ -174,10 +174,10 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
                       setRemoveCols(num);
                       handleSimulate(fontSizeDelta, num, targetLang, targetLimit);
                     }}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                       removeCols === num
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                        ? 'bg-[#42D6E8]/20 text-[#42D6E8] border-[#42D6E8]/40'
+                        : 'bg-white/10 text-[#9BA3BD] border-white/15 hover:text-white'
                     }`}
                   >
                     {num}
@@ -187,9 +187,9 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
             </div>
 
             {/* Target Page Ceiling */}
-            <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-2">
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+                <span className="font-semibold text-[#F4F5FF] flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5 text-amber-400" />
                   Target Page Ceiling
                 </span>
@@ -203,10 +203,10 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
                       setTargetLimit(num);
                       handleSimulate(fontSizeDelta, removeCols, targetLang, num);
                     }}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                       targetLimit === num
                         ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                        : 'bg-white/10 text-[#9BA3BD] border-white/15 hover:text-white'
                     }`}
                   >
                     {num}p
@@ -217,35 +217,35 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
           </div>
 
           {/* Outcome Prediction Box */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950/30 border border-violet-500/20 space-y-4">
+          <div className="p-5 rounded-2xl bg-gradient-to-br from-white/[0.04] via-white/[0.02] to-[#8B7CFF]/10 border border-[#8B7CFF]/20 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+              <span className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider">
                 Predicted Layout Outcome
               </span>
-              <span className="text-[11px] font-mono text-slate-400">
+              <span className="text-[11px] font-mono text-[#9BA3BD]">
                 Simulated: {new Date(result.simulatedAt).toLocaleTimeString()}
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
-                <div className="text-[11px] text-slate-400">Original Pages</div>
-                <div className="text-xl font-extrabold text-slate-100">{result.originalPageCount}</div>
+              <div className="p-3 rounded-xl bg-black/30 border border-white/10 text-center">
+                <div className="text-[11px] text-[#9BA3BD]">Original Pages</div>
+                <div className="text-xl font-extrabold text-[#F4F5FF]">{result.originalPageCount}</div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
-                <div className="text-[11px] text-slate-400">Predicted Pages</div>
+              <div className="p-3 rounded-xl bg-black/30 border border-white/10 text-center">
+                <div className="text-[11px] text-[#9BA3BD]">Predicted Pages</div>
                 <div className={`text-xl font-extrabold ${result.predictedOverflow ? 'text-amber-400' : 'text-emerald-400'}`}>
                   {result.predictedPageCount}
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
-                <div className="text-[11px] text-slate-400">Text Volume</div>
-                <div className="text-xl font-extrabold text-violet-400">
+              <div className="p-3 rounded-xl bg-black/30 border border-white/10 text-center">
+                <div className="text-[11px] text-[#9BA3BD]">Text Volume</div>
+                <div className="text-xl font-extrabold text-[#8B7CFF]">
                   {Math.round(result.textExpansionRatio * 100)}%
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-center">
-                <div className="text-[11px] text-slate-400">Overflow Status</div>
+              <div className="p-3 rounded-xl bg-black/30 border border-white/10 text-center">
+                <div className="text-[11px] text-[#9BA3BD]">Overflow Status</div>
                 <div className="text-xs font-bold mt-1">
                   {result.predictedOverflow ? (
                     <span className="text-amber-400 flex items-center justify-center gap-1">
@@ -262,7 +262,7 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
 
             {/* Warnings and Recommendations */}
             {result.warnings.length > 0 && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 space-y-1">
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-300 space-y-1">
                 {result.warnings.map((w, idx) => (
                   <div key={idx} className="flex items-start gap-1.5">
                     <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
@@ -273,10 +273,10 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
             )}
 
             {result.recommendations.length > 0 && (
-              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 space-y-1">
+              <div className="p-3 rounded-xl bg-[#42D6E8]/10 border border-[#42D6E8]/25 text-xs text-[#42D6E8] space-y-1">
                 {result.recommendations.map((r, idx) => (
                   <div key={idx} className="flex items-start gap-1.5">
-                    <Sparkles className="w-4 h-4 shrink-0 text-blue-400 mt-0.5" />
+                    <Sparkles className="w-4 h-4 shrink-0 text-[#42D6E8] mt-0.5" />
                     <span>{r}</span>
                   </div>
                 ))}
@@ -286,10 +286,10 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">
           <button
             onClick={resetSimulation}
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-[#9BA3BD] hover:text-white transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Reset Parameters
@@ -297,13 +297,13 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white transition-colors"
+              className="px-4 py-2 text-xs font-medium text-[#9BA3BD] hover:text-white transition-colors cursor-pointer"
             >
               Close Simulator
             </button>
             <button
               onClick={onClose}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold shadow-lg shadow-violet-600/20 transition-all"
+              className="glass-btn-primary flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold shadow-lg shadow-[#8B7CFF]/20 transition-all cursor-pointer"
             >
               <span>Apply Parameters</span>
               <ArrowRight className="w-3.5 h-3.5" />

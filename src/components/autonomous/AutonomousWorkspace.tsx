@@ -159,34 +159,34 @@ export const AutonomousWorkspace: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-slate-950 text-slate-100 flex flex-col overflow-y-auto">
+    <div className="flex-1 bg-[#080B18]/60 text-[#F4F5FF] flex flex-col overflow-y-auto custom-scrollbar">
       {/* Top Banner & Mode Selector */}
-      <div className="border-b border-slate-800 bg-slate-900/60 p-6 backdrop-blur">
+      <div className="border-b border-white/10 bg-[#11152A]/85 p-6 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3" />
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-emerald-400" />
                 OmniDoc 2.0 Autonomous Engine
               </span>
-              <span className="text-xs text-slate-400">Strict Tool Constraints &amp; Verifiable Provenance</span>
+              <span className="text-xs text-[#9BA3BD]">Strict Tool Constraints &amp; Verifiable Provenance</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white mt-1">
+            <h1 className="text-2xl font-bold tracking-tight text-[#F4F5FF] mt-1">
               Autonomous Document Engineering Workspace
             </h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-[#9BA3BD]">
               Natural-language intent decomposition, DAG execution graphs, typed tool execution, and source evidence traceability.
             </p>
           </div>
 
           {/* Processing Mode Toggles */}
-          <div className="bg-slate-900 p-1.5 rounded-2xl border border-slate-800 flex items-center gap-1">
+          <div className="glass-card p-1.5 rounded-2xl border-white/10 flex items-center gap-1">
             <button
               onClick={() => setMode('local')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 mode === 'local'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 shadow-lg shadow-emerald-500/20'
+                  : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
               }`}
             >
               <Cpu className="w-3.5 h-3.5" />
@@ -196,8 +196,8 @@ export const AutonomousWorkspace: React.FC = () => {
               onClick={() => setMode('hybrid')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 mode === 'hybrid'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/40'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#8B7CFF]/25 border border-[#8B7CFF]/40 text-[#F4F5FF] shadow-lg shadow-[#8B7CFF]/20 glow-purple'
+                  : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -207,8 +207,8 @@ export const AutonomousWorkspace: React.FC = () => {
               onClick={() => setMode('cloud')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 mode === 'cloud'
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#42D6E8]/25 border border-[#42D6E8]/40 text-[#42D6E8] shadow-lg shadow-[#42D6E8]/20'
+                  : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
@@ -218,13 +218,13 @@ export const AutonomousWorkspace: React.FC = () => {
         </div>
 
         {/* Sub-navigation tabs */}
-        <div className="max-w-7xl mx-auto flex items-center gap-2 mt-6 pt-4 border-t border-slate-800/80">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 mt-6 pt-4 border-t border-white/10 overflow-x-auto">
           <button
             onClick={() => setSubTab('agent')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               subTab === 'agent'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
+                : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
             }`}
           >
             <Play className="w-3.5 h-3.5" />
@@ -235,8 +235,8 @@ export const AutonomousWorkspace: React.FC = () => {
             onClick={() => setSubTab('radar')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               subTab === 'radar'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
+                : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
             }`}
           >
             <Scale className="w-3.5 h-3.5" />
@@ -247,8 +247,8 @@ export const AutonomousWorkspace: React.FC = () => {
             onClick={() => setSubTab('graph')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               subTab === 'graph'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
+                : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
             }`}
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -259,8 +259,8 @@ export const AutonomousWorkspace: React.FC = () => {
             onClick={() => setSubTab('search')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               subTab === 'search'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
+                : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
             }`}
           >
             <Search className="w-3.5 h-3.5" />
@@ -274,14 +274,14 @@ export const AutonomousWorkspace: React.FC = () => {
         {subTab === 'agent' && (
           <>
             {/* Objective & File Input Card */}
-            <div className="bg-slate-900/70 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur space-y-5">
+            <div className="glass-panel border-white/12 rounded-3xl p-6 shadow-2xl backdrop-blur-2xl space-y-5">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-white flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-indigo-400" />
+                  <h2 className="text-base font-semibold text-[#F4F5FF] flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[#8B7CFF]" />
                     Define Autonomous Document Objective
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-[#9BA3BD] mt-0.5">
                     Select an engineering workflow preset or enter custom requirements.
                   </p>
                 </div>
@@ -293,8 +293,8 @@ export const AutonomousWorkspace: React.FC = () => {
                       onClick={() => handleSelectPreset(p.id)}
                       className={`px-3 py-1 rounded-xl text-xs font-medium border transition-all ${
                         selectedPreset === p.id
-                          ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50 shadow-sm'
-                          : 'bg-slate-800/80 text-slate-400 border-slate-700/60 hover:text-slate-200'
+                          ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border-[#8B7CFF]/40 shadow-sm'
+                          : 'glass-card text-[#9BA3BD] border-white/10 hover:text-[#F4F5FF]'
                       }`}
                     >
                       {p.name.split(' ')[0]} Intelligence

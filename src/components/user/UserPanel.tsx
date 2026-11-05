@@ -108,19 +108,19 @@ export const UserPanel: React.FC<UserPanelProps> = ({
   const quotaPct = Math.min(100, Math.max(1, Math.round((totalStorageBytes / maxQuotaBytes) * 100)));
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 select-none animate-in fade-in">
-      <div className="bg-white border border-slate-200 rounded-[28px] max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 z-50 bg-[#080B18]/80 backdrop-blur-xl flex items-center justify-center p-3 sm:p-5 select-none animate-in fade-in">
+      <div className="glass-panel border-white/15 rounded-[28px] max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-[#F4F5FF]">
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/[0.03]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#8B7CFF]/30 to-[#42D6E8]/30 border border-[#8B7CFF]/40 text-[#42D6E8] flex items-center justify-center font-bold shadow-md shadow-[#8B7CFF]/20">
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-slate-900 leading-tight">
+              <h2 className="text-base font-extrabold text-[#F4F5FF] leading-tight">
                 Account &amp; Studio Panel
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#9BA3BD]">
                 Manage your user identity, storage quota, and security settings
               </p>
             </div>
@@ -128,20 +128,20 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-full hover:bg-white/10 text-[#9BA3BD] hover:text-white flex items-center justify-center cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center px-5 border-b border-slate-100 bg-white gap-2 overflow-x-auto text-xs font-semibold text-slate-500">
+        <div className="flex items-center px-5 border-b border-white/10 bg-white/[0.02] gap-2 overflow-x-auto text-xs font-semibold text-[#9BA3BD]">
           <button
             onClick={() => setActiveTab('profile')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'profile'
-                ? 'border-blue-600 text-blue-600 font-bold'
-                : 'border-transparent hover:text-slate-900'
+                ? 'border-[#8B7CFF] text-[#8B7CFF] font-bold'
+                : 'border-transparent hover:text-white'
             }`}
           >
             <User className="w-4 h-4" />
@@ -152,11 +152,11 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('plan')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'plan'
-                ? 'border-blue-600 text-blue-600 font-bold'
-                : 'border-transparent hover:text-slate-900'
+                ? 'border-[#8B7CFF] text-[#8B7CFF] font-bold'
+                : 'border-transparent hover:text-white'
             }`}
           >
-            <Zap className="w-4 h-4 text-amber-500" />
+            <Zap className="w-4 h-4 text-[#42D6E8]" />
             <span>Plan &amp; Quota</span>
           </button>
 
@@ -164,8 +164,8 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('security')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'security'
-                ? 'border-blue-600 text-blue-600 font-bold'
-                : 'border-transparent hover:text-slate-900'
+                ? 'border-[#8B7CFF] text-[#8B7CFF] font-bold'
+                : 'border-transparent hover:text-white'
             }`}
           >
             <Lock className="w-4 h-4" />
@@ -176,8 +176,8 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('api')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'api'
-                ? 'border-blue-600 text-blue-600 font-bold'
-                : 'border-transparent hover:text-slate-900'
+                ? 'border-[#8B7CFF] text-[#8B7CFF] font-bold'
+                : 'border-transparent hover:text-white'
             }`}
           >
             <Key className="w-4 h-4" />
@@ -192,7 +192,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             <div className="space-y-6">
               {/* Avatar Chooser */}
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-2">
+                <label className="text-xs font-bold text-[#F4F5FF] block mb-2">
                   Select User Avatar
                 </label>
                 <div className="flex items-center gap-3 overflow-x-auto pb-1">
@@ -204,7 +204,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                       onClick={() => setSelectedAvatar(avatar)}
                       className={`w-12 h-12 rounded-2xl object-cover cursor-pointer transition-all border-2 ${
                         selectedAvatar === avatar
-                          ? 'border-blue-600 ring-2 ring-blue-500/30 scale-105'
+                          ? 'border-[#8B7CFF] ring-2 ring-[#8B7CFF]/40 scale-105'
                           : 'border-transparent hover:opacity-80'
                       }`}
                     />
@@ -215,38 +215,38 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               {/* Form Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Full Name</label>
+                  <label className="font-bold text-[#9BA3BD] block mb-1">Full Name</label>
                   <input
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     placeholder="e.g. Zach Marion"
-                    className="w-full p-2.5 rounded-xl border border-slate-300 focus:border-blue-500 outline-none text-slate-800 font-medium"
+                    className="w-full p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#8B7CFF] outline-none text-[#F4F5FF] placeholder:text-[#9BA3BD]/50 font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Email Address</label>
+                  <label className="font-bold text-[#9BA3BD] block mb-1">Email Address</label>
                   <input
                     type="email"
                     value={userEmail}
                     onChange={(e) => setUserEmail(e.target.value)}
                     placeholder="e.g. user@company.com"
-                    className="w-full p-2.5 rounded-xl border border-slate-300 focus:border-blue-500 outline-none text-slate-800 font-medium"
+                    className="w-full p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#8B7CFF] outline-none text-[#F4F5FF] placeholder:text-[#9BA3BD]/50 font-medium"
                   />
                 </div>
               </div>
 
               {/* Status info box */}
-              <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/60 flex items-center justify-between text-xs">
+              <div className="p-4 rounded-2xl bg-[#8B7CFF]/10 border border-[#8B7CFF]/30 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="w-5 h-5 text-blue-600" />
+                  <ShieldCheck className="w-5 h-5 text-[#42D6E8]" />
                   <div>
-                    <div className="font-bold text-blue-950">Local Identity Active</div>
-                    <div className="text-blue-700 text-[11px]">No personal data transmitted to external servers</div>
+                    <div className="font-bold text-[#F4F5FF]">Local Identity Active</div>
+                    <div className="text-[#9BA3BD] text-[11px]">No personal data transmitted to external servers</div>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-blue-600 text-white font-bold text-[10px]">
+                <span className="px-2.5 py-1 rounded-full bg-[#8B7CFF] text-white font-bold text-[10px] shadow-sm shadow-[#8B7CFF]/40">
                   VERIFIED
                 </span>
               </div>
@@ -257,9 +257,9 @@ export const UserPanel: React.FC<UserPanelProps> = ({
           {activeTab === 'plan' && (
             <div className="space-y-6">
               {/* Billing Cycle Switcher */}
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-100 border border-slate-200">
-                <span className="text-xs font-bold text-slate-700">Billing Cadence</span>
-                <div className="flex items-center gap-1 bg-white p-1 rounded-xl shadow-xs border border-slate-200 text-xs font-semibold">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.04] border border-white/10">
+                <span className="text-xs font-bold text-[#F4F5FF]">Billing Cadence</span>
+                <div className="flex items-center gap-1 bg-white/[0.06] p-1 rounded-xl border border-white/10 text-xs font-semibold">
                   <button
                     onClick={() => {
                       onUpdateSession({ ...userSession, billingCycle: 'monthly' });
@@ -267,8 +267,8 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                     }}
                     className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       (userSession.billingCycle || 'annual') === 'monthly'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-gradient-to-r from-[#8B7CFF] to-[#7363f8] text-white shadow-xs'
+                        : 'text-[#9BA3BD] hover:text-white'
                     }`}
                   >
                     Monthly
@@ -280,12 +280,12 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                     }}
                     className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       (userSession.billingCycle || 'annual') === 'annual'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-gradient-to-r from-[#8B7CFF] to-[#7363f8] text-white shadow-xs'
+                        : 'text-[#9BA3BD] hover:text-white'
                     }`}
                   >
                     <span>Annual</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500 text-white font-bold">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/80 text-white font-bold">
                       SAVE 20%
                     </span>
                   </button>
@@ -332,39 +332,39 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                       key={p.tier}
                       className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
                         isCurrent
-                          ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-500/20'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
+                          ? 'border-[#8B7CFF] bg-[#8B7CFF]/15 shadow-lg shadow-[#8B7CFF]/20 ring-1 ring-[#8B7CFF]/40'
+                          : 'border-white/10 bg-white/[0.03] hover:border-white/20'
                       }`}
                     >
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-[#9BA3BD]">
                             {p.badge}
                           </span>
                           {isCurrent && (
-                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-600 text-white">
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#8B7CFF] text-white">
                               ACTIVE
                             </span>
                           )}
                         </div>
 
                         <div>
-                          <h4 className="text-sm font-bold text-slate-900">{p.name}</h4>
+                          <h4 className="text-sm font-bold text-[#F4F5FF]">{p.name}</h4>
                           <div className="flex items-baseline gap-1 mt-0.5">
-                            <span className="text-xl font-extrabold text-slate-900">{p.price}</span>
-                            <span className="text-xs text-slate-500">{p.period}</span>
+                            <span className="text-xl font-extrabold text-[#F4F5FF]">{p.price}</span>
+                            <span className="text-xs text-[#9BA3BD]">{p.period}</span>
                           </div>
                         </div>
 
-                        <p className="text-[11px] text-slate-500 leading-tight">{p.desc}</p>
+                        <p className="text-[11px] text-[#9BA3BD] leading-tight">{p.desc}</p>
 
-                        <div className="pt-2 border-t border-slate-100 space-y-1 text-[11px] text-slate-600">
+                        <div className="pt-2 border-t border-white/10 space-y-1 text-[11px] text-[#9BA3BD]">
                           <div className="flex items-center gap-1.5 font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#42D6E8]" />
                             <span>{p.maxSize}</span>
                           </div>
                           <div className="flex items-center gap-1.5 font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#42D6E8]" />
                             <span>{p.batchLimit}</span>
                           </div>
                         </div>
@@ -378,8 +378,8 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                         disabled={isCurrent}
                         className={`w-full mt-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isCurrent
-                            ? 'bg-blue-100 text-blue-700 cursor-default'
-                            : 'bg-slate-900 hover:bg-slate-800 text-white shadow-xs'
+                            ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] cursor-default'
+                            : 'glass-btn-primary text-white shadow-xs'
                         }`}
                       >
                         {isCurrent ? 'Current Plan' : `Select ${p.name}`}
@@ -390,27 +390,27 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               </div>
 
               {/* Storage Quota Usage */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/40 space-y-2">
+              <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <div className="font-bold text-slate-900 flex items-center gap-2">
-                    <HardDrive className="w-4 h-4 text-blue-600" />
+                  <div className="font-bold text-[#F4F5FF] flex items-center gap-2">
+                    <HardDrive className="w-4 h-4 text-[#42D6E8]" />
                     <span>Local Device Storage Quota</span>
                   </div>
-                  <div className="font-mono text-slate-500 font-semibold">
+                  <div className="font-mono text-[#9BA3BD] font-semibold">
                     {formatFileSize(totalStorageBytes)} / 100 MB ({quotaPct}%)
                   </div>
                 </div>
 
-                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all"
+                    className="h-full bg-gradient-to-r from-[#8B7CFF] to-[#42D6E8] rounded-full transition-all"
                     style={{ width: `${quotaPct}%` }}
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+                <div className="flex items-center justify-between text-[11px] text-[#9BA3BD] pt-0.5">
                   <span>{totalProjectsCount} projects stored in browser local storage</span>
-                  <span className="text-emerald-600 font-bold">100% Client-Side Free</span>
+                  <span className="text-emerald-400 font-bold">100% Client-Side Free</span>
                 </div>
               </div>
             </div>
@@ -419,57 +419,57 @@ export const UserPanel: React.FC<UserPanelProps> = ({
           {/* TAB 3: SECURITY & PRIVACY */}
           {activeTab === 'security' && (
             <div className="space-y-4 text-xs">
-              <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-200">
+              <div className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/[0.03]">
                 <div className="space-y-0.5">
-                  <div className="font-bold text-slate-900">Auto-Save Working Drafts</div>
-                  <div className="text-slate-500 text-[11px]">Automatically preserve edits to browser local storage (localStorage)</div>
+                  <div className="font-bold text-[#F4F5FF]">Auto-Save Working Drafts</div>
+                  <div className="text-[#9BA3BD] text-[11px]">Automatically preserve edits to browser local storage (localStorage)</div>
                 </div>
                 <input
                   type="checkbox"
                   checked={autoSave}
                   onChange={(e) => setAutoSave(e.target.checked)}
-                  className="w-5 h-5 accent-blue-600 cursor-pointer"
+                  className="w-5 h-5 accent-[#8B7CFF] cursor-pointer"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-200">
+              <div className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/[0.03]">
                 <div className="space-y-0.5">
-                  <div className="font-bold text-slate-900">Client-Side Memory Sandbox</div>
-                  <div className="text-slate-500 text-[11px]">Enforce zero transmission of document bytes over network</div>
+                  <div className="font-bold text-[#F4F5FF]">Client-Side Memory Sandbox</div>
+                  <div className="text-[#9BA3BD] text-[11px]">Enforce zero transmission of document bytes over network</div>
                 </div>
                 <input
                   type="checkbox"
                   checked={localEncryption}
                   onChange={(e) => setLocalEncryption(e.target.checked)}
-                  className="w-5 h-5 accent-blue-600 cursor-pointer"
+                  className="w-5 h-5 accent-[#8B7CFF] cursor-pointer"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl border border-slate-200">
+              <div className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/[0.03]">
                 <div className="space-y-0.5">
-                  <div className="font-bold text-slate-900">Auto-Purge on Browser Close</div>
-                  <div className="text-slate-500 text-[11px]">Wipe temporary session blobs on window unload</div>
+                  <div className="font-bold text-[#F4F5FF]">Auto-Purge on Browser Close</div>
+                  <div className="text-[#9BA3BD] text-[11px]">Wipe temporary session blobs on window unload</div>
                 </div>
                 <input
                   type="checkbox"
                   checked={autoPurge}
                   onChange={(e) => setAutoPurge(e.target.checked)}
-                  className="w-5 h-5 accent-blue-600 cursor-pointer"
+                  className="w-5 h-5 accent-[#8B7CFF] cursor-pointer"
                 />
               </div>
 
               {/* Danger Zone */}
-              <div className="p-4 rounded-2xl bg-red-50 border border-red-200 space-y-2 mt-4">
-                <div className="font-bold text-red-700 flex items-center gap-1.5">
+              <div className="p-4 rounded-2xl bg-red-950/30 border border-red-500/30 space-y-2 mt-4">
+                <div className="font-bold text-red-400 flex items-center gap-1.5">
                   <Trash2 className="w-4 h-4" />
                   <span>Danger Zone: Permanent Memory Purge</span>
                 </div>
-                <p className="text-[11px] text-red-600">
+                <p className="text-[11px] text-red-300">
                   Delete all saved projects, conversion history, and local preferences permanently.
                 </p>
                 <button
                   onClick={handlePurgeAllData}
-                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold cursor-pointer transition-colors shadow-sm"
+                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold cursor-pointer transition-colors shadow-sm"
                 >
                   Purge All Stored Data
                 </button>
@@ -481,18 +481,18 @@ export const UserPanel: React.FC<UserPanelProps> = ({
           {activeTab === 'api' && (
             <div className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-slate-800">Personal Access API Token</label>
-                <p className="text-slate-500 text-[11px]">Use this token to authenticate CLI scripts and background workers.</p>
+                <label className="font-bold text-[#F4F5FF]">Personal Access API Token</label>
+                <p className="text-[#9BA3BD] text-[11px]">Use this token to authenticate CLI scripts and background workers.</p>
                 <div className="flex items-center gap-2 pt-1">
                   <input
                     type="password"
                     value={apiToken}
                     readOnly
-                    className="flex-1 p-2.5 rounded-xl border border-slate-300 bg-slate-50 font-mono text-slate-700 text-xs"
+                    className="flex-1 p-2.5 rounded-xl border border-white/15 bg-white/[0.04] font-mono text-[#F4F5FF] text-xs"
                   />
                   <button
                     onClick={handleCopyToken}
-                    className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold cursor-pointer flex items-center gap-1"
+                    className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer flex items-center gap-1"
                   >
                     {copiedToken ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                     <span>{copiedToken ? 'Copied' : 'Copy'}</span>
@@ -503,15 +503,15 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               <div className="pt-2">
                 <button
                   onClick={handleGenerateNewToken}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold cursor-pointer border border-slate-300"
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-[#F4F5FF] font-bold cursor-pointer border border-white/15"
                 >
                   Generate New Secret Token
                 </button>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-600 space-y-1">
-                <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <Globe className="w-4 h-4 text-blue-600" />
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-[#9BA3BD] space-y-1">
+                <div className="font-bold text-[#F4F5FF] flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-[#42D6E8]" />
                   <span>SDK &amp; Webhook Integration</span>
                 </div>
                 <p className="text-[11px] leading-relaxed">
@@ -523,11 +523,11 @@ export const UserPanel: React.FC<UserPanelProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs">
+        <div className="p-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200 font-semibold cursor-pointer"
+              className="px-4 py-2 rounded-xl text-[#9BA3BD] hover:bg-white/10 font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
@@ -537,7 +537,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                   onClose();
                   onLogout();
                 }}
-                className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-bold flex items-center gap-1.5 cursor-pointer border border-red-200/60 transition-colors"
+                className="px-3.5 py-2 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-400 font-bold flex items-center gap-1.5 cursor-pointer border border-red-500/30 transition-colors"
                 title="Log Out of this workspace"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -548,7 +548,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
           <button
             onClick={handleSaveProfile}
-            className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md shadow-blue-500/25 cursor-pointer transition-all"
+            className="glass-btn-primary flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white font-bold cursor-pointer"
           >
             <Save className="w-4 h-4" />
             <span>Save Changes</span>

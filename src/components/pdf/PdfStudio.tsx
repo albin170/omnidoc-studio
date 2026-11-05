@@ -653,22 +653,22 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
       {/* 1. Primary Top Navigation & File Bar */}
-      <div className="h-14 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
         <div className="flex items-center gap-3">
           <input
             type="text"
             value={fileName}
             onChange={(e) => setFileName(e.target.value)}
-            className="bg-transparent text-sm font-bold text-white border-b border-transparent hover:border-slate-700 focus:border-red-500 px-1 py-0.5 outline-none w-48 md:w-64"
+            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-[#8B7CFF] px-1 py-0.5 outline-none w-48 md:w-64 transition-colors"
             placeholder="Document Name"
           />
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-semibold border border-red-500/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30">
             PDF STUDIO PRO
           </span>
           {statusMessage && (
-            <span className="text-[11px] text-slate-400 font-medium truncate max-w-xs hidden xl:block">
+            <span className="text-[11px] text-[#9BA3BD] font-medium truncate max-w-xs hidden xl:block">
               {statusMessage}
             </span>
           )}
@@ -677,11 +677,11 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
         {/* Action Controls & Export */}
         <div className="flex items-center gap-2">
           {/* Undo/Redo */}
-          <div className="flex items-center bg-slate-800 rounded-lg p-0.5 text-xs text-slate-300">
+          <div className="flex items-center glass-card rounded-lg p-0.5 text-xs text-[#9BA3BD]">
             <button
               onClick={handleUndo}
               disabled={historyStack.length === 0}
-              className="p-1 hover:text-white disabled:opacity-30 cursor-pointer"
+              className="p-1 hover:text-[#F4F5FF] disabled:opacity-30 cursor-pointer"
               title="Undo"
             >
               <Undo2 className="w-3.5 h-3.5" />
@@ -689,15 +689,15 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             <button
               onClick={handleRedo}
               disabled={redoStack.length === 0}
-              className="p-1 hover:text-white disabled:opacity-30 cursor-pointer"
+              className="p-1 hover:text-[#F4F5FF] disabled:opacity-30 cursor-pointer"
               title="Redo"
             >
               <Redo2 className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
-            <Upload className="w-3.5 h-3.5 text-red-400" />
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
+            <Upload className="w-3.5 h-3.5 text-rose-400" />
             <span className="hidden sm:inline">Upload PDF</span>
             <input
               type="file"
@@ -707,7 +707,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             />
           </label>
 
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
             <Plus className="w-3.5 h-3.5 text-emerald-400" />
             <span className="hidden sm:inline">Merge PDF</span>
             <input type="file" accept=".pdf" className="hidden" onChange={handleMergePdfUpload} />
@@ -716,7 +716,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
           <button
             onClick={() => setIsSplitModalOpen(true)}
             disabled={!pdfBytes}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-amber-400/50 disabled:opacity-40 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
           >
             <Scissors className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Split</span>
@@ -726,9 +726,9 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             <button
               onClick={() => onSaveToProjects(fileName, { annotations, textEdits, watermarkText, addPageNumbers, fileName })}
               disabled={!pdfBytes}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 disabled:opacity-40 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
             >
-              <Save className="w-3.5 h-3.5 text-indigo-400" />
+              <Save className="w-3.5 h-3.5 text-[#8B7CFF]" />
               <span>Save</span>
             </button>
           )}
@@ -736,7 +736,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
           <button
             onClick={handleExportPdf}
             disabled={!pdfBytes || isProcessing}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-xs font-semibold shadow-md shadow-red-600/25 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary disabled:opacity-40 text-xs font-semibold shadow-lg shadow-[#8B7CFF]/20 cursor-pointer"
           >
             <DownloadCloud className="w-4 h-4" />
             <span>Save &amp; Export</span>
@@ -745,12 +745,12 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       </div>
 
       {/* 2. Secondary Editing & Annotation Toolbar */}
-      <div className="h-11 border-b border-slate-800/80 bg-slate-900/60 px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2">
-        <div className="flex items-center gap-1.5 text-slate-300 text-xs">
+      <div className="h-11 border-b border-white/10 bg-[#11152A]/60 backdrop-blur-xl px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-[#9BA3BD]">
+        <div className="flex items-center gap-1.5 text-xs">
           <button
             onClick={() => setActiveTool(activeTool === 'text' ? 'select' : 'text')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-              activeTool === 'text' ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/40' : 'hover:bg-slate-800'
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
+              activeTool === 'text' ? 'bg-[#8B7CFF]/25 text-[#F4F5FF] border border-[#8B7CFF]/40 glow-purple' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
             title="Add new text note"
           >
@@ -760,30 +760,30 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
           <button
             onClick={() => setActiveTool(activeTool === 'highlight' ? 'select' : 'highlight')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-              activeTool === 'highlight' ? 'bg-yellow-600/30 text-yellow-300 border border-yellow-500/40' : 'hover:bg-slate-800'
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
+              activeTool === 'highlight' ? 'bg-amber-400/25 text-amber-300 border border-amber-400/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
             title="Highlight region"
           >
-            <Highlighter className="w-3.5 h-3.5 text-yellow-400" />
+            <Highlighter className="w-3.5 h-3.5 text-amber-400" />
             <span>Highlight</span>
           </button>
 
           <button
             onClick={() => setActiveTool(activeTool === 'redact' ? 'select' : 'redact')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
-              activeTool === 'redact' ? 'bg-red-600/30 text-red-300 border border-red-500/40' : 'hover:bg-slate-800'
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl transition-all cursor-pointer ${
+              activeTool === 'redact' ? 'bg-rose-500/25 text-rose-300 border border-rose-500/40 glow-rose' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
             title="True Redaction: Blackout + Stream Scrubbing"
           >
-            <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
+            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
             <span>Redact Area</span>
           </button>
 
           <button
             onClick={() => setActiveTool(activeTool === 'underline' ? 'select' : 'underline')}
-            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-              activeTool === 'underline' ? 'bg-blue-600/30 text-blue-300 border border-blue-500/40' : 'hover:bg-slate-800'
+            className={`p-1.5 rounded-xl transition-all cursor-pointer ${
+              activeTool === 'underline' ? 'bg-[#42D6E8]/25 text-[#42D6E8] border border-[#42D6E8]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
             title="Underline"
           >
@@ -792,8 +792,8 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
           <button
             onClick={() => setActiveTool(activeTool === 'strikethrough' ? 'select' : 'strikethrough')}
-            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-              activeTool === 'strikethrough' ? 'bg-red-600/30 text-red-300 border border-red-500/40' : 'hover:bg-slate-800'
+            className={`p-1.5 rounded-xl transition-all cursor-pointer ${
+              activeTool === 'strikethrough' ? 'bg-rose-500/25 text-rose-300 border border-rose-500/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
             title="Strikethrough"
           >
@@ -802,8 +802,8 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
           <button
             onClick={() => setActiveTool(activeTool === 'rectangle' ? 'select' : 'rectangle')}
-            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-              activeTool === 'rectangle' ? 'bg-slate-700 text-white' : 'hover:bg-slate-800'
+            className={`p-1.5 rounded-xl transition-all cursor-pointer ${
+              activeTool === 'rectangle' ? 'bg-white/20 text-[#F4F5FF]' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
             title="Draw Rectangle Box"
           >
@@ -812,14 +812,14 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
           <button
             onClick={() => setIsSignatureModalOpen(true)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-800 cursor-pointer"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-xl hover:bg-white/[0.06] text-[#9BA3BD] hover:text-[#F4F5FF] cursor-pointer transition-colors"
             title="Draw Signature"
           >
-            <PenTool className="w-3.5 h-3.5 text-indigo-400" />
+            <PenTool className="w-3.5 h-3.5 text-[#8B7CFF]" />
             <span>Sign</span>
           </button>
 
-          <label className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-slate-800 cursor-pointer">
+          <label className="flex items-center gap-1 px-2 py-1 rounded-xl hover:bg-white/[0.06] text-[#9BA3BD] hover:text-[#F4F5FF] cursor-pointer transition-colors">
             <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
             <span>Image</span>
             <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleInsertImage} />
@@ -827,15 +827,15 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
           <button
             onClick={() => setActiveTool(activeTool === 'comment' ? 'select' : 'comment')}
-            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-              activeTool === 'comment' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'hover:bg-slate-800'
+            className={`p-1.5 rounded-xl transition-all cursor-pointer ${
+              activeTool === 'comment' ? 'bg-amber-400/25 text-amber-300 border border-amber-400/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
             title="Add Review Comment"
           >
             <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Watermark toggle */}
           <button
@@ -843,8 +843,8 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
               const text = prompt('Enter watermark text (e.g. CONFIDENTIAL, DRAFT):', watermarkText || 'CONFIDENTIAL');
               if (text !== null) setWatermarkText(text);
             }}
-            className={`px-2 py-1 rounded-lg text-xs cursor-pointer ${
-              watermarkText ? 'bg-slate-800 text-indigo-400 border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-400'
+            className={`px-2 py-1 rounded-xl text-xs cursor-pointer transition-colors ${
+              watermarkText ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
           >
             <Stamp className="w-3.5 h-3.5 inline mr-1" />
@@ -853,8 +853,8 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
           <button
             onClick={() => setAddPageNumbers(!addPageNumbers)}
-            className={`px-2 py-1 rounded-lg text-xs cursor-pointer ${
-              addPageNumbers ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-400'
+            className={`px-2 py-1 rounded-xl text-xs cursor-pointer transition-colors ${
+              addPageNumbers ? 'bg-[#42D6E8]/20 text-[#42D6E8] border border-[#42D6E8]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'
             }`}
           >
             <span>Page Numbers: {addPageNumbers ? 'ON' : 'OFF'}</span>
@@ -864,35 +864,35 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
         {/* Right Search & Zoom Bar */}
         <div className="flex items-center gap-2">
           {/* In-PDF Search */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-2 py-0.5 gap-1.5 text-xs text-white">
-            <Search className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center glass-card border-white/10 rounded-xl px-2.5 py-1 gap-1.5 text-xs text-[#F4F5FF]">
+            <Search className="w-3.5 h-3.5 text-[#42D6E8]" />
             <input
               type="text"
               placeholder="Search PDF text..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent outline-none w-28 md:w-36 text-xs text-slate-200"
+              className="bg-transparent outline-none w-28 md:w-36 text-xs text-[#F4F5FF] placeholder:text-[#9BA3BD]/60"
             />
             {searchQuery && (
-              <span className="text-[10px] text-indigo-400 font-mono font-bold">
+              <span className="text-[10px] text-[#42D6E8] font-mono font-bold">
                 {searchResultsCount} found
               </span>
             )}
           </div>
 
           {/* Zoom */}
-          <div className="flex items-center bg-slate-800 rounded-lg p-0.5 text-xs text-slate-300">
+          <div className="flex items-center glass-card border-white/10 rounded-xl p-0.5 text-xs text-[#9BA3BD]">
             <button
               onClick={() => setZoomScale((s) => Math.max(0.6, s - 0.2))}
-              className="p-1 hover:text-white cursor-pointer"
+              className="p-1 hover:text-[#F4F5FF] cursor-pointer"
               title="Zoom out"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
-            <span className="px-2 font-mono text-[11px]">{Math.round(zoomScale * 100)}%</span>
+            <span className="px-2 font-mono text-[11px] text-[#F4F5FF]">{Math.round(zoomScale * 100)}%</span>
             <button
               onClick={() => setZoomScale((s) => Math.min(2.5, s + 0.2))}
-              className="p-1 hover:text-white cursor-pointer"
+              className="p-1 hover:text-[#F4F5FF] cursor-pointer"
               title="Zoom in"
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -903,19 +903,19 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
       {/* 3. Floating In-Place Text Editor Toolbar (when a text span is selected) */}
       {selectedTextItem && (
-        <div className="bg-indigo-950/90 border-b border-indigo-500/40 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs text-white shadow-xl animate-in fade-in">
+        <div className="bg-[#11152A]/95 backdrop-blur-2xl border-b border-[#8B7CFF]/40 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs text-[#F4F5FF] shadow-2xl animate-in fade-in">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold text-indigo-300">Editing Text:</span>
+            <span className="text-[10px] uppercase font-bold text-[#8B7CFF]">Editing Text:</span>
             <input
               type="text"
               value={editDraftText}
               onChange={(e) => setEditDraftText(e.target.value)}
               placeholder="Edit text..."
-              className="px-2 py-1 rounded bg-slate-900 border border-slate-700 text-white text-xs w-64 md:w-80 outline-none focus:border-indigo-400"
+              className="px-2.5 py-1 rounded-xl glass-input text-[#F4F5FF] text-xs w-64 md:w-80 outline-none focus:border-[#8B7CFF]"
             />
             <button
               onClick={commitTextEdit}
-              className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1 cursor-pointer"
+              className="px-3 py-1 rounded-xl glass-btn-primary font-bold flex items-center gap-1 cursor-pointer"
             >
               <Check className="w-3.5 h-3.5" />
               <span>Apply</span>
@@ -925,20 +925,20 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
           <div className="flex items-center gap-2">
             {/* Font size */}
             <div className="flex items-center gap-1">
-              <span className="text-slate-400">Size:</span>
+              <span className="text-[#9BA3BD]">Size:</span>
               <input
                 type="number"
                 min={8}
                 max={72}
                 value={editFontSize}
                 onChange={(e) => setEditFontSize(Number(e.target.value))}
-                className="w-12 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-white text-center"
+                className="w-12 glass-input rounded-lg px-1.5 py-0.5 text-xs text-[#F4F5FF] text-center"
               />
             </div>
 
             {/* Font color */}
             <div className="flex items-center gap-1">
-              <span className="text-slate-400">Color:</span>
+              <span className="text-[#9BA3BD]">Color:</span>
               <input
                 type="color"
                 value={editFontColor}
@@ -950,13 +950,13 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             {/* Bold/Italic */}
             <button
               onClick={() => setEditFontWeight(editFontWeight === 'bold' ? 'normal' : 'bold')}
-              className={`px-2 py-0.5 rounded font-bold ${editFontWeight === 'bold' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'}`}
+              className={`px-2 py-0.5 rounded-lg font-bold ${editFontWeight === 'bold' ? 'bg-[#8B7CFF] text-[#080B18]' : 'glass-card text-[#9BA3BD]'}`}
             >
               B
             </button>
             <button
               onClick={() => setEditFontStyle(editFontStyle === 'italic' ? 'normal' : 'italic')}
-              className={`px-2 py-0.5 rounded italic font-serif ${editFontStyle === 'italic' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'}`}
+              className={`px-2 py-0.5 rounded-lg italic font-serif ${editFontStyle === 'italic' ? 'bg-[#8B7CFF] text-[#080B18]' : 'glass-card text-[#9BA3BD]'}`}
             >
               I
             </button>
@@ -964,7 +964,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             {/* Redact or Delete */}
             <button
               onClick={handleRedactSelectedText}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-red-600/30 hover:bg-red-600/50 text-red-300 border border-red-500/40 text-xs font-semibold cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/40 text-xs font-semibold cursor-pointer transition-colors"
               title="Redact this exact word/phrase"
             >
               <ShieldAlert className="w-3.5 h-3.5" />
@@ -973,7 +973,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
             <button
               onClick={handleDeleteSelectedText}
-              className="p-1 rounded bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-400 cursor-pointer"
+              className="p-1 rounded-lg glass-card hover:bg-rose-500/20 text-[#9BA3BD] hover:text-rose-400 cursor-pointer transition-colors"
               title="Delete text item"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -981,7 +981,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
             <button
               onClick={() => setSelectedTextItem(null)}
-              className="p-1 rounded hover:bg-slate-800 text-slate-400"
+              className="p-1 rounded-lg hover:bg-white/10 text-[#9BA3BD] transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -993,12 +993,12 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       <div className="flex-1 flex overflow-hidden">
         {/* Left Page Thumbnails & Operations Strip */}
         {pdfJsDoc && (
-          <div className="w-48 border-r border-slate-800 bg-slate-900/40 p-3 overflow-y-auto space-y-3 shrink-0 hidden sm:block">
-            <div className="flex items-center justify-between pb-1 border-b border-slate-800">
-              <span className="text-[11px] font-bold text-slate-400 uppercase">Pages ({numPages})</span>
+          <div className="w-48 border-r border-white/10 bg-[#11152A]/40 backdrop-blur-xl p-3 overflow-y-auto space-y-3 shrink-0 hidden sm:block custom-scrollbar">
+            <div className="flex items-center justify-between pb-1 border-b border-white/10">
+              <span className="text-[11px] font-bold text-[#9BA3BD] uppercase tracking-wider">Pages ({numPages})</span>
               <button
                 onClick={handleInsertBlankPage}
-                className="p-1 rounded bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white transition-colors"
+                className="p-1 rounded-lg glass-card hover:border-[#8B7CFF]/50 text-[#9BA3BD] hover:text-[#F4F5FF] transition-all"
                 title="Insert Blank Page after active page"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -1009,26 +1009,26 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
               <div
                 key={pNum}
                 onClick={() => setCurrentPage(pNum)}
-                className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                className={`p-2.5 rounded-2xl border text-center transition-all cursor-pointer ${
                   currentPage === pNum
-                    ? 'border-red-500 bg-red-500/10 shadow-md ring-1 ring-red-500/30'
-                    : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                    ? 'border-[#8B7CFF]/60 bg-[#8B7CFF]/15 shadow-lg shadow-[#8B7CFF]/20 glow-purple'
+                    : 'border-white/10 glass-card hover:border-white/20'
                 }`}
               >
-                <div className="text-xs font-bold text-slate-300 mb-1.5 flex items-center justify-between">
+                <div className="text-xs font-bold text-[#F4F5FF] mb-1.5 flex items-center justify-between">
                   <span>Page {pNum}</span>
                   {currentPage === pNum && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#8B7CFF] glow-purple" />
                   )}
                 </div>
 
-                <div className="flex items-center justify-center gap-1 text-slate-400">
+                <div className="flex items-center justify-center gap-1 text-[#9BA3BD]">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleRotateCurrentPage(pNum - 1, 90);
                     }}
-                    className="p-1 rounded hover:bg-slate-800 hover:text-white"
+                    className="p-1 rounded-lg hover:bg-white/10 hover:text-[#F4F5FF] transition-colors"
                     title="Rotate page 90°"
                   >
                     <RotateCw className="w-3 h-3" />
@@ -1039,7 +1039,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                       e.stopPropagation();
                       handleDuplicateCurrentPage(pNum - 1);
                     }}
-                    className="p-1 rounded hover:bg-slate-800 hover:text-white"
+                    className="p-1 rounded-lg hover:bg-white/10 hover:text-[#F4F5FF] transition-colors"
                     title="Duplicate page"
                   >
                     <Copy className="w-3 h-3" />
@@ -1051,7 +1051,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                         e.stopPropagation();
                         handleDeleteCurrentPage(pNum - 1);
                       }}
-                      className="p-1 rounded hover:bg-red-500/20 text-slate-400 hover:text-red-400"
+                      className="p-1 rounded-lg hover:bg-rose-500/20 text-[#9BA3BD] hover:text-rose-400 transition-colors"
                       title="Delete page"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -1064,19 +1064,19 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
         )}
 
         {/* Viewport Canvas with Interactive Text Layer */}
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center items-start bg-slate-950">
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center items-start bg-[#080B18]/60 custom-scrollbar">
           {!pdfJsDoc ? (
-            <div className="max-w-md w-full my-auto text-center p-8 rounded-2xl border-2 border-dashed border-slate-800 space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+            <div className="max-w-md w-full my-auto text-center p-8 rounded-[24px] glass-panel border border-dashed border-white/15 space-y-4 shadow-2xl">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 glow-rose">
                 <FileText className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">No PDF Loaded</h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <h3 className="text-lg font-bold text-[#F4F5FF]">No PDF Loaded</h3>
+                <p className="text-xs text-[#9BA3BD] mt-1 leading-relaxed">
                   Upload an existing PDF document to edit existing text, redact sensitive terms, add annotations, signatures, and manage pages.
                 </p>
               </div>
-              <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold cursor-pointer shadow-lg shadow-red-600/30">
+              <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl glass-btn-primary text-xs font-semibold cursor-pointer shadow-lg shadow-[#8B7CFF]/25">
                 <Upload className="w-4 h-4" />
                 <span>Upload PDF Document</span>
                 <input
@@ -1088,7 +1088,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
               </label>
             </div>
           ) : (
-            <div className="relative shadow-2xl rounded-lg overflow-hidden border border-slate-700/80 bg-white">
+            <div className="relative shadow-2xl rounded-xl overflow-hidden border border-white/20 bg-white">
               {/* Interactive Cursor Banner when a tool is armed */}
               {activeTool !== 'select' && (
                 <div className="absolute top-3 left-3 z-30 px-3 py-1 rounded-full bg-slate-900/90 text-white text-[11px] font-semibold border border-indigo-500/40 shadow-lg flex items-center gap-1.5">
@@ -1256,26 +1256,26 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
       {/* Signature Modal */}
       {isSignatureModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="glass-panel border-white/15 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-[#F4F5FF]">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <PenTool className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-base font-bold text-[#F4F5FF] flex items-center gap-2">
+                <PenTool className="w-4 h-4 text-[#8B7CFF]" />
                 <span>Draw Your Signature</span>
               </h3>
               <button
                 onClick={() => setIsSignatureModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-[#9BA3BD] hover:text-[#F4F5FF] p-1 rounded-lg hover:bg-white/10 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#9BA3BD]">
               Draw inside the pad below to generate a transparent digital signature stamp.
             </p>
 
-            <div className="border border-slate-700 rounded-xl bg-white overflow-hidden">
+            <div className="border border-white/20 rounded-xl bg-white overflow-hidden shadow-inner">
               <canvas
                 ref={signaturePadCanvasRef}
                 width={380}
@@ -1297,14 +1297,14 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                     ctx?.clearRect(0, 0, canvas.width, canvas.height);
                   }
                 }}
-                className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-slate-800"
+                className="px-3 py-1.5 rounded-xl text-xs text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/10 transition-colors"
               >
                 Clear Pad
               </button>
 
               <button
                 onClick={applySignature}
-                className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md"
+                className="px-4 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#8B7CFF]/20"
               >
                 Apply Signature
               </button>
@@ -1315,44 +1315,44 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
       {/* Split PDF Modal */}
       {isSplitModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="glass-panel border-white/15 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-[#F4F5FF]">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#F4F5FF] flex items-center gap-2">
                 <Scissors className="w-4 h-4 text-amber-400" />
                 <span>Split PDF Document</span>
               </h3>
-              <button onClick={() => setIsSplitModalOpen(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setIsSplitModalOpen(false)} className="text-[#9BA3BD] hover:text-[#F4F5FF] p-1 rounded-lg hover:bg-white/10 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#9BA3BD]">
               Choose the page range to extract into a standalone PDF file:
             </p>
 
-            <div className="flex items-center gap-4 text-xs text-white">
+            <div className="flex items-center gap-4 text-xs text-[#F4F5FF]">
               <div className="flex-1 space-y-1">
-                <label className="text-slate-400">From Page:</label>
+                <label className="text-[#9BA3BD]">From Page:</label>
                 <input
                   type="number"
                   min={1}
                   max={numPages}
                   value={splitRange.start}
                   onChange={(e) => setSplitRange({ ...splitRange, start: Math.max(1, Number(e.target.value)) })}
-                  className="w-full px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white"
+                  className="w-full px-3 py-1.5 rounded-xl glass-input text-[#F4F5FF]"
                 />
               </div>
 
               <div className="flex-1 space-y-1">
-                <label className="text-slate-400">To Page:</label>
+                <label className="text-[#9BA3BD]">To Page:</label>
                 <input
                   type="number"
                   min={splitRange.start}
                   max={numPages}
                   value={splitRange.end}
                   onChange={(e) => setSplitRange({ ...splitRange, end: Math.min(numPages, Number(e.target.value)) })}
-                  className="w-full px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white"
+                  className="w-full px-3 py-1.5 rounded-xl glass-input text-[#F4F5FF]"
                 />
               </div>
             </div>
@@ -1360,13 +1360,13 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setIsSplitModalOpen(false)}
-                className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white"
+                className="px-3 py-1.5 rounded-xl text-xs text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/10 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSplitPdf}
-                className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow-md"
+                className="px-4 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-semibold shadow-md transition-colors"
               >
                 Extract Pages
               </button>

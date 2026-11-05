@@ -93,22 +93,22 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-900 text-slate-100">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
       {/* Top Header */}
-      <div className="h-14 border-b border-slate-800 bg-slate-900/90 px-6 flex items-center justify-between shrink-0">
+      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <div className="p-2 rounded-xl bg-[#8B7CFF]/15 text-[#8B7CFF] border border-[#8B7CFF]/30">
             <Settings className="w-4 h-4" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-white leading-tight">Settings &amp; Environment</h1>
-            <p className="text-[11px] text-slate-400">Manage client engine, storage cache, and privacy controls</p>
+            <h1 className="text-sm font-bold text-[#F4F5FF] leading-tight">Settings &amp; Environment</h1>
+            <p className="text-[11px] text-[#9BA3BD]">Manage client engine, storage cache, and privacy controls</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5" />
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             <span>Zero-Cloud Mode Active</span>
           </span>
         </div>
@@ -117,7 +117,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
       {/* Main Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Navigation */}
-        <div className="w-56 border-r border-slate-800/80 bg-slate-950/60 p-4 space-y-1 shrink-0">
+        <div className="w-56 border-r border-white/10 bg-[#11152A]/40 backdrop-blur-xl p-4 space-y-1.5 shrink-0">
           {[
             { id: 'general', label: 'General & Editor', icon: Sparkles },
             { id: 'storage', label: 'Storage & Backup', icon: HardDrive },
@@ -132,8 +132,8 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   active 
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                    ? 'glass-btn-primary shadow-md shadow-[#8B7CFF]/20 glow-purple' 
+                    : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -144,10 +144,10 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
         </div>
 
         {/* Content Pane */}
-        <div className="flex-1 overflow-y-auto p-6 max-w-4xl space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 max-w-4xl space-y-6 custom-scrollbar">
           {activeTab === 'general' && (
             <div className="space-y-6">
-              <div className="p-5 rounded-2xl bg-slate-800/50 border border-slate-700/60 space-y-4">
+              <div className="p-5 rounded-2xl glass-card border-white/10 space-y-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-indigo-400" />
                   <span>Editor Preferences</span>

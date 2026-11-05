@@ -234,26 +234,26 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
   const readTimeMin = Math.max(1, Math.ceil(wordsCount / 200));
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
       {/* Top Action Bar */}
-      <div className="h-14 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
         <div className="flex items-center gap-3">
           <input
             type="text"
             value={docTitle}
             onChange={(e) => setDocTitle(e.target.value)}
-            className="bg-transparent text-sm font-bold text-white border-b border-transparent hover:border-slate-700 focus:border-indigo-500 px-1 py-0.5 outline-none w-48 md:w-64"
+            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-[#8B7CFF] px-1 py-0.5 outline-none w-48 md:w-64 transition-colors"
             placeholder="Document Title"
           />
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-semibold border border-blue-500/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8B7CFF]/20 text-[#8B7CFF] font-semibold border border-[#8B7CFF]/30">
             RICH DOCX
           </span>
         </div>
 
         {/* Export Controls */}
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
-            <Upload className="w-3.5 h-3.5 text-blue-400" />
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
+            <Upload className="w-3.5 h-3.5 text-[#42D6E8]" />
             <span className="hidden sm:inline">Import DOCX</span>
             <input type="file" accept=".docx,.txt,.html,.md" className="hidden" onChange={handleImportDocx} />
           </label>
@@ -261,28 +261,28 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(docTitle, { content: editorRef.current?.innerHTML })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
             >
-              <Save className="w-3.5 h-3.5 text-indigo-400" />
+              <Save className="w-3.5 h-3.5 text-[#8B7CFF]" />
               <span>Save</span>
             </button>
           )}
 
-          <div className="flex items-center bg-slate-800 rounded-lg p-0.5 text-xs">
+          <div className="flex items-center glass-card border-white/10 rounded-xl p-0.5 text-xs">
             <select
               value={exportFormat}
               onChange={(e) => setExportFormat(e.target.value as any)}
-              className="bg-transparent text-slate-200 font-semibold px-2 py-1 outline-none uppercase text-xs cursor-pointer"
+              className="bg-transparent text-[#F4F5FF] font-semibold px-2.5 py-1 outline-none uppercase text-xs cursor-pointer"
             >
-              <option value="docx">.DOCX</option>
-              <option value="pdf">.PDF</option>
-              <option value="txt">.TXT</option>
-              <option value="html">.HTML</option>
+              <option value="docx" className="bg-[#11152A] text-white">.DOCX</option>
+              <option value="pdf" className="bg-[#11152A] text-white">.PDF</option>
+              <option value="txt" className="bg-[#11152A] text-white">.TXT</option>
+              <option value="html" className="bg-[#11152A] text-white">.HTML</option>
             </select>
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-1 rounded-lg glass-btn-primary text-xs font-semibold cursor-pointer shadow-md shadow-[#8B7CFF]/20"
             >
               <DownloadCloud className="w-3.5 h-3.5" />
               <span>Export</span>
@@ -292,131 +292,131 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
       </div>
 
       {/* Editor Formatting Toolbar */}
-      <div className="h-11 border-b border-slate-800/80 bg-slate-900/60 px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-slate-400">
+      <div className="h-11 border-b border-white/10 bg-[#11152A]/60 backdrop-blur-xl px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-[#9BA3BD]">
         <div className="flex items-center gap-1">
           <button
             onClick={() => executeCommand('undo')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Undo"
           >
             <Undo className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => executeCommand('redo')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Redo"
           >
             <Redo className="w-3.5 h-3.5" />
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Heading formats */}
           <button
             onClick={() => executeCommand('formatBlock', '<h1>')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Heading 1"
           >
             <Heading1 className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('formatBlock', '<h2>')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Heading 2"
           >
             <Heading2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('formatBlock', '<h3>')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Heading 3"
           >
             <Heading3 className="w-4 h-4" />
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Inline styles */}
           <button
             onClick={() => executeCommand('bold')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white font-bold"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] font-bold transition-colors"
             title="Bold (Ctrl+B)"
           >
             <Bold className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('italic')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white italic"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] italic transition-colors"
             title="Italic (Ctrl+I)"
           >
             <Italic className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('underline')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white underline"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] underline transition-colors"
             title="Underline (Ctrl+U)"
           >
             <Underline className="w-4 h-4" />
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Lists */}
           <button
             onClick={() => executeCommand('insertUnorderedList')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Bullet List"
           >
             <List className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('insertOrderedList')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Numbered List"
           >
             <ListOrdered className="w-4 h-4" />
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Alignment */}
           <button
             onClick={() => executeCommand('justifyLeft')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Align Left"
           >
             <AlignLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('justifyCenter')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Align Center"
           >
             <AlignCenter className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('justifyRight')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Align Right"
           >
             <AlignRight className="w-4 h-4" />
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Table */}
           <button
             onClick={handleInsertTable}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Insert Table"
           >
-            <TableIcon className="w-4 h-4" />
+            <TableIcon className="w-4 h-4 text-[#42D6E8]" />
           </button>
 
           {/* Clear format */}
           <button
             onClick={() => executeCommand('removeFormat')}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
             title="Clear Formatting"
           >
             <RemoveFormatting className="w-4 h-4" />
@@ -425,7 +425,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {/* Search */}
           <button
             onClick={() => setIsFindOpen(!isFindOpen)}
-            className={`p-1.5 rounded hover:bg-slate-800 ${isFindOpen ? 'text-indigo-400 bg-slate-800' : ''}`}
+            className={`p-1.5 rounded-lg transition-colors ${isFindOpen ? 'text-[#8B7CFF] bg-[#8B7CFF]/20 border border-[#8B7CFF]/30' : 'hover:bg-white/[0.06] hover:text-[#F4F5FF]'}`}
             title="Find & Replace"
           >
             <Search className="w-4 h-4" />
@@ -433,11 +433,11 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
         </div>
 
         {/* Word and character count */}
-        <div className="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
+        <div className="flex items-center gap-3 text-[11px] text-[#9BA3BD] font-mono">
           <span>{wordsCount} words</span>
           <span>{charsCount} chars</span>
           <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-slate-500" />
+            <Clock className="w-3 h-3 text-[#42D6E8]" />
             {readTimeMin} min read
           </span>
         </div>
@@ -445,45 +445,45 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
 
       {/* Find & Replace Bar */}
       {isFindOpen && (
-        <div className="p-3 bg-slate-900 border-b border-slate-800 flex items-center gap-3 text-xs">
+        <div className="p-3 bg-[#11152A]/90 backdrop-blur-xl border-b border-white/10 flex items-center gap-3 text-xs">
           <input
             type="text"
             placeholder="Find text..."
             value={findQuery}
             onChange={(e) => setFindQuery(e.target.value)}
-            className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-white outline-none w-48"
+            className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] outline-none w-48"
           />
           <input
             type="text"
             placeholder="Replace with..."
             value={replaceQuery}
             onChange={(e) => setReplaceQuery(e.target.value)}
-            className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-white outline-none w-48"
+            className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] outline-none w-48"
           />
           <button
             onClick={handleFindReplace}
-            className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer"
+            className="px-3 py-1 rounded-xl glass-btn-primary font-semibold cursor-pointer shadow-md shadow-[#8B7CFF]/20"
           >
             Replace All
           </button>
           <button
             onClick={() => setIsFindOpen(false)}
-            className="text-slate-500 hover:text-slate-300 ml-auto"
+            className="text-[#9BA3BD] hover:text-[#F4F5FF] p-1 rounded-lg ml-auto"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Document Writing Surface (A4 styled paper) */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center bg-slate-950">
-        <div className="w-full max-w-4xl bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl p-6 md:p-12 min-h-[750px] flex flex-col text-slate-100">
+      {/* Document Writing Surface (Aurora Glass styled document paper) */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center bg-[#080B18]/60 custom-scrollbar">
+        <div className="w-full max-w-4xl glass-panel border border-white/15 rounded-3xl shadow-2xl p-6 md:p-12 min-h-[750px] flex flex-col text-[#F4F5FF]">
           <div
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
             onInput={updateStats}
-            className="w-full flex-1 outline-none text-slate-100 font-sans text-sm md:text-base leading-relaxed space-y-3 focus:ring-0 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-white [&>h1]:mb-3 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-slate-100 [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:text-slate-200 [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:mb-2 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table_th]:border [&>table_th]:border-slate-700 [&>table_th]:p-2 [&>table_td]:border [&>table_td]:border-slate-800 [&>table_td]:p-2"
+            className="w-full flex-1 outline-none text-[#F4F5FF] font-sans text-sm md:text-base leading-relaxed space-y-3 focus:ring-0 [&>h1]:text-2xl [&>h1]:font-black [&>h1]:text-[#F4F5FF] [&>h1]:mb-3 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-[#F4F5FF] [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:text-[#42D6E8] [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>p]:text-[#F4F5FF]/90 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:mb-2 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table_th]:border [&>table_th]:border-white/20 [&>table_th]:p-2 [&>table_th]:bg-white/[0.06] [&>table_td]:border [&>table_td]:border-white/10 [&>table_td]:p-2"
           />
         </div>
       </div>

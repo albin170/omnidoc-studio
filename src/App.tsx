@@ -538,35 +538,42 @@ export const App: React.FC = () => {
 
   return (
     /* Full-Screen, 100% Viewport App Shell */
-    <div className="w-full h-screen min-h-screen m-0 p-0 overflow-hidden flex flex-col md:flex-row bg-slate-100/70 select-none relative">
+    <div className="w-full h-screen min-h-screen m-0 p-0 overflow-hidden flex flex-col md:flex-row bg-[#080B18] text-[#F4F5FF] select-none relative font-sans">
+      {/* Ambient Aurora Gradient Lighting */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="aurora-blob-1 absolute -top-40 -left-40 w-[640px] h-[640px] rounded-full bg-[#8B7CFF]/15 blur-[150px]" />
+        <div className="aurora-blob-2 absolute top-1/3 -right-40 w-[580px] h-[580px] rounded-full bg-[#42D6E8]/12 blur-[160px]" />
+        <div className="aurora-blob-3 absolute -bottom-40 left-1/3 w-[620px] h-[620px] rounded-full bg-indigo-600/15 blur-[160px]" />
+      </div>
+
       {/* Global Window Drag-and-Drop Listener */}
       <GlobalDropzone onFilesDropped={handleGlobalFilesDropped} />
 
       {/* Mobile Top Header (hidden on desktop) */}
-      <header className="w-full md:hidden flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800 text-white z-30 shrink-0">
+      <header className="w-full md:hidden flex items-center justify-between px-4 py-3 bg-[#11152A]/85 backdrop-blur-2xl border-b border-white/10 text-[#F4F5FF] z-30 shrink-0">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
           <OmniDocLogo size={32} />
-          <div className="font-extrabold text-sm text-white">OmniDoc Studio</div>
+          <div className="font-extrabold text-sm text-[#F4F5FF]">OmniDoc Studio</div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsCommandPaletteOpen(true)}
-            className="p-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white"
+            className="p-1.5 rounded-lg bg-white/10 text-slate-200 hover:text-white"
             title="Search (Ctrl+K)"
           >
             <Search className="w-4 h-4" />
           </button>
           <button
             onClick={() => setIsUserPanelOpen(true)}
-            className="p-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white"
+            className="p-1.5 rounded-lg bg-white/10 text-slate-200 hover:text-white"
             title="User Panel"
           >
             <UserIcon className="w-4 h-4" />
           </button>
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="p-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white"
+            className="p-1.5 rounded-lg bg-white/10 text-slate-200 hover:text-white"
             title="Open Menu"
           >
             <Menu className="w-5 h-5" />
@@ -602,27 +609,27 @@ export const App: React.FC = () => {
       />
 
       {/* Full-Size Dynamic Workspace Content Area */}
-      <main className="flex-1 h-full flex flex-col overflow-hidden bg-white/75 backdrop-blur-xl">
+      <main className="flex-1 h-full flex flex-col overflow-hidden relative z-10 bg-transparent">
         {/* User-Friendly Studio Navigation & Quick Switcher Breadcrumb (shown in active studios) */}
         {activeTab !== 'dashboard' && (
-          <div className="h-12 border-b border-slate-200/80 bg-white/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between shrink-0 select-none z-10">
+          <div className="h-12 border-b border-white/10 bg-[#11152A]/75 backdrop-blur-2xl px-4 sm:px-6 flex items-center justify-between shrink-0 select-none z-10">
             <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/[0.14] text-[#F4F5FF] border border-white/10 font-bold text-xs transition-colors cursor-pointer"
                 title="Return to Dashboard (Ctrl+D)"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Dashboard</span>
               </button>
 
-              <span className="text-slate-300 font-light">/</span>
+              <span className="text-white/20 font-light">/</span>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold text-slate-800">
+                <span className="text-xs font-extrabold text-[#F4F5FF]">
                   {studioTitles[activeTab]}
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30 text-[10px] font-bold">
                   ACTIVE
                 </span>
               </div>
@@ -634,57 +641,57 @@ export const App: React.FC = () => {
               <select
                 value={activeTab}
                 onChange={(e) => setActiveTab(e.target.value as WorkspaceTab)}
-                className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 border-none text-[11px] font-semibold text-slate-700 outline-none cursor-pointer hidden sm:block"
+                className="px-2.5 py-1 rounded-xl bg-[#11152A]/90 hover:bg-[#11152A] border border-white/15 text-[11px] font-semibold text-[#F4F5FF] outline-none cursor-pointer hidden sm:block backdrop-blur-md"
                 title="Quick switch to another studio"
               >
-                <option value="dashboard">Dashboard</option>
-                <option value="autonomous">Autonomous Workspace 2.0</option>
-                <option value="workflow">Workflow Studio</option>
-                <option value="converter">Conversion Hub</option>
-                <option value="pdf">PDF Studio</option>
-                <option value="docx">Word (DOCX)</option>
-                <option value="slides">PowerPoint (PPTX)</option>
-                <option value="sheets">Sheets (XLSX)</option>
-                <option value="image">Photo &amp; Graphics</option>
-                <option value="ocr">OCR Scanner</option>
-                <option value="templates">Templates</option>
-                <option value="projects">Projects</option>
-                <option value="settings">Settings &amp; Environment</option>
+                <option value="dashboard" className="bg-[#11152A] text-white">Dashboard</option>
+                <option value="autonomous" className="bg-[#11152A] text-white">Autonomous Workspace 2.0</option>
+                <option value="workflow" className="bg-[#11152A] text-white">Workflow Studio</option>
+                <option value="converter" className="bg-[#11152A] text-white">Conversion Hub</option>
+                <option value="pdf" className="bg-[#11152A] text-white">PDF Studio</option>
+                <option value="docx" className="bg-[#11152A] text-white">Word (DOCX)</option>
+                <option value="slides" className="bg-[#11152A] text-white">PowerPoint (PPTX)</option>
+                <option value="sheets" className="bg-[#11152A] text-white">Sheets (XLSX)</option>
+                <option value="image" className="bg-[#11152A] text-white">Photo &amp; Graphics</option>
+                <option value="ocr" className="bg-[#11152A] text-white">OCR Scanner</option>
+                <option value="templates" className="bg-[#11152A] text-white">Templates</option>
+                <option value="projects" className="bg-[#11152A] text-white">Projects</option>
+                <option value="settings" className="bg-[#11152A] text-white">Settings &amp; Environment</option>
                 {userSession.role === 'admin' && (
-                  <option value="admin">Admin Console</option>
+                  <option value="admin" className="bg-[#11152A] text-white">Admin Console</option>
                 )}
               </select>
 
               <button
                 onClick={() => setIsAiOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold border border-purple-200 cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#8B7CFF]/15 hover:bg-[#8B7CFF]/25 text-[#8B7CFF] text-xs font-bold border border-[#8B7CFF]/30 cursor-pointer"
                 title="AI Document Assistant"
               >
-                <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                <Sparkles className="w-3.5 h-3.5 text-[#8B7CFF]" />
                 <span className="hidden md:inline">AI Help</span>
               </button>
 
               <button
                 onClick={() => setIsDiffOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200 cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 text-xs font-bold border border-indigo-500/30 cursor-pointer"
                 title="Compare Revisions & View Diffs"
               >
-                <GitCompare className="w-3.5 h-3.5 text-indigo-600" />
+                <GitCompare className="w-3.5 h-3.5 text-indigo-400" />
                 <span className="hidden md:inline">Compare</span>
               </button>
 
               <button
                 onClick={() => setIsBatchOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold border border-blue-200 cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#42D6E8]/15 hover:bg-[#42D6E8]/25 text-[#42D6E8] text-xs font-bold border border-[#42D6E8]/30 cursor-pointer"
                 title="Batch Convert & ZIP Automation"
               >
-                <Layers className="w-3.5 h-3.5 text-blue-600" />
+                <Layers className="w-3.5 h-3.5 text-[#42D6E8]" />
                 <span className="hidden md:inline">Batch ZIP</span>
               </button>
 
               <button
                 onClick={() => setIsCommandPaletteOpen(true)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-800 cursor-pointer"
+                className="p-1.5 rounded-xl hover:bg-white/10 text-[#9BA3BD] hover:text-white cursor-pointer"
                 title="Quick Search (Ctrl+K)"
               >
                 <Search className="w-4 h-4" />
@@ -692,7 +699,7 @@ export const App: React.FC = () => {
 
               <button
                 onClick={() => setIsHelpShortcutsOpen(true)}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-800 cursor-pointer"
+                className="p-1.5 rounded-xl hover:bg-white/10 text-[#9BA3BD] hover:text-white cursor-pointer"
                 title="Shortcuts & Help (?)"
               >
                 <HelpCircle className="w-4 h-4" />

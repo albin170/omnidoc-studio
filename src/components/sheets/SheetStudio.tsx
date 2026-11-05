@@ -449,25 +449,25 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
   const activeCoord = `${indexToColumnLetter(selectedCell.c)}${selectedCell.r + 1}`;
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
       {/* Top Header */}
-      <div className="h-14 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
         <div className="flex items-center gap-3">
           <input
             type="text"
             value={sheetTitle}
             onChange={(e) => setSheetTitle(e.target.value)}
-            className="bg-transparent text-sm font-bold text-white border-b border-transparent hover:border-slate-700 focus:border-emerald-500 px-1 py-0.5 outline-none w-48 md:w-60"
+            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-[#42D6E8] px-1 py-0.5 outline-none w-48 md:w-60 transition-colors"
             placeholder="Spreadsheet Title"
           />
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
             MULTI-SHEET XLSX
           </span>
         </div>
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-emerald-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
             <Upload className="w-3.5 h-3.5 text-emerald-400" />
             <span className="hidden sm:inline">Import Workbook</span>
             <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportFile} />
@@ -476,34 +476,34 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(sheetTitle, { sheets, sheetOrder, cellStyles })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
             >
-              <Save className="w-3.5 h-3.5 text-indigo-400" />
+              <Save className="w-3.5 h-3.5 text-[#8B7CFF]" />
               <span>Save</span>
             </button>
           )}
 
           <button
             onClick={() => setShowChartModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
             title="Create Interactive Chart"
           >
-            <BarChart2 className="w-3.5 h-3.5 text-cyan-400" />
+            <BarChart2 className="w-3.5 h-3.5 text-[#42D6E8]" />
             <span>Chart</span>
           </button>
 
           <button
             onClick={handleExportPdf}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-rose-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
           >
-            <DownloadCloud className="w-3.5 h-3.5 text-red-400" />
+            <DownloadCloud className="w-3.5 h-3.5 text-rose-400" />
             <span>PDF Report</span>
           </button>
 
           <button
             onClick={handleExportCsv}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-emerald-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
           >
             <DownloadCloud className="w-3.5 h-3.5 text-emerald-400" />
             <span>CSV</span>
@@ -511,7 +511,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
 
           <button
             onClick={handleExportXlsx}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/30 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#8B7CFF]/25 cursor-pointer"
           >
             <DownloadCloud className="w-3.5 h-3.5" />
             <span>Export .XLSX</span>
@@ -520,13 +520,13 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
       </div>
 
       {/* Formatting & Controls Ribbon */}
-      <div className="border-b border-slate-800 bg-slate-900/70 px-4 py-1.5 flex items-center justify-between gap-3 overflow-x-auto text-xs text-slate-300">
+      <div className="border-b border-white/10 bg-[#11152A]/60 backdrop-blur-xl px-4 py-1.5 flex items-center justify-between gap-3 overflow-x-auto text-xs text-[#9BA3BD]">
         <div className="flex items-center gap-1 shrink-0">
           {/* Undo / Redo */}
           <button
             onClick={handleUndo}
             disabled={history.length === 0}
-            className="p-1.5 rounded hover:bg-slate-800 disabled:opacity-30 text-slate-400 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] disabled:opacity-30 text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
             title="Undo"
           >
             <Undo2 className="w-3.5 h-3.5" />
@@ -534,82 +534,82 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           <button
             onClick={handleRedo}
             disabled={redoStack.length === 0}
-            className="p-1.5 rounded hover:bg-slate-800 disabled:opacity-30 text-slate-400 hover:text-white"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] disabled:opacity-30 text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
             title="Redo"
           >
             <Redo2 className="w-3.5 h-3.5" />
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Text Formatting */}
           <button
             onClick={() => toggleCellStyle('bold', true)}
-            className={`p-1.5 rounded font-bold ${activeStyle.bold ? 'bg-emerald-500/20 text-emerald-400' : 'hover:bg-slate-800 text-slate-400'}`}
+            className={`p-1.5 rounded-lg font-bold transition-all ${activeStyle.bold ? 'bg-[#8B7CFF]/25 text-[#F4F5FF] border border-[#8B7CFF]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'}`}
             title="Bold"
           >
             <BoldIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => toggleCellStyle('italic', true)}
-            className={`p-1.5 rounded italic ${activeStyle.italic ? 'bg-emerald-500/20 text-emerald-400' : 'hover:bg-slate-800 text-slate-400'}`}
+            className={`p-1.5 rounded-lg italic transition-all ${activeStyle.italic ? 'bg-[#8B7CFF]/25 text-[#F4F5FF] border border-[#8B7CFF]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'}`}
             title="Italic"
           >
             <ItalicIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => toggleCellStyle('underline', true)}
-            className={`p-1.5 rounded underline ${activeStyle.underline ? 'bg-emerald-500/20 text-emerald-400' : 'hover:bg-slate-800 text-slate-400'}`}
+            className={`p-1.5 rounded-lg underline transition-all ${activeStyle.underline ? 'bg-[#8B7CFF]/25 text-[#F4F5FF] border border-[#8B7CFF]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'}`}
             title="Underline"
           >
             <UnderlineIcon className="w-3.5 h-3.5" />
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Alignments */}
           <button
             onClick={() => toggleCellStyle('align', 'left')}
-            className={`p-1.5 rounded ${activeStyle.align === 'left' ? 'bg-emerald-500/20 text-emerald-400' : 'hover:bg-slate-800 text-slate-400'}`}
+            className={`p-1.5 rounded-lg transition-all ${activeStyle.align === 'left' ? 'bg-[#42D6E8]/25 text-[#42D6E8] border border-[#42D6E8]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'}`}
             title="Align Left"
           >
             <AlignLeft className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => toggleCellStyle('align', 'center')}
-            className={`p-1.5 rounded ${activeStyle.align === 'center' ? 'bg-emerald-500/20 text-emerald-400' : 'hover:bg-slate-800 text-slate-400'}`}
+            className={`p-1.5 rounded-lg transition-all ${activeStyle.align === 'center' ? 'bg-[#42D6E8]/25 text-[#42D6E8] border border-[#42D6E8]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'}`}
             title="Align Center"
           >
             <AlignCenter className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => toggleCellStyle('align', 'right')}
-            className={`p-1.5 rounded ${activeStyle.align === 'right' ? 'bg-emerald-500/20 text-emerald-400' : 'hover:bg-slate-800 text-slate-400'}`}
+            className={`p-1.5 rounded-lg transition-all ${activeStyle.align === 'right' ? 'bg-[#42D6E8]/25 text-[#42D6E8] border border-[#42D6E8]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'}`}
             title="Align Right"
           >
             <AlignRight className="w-3.5 h-3.5" />
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Number Formats */}
           <select
             value={activeStyle.format || 'general'}
             onChange={(e) => setCellFormatType(e.target.value as any)}
-            className="bg-slate-800 text-slate-300 text-xs rounded px-2 py-1 outline-none border border-slate-700 cursor-pointer"
+            className="glass-input text-xs rounded-xl px-2.5 py-1 outline-none text-[#F4F5FF] cursor-pointer"
           >
-            <option value="general">General</option>
-            <option value="currency">Currency ($)</option>
-            <option value="percent">Percent (%)</option>
-            <option value="number">Number (1,234.00)</option>
+            <option value="general" className="bg-[#11152A] text-white">General</option>
+            <option value="currency" className="bg-[#11152A] text-white">Currency ($)</option>
+            <option value="percent" className="bg-[#11152A] text-white">Percent (%)</option>
+            <option value="number" className="bg-[#11152A] text-white">Number (1,234.00)</option>
           </select>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Sort Column */}
           <button
             onClick={() => handleSortColumn(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl hover:bg-white/[0.06] text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
             title="Sort Column Ascending"
           >
             <ArrowUpDown className="w-3 h-3 text-emerald-400" />
@@ -617,19 +617,19 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           </button>
           <button
             onClick={() => handleSortColumn(false)}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl hover:bg-white/[0.06] text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
             title="Sort Column Descending"
           >
             <ArrowUpDown className="w-3 h-3 text-amber-400" />
             <span>Sort Z-A</span>
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-white/10 mx-1" />
 
           {/* Search Toggle */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className={`flex items-center gap-1 px-2 py-1 rounded ${showSearch ? 'bg-emerald-500/20 text-emerald-400' : 'hover:bg-slate-800 text-slate-400'}`}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-xl transition-all ${showSearch ? 'bg-[#8B7CFF]/25 text-[#F4F5FF] border border-[#8B7CFF]/40' : 'hover:bg-white/[0.06] text-[#9BA3BD]'}`}
             title="Find & Replace"
           >
             <Search className="w-3 h-3" />
@@ -638,30 +638,30 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
         </div>
 
         {/* Row & Col Controls */}
-        <div className="flex items-center gap-1 text-slate-400 text-xs shrink-0">
+        <div className="flex items-center gap-1.5 text-[#9BA3BD] text-xs shrink-0">
           <button
             onClick={addRow}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 hover:text-white cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl glass-card hover:border-[#8B7CFF]/50 hover:text-[#F4F5FF] cursor-pointer transition-all"
             title="Add row"
           >
-            <Plus className="w-3 h-3" />
+            <Plus className="w-3 h-3 text-[#42D6E8]" />
             <span>Row</span>
           </button>
           <button
             onClick={removeRow}
             disabled={gridData.length <= 1}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 hover:text-white disabled:opacity-30 cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl glass-card hover:border-rose-400/50 hover:text-rose-300 disabled:opacity-30 cursor-pointer transition-all"
             title="Remove row"
           >
-            <Minus className="w-3 h-3" />
+            <Minus className="w-3 h-3 text-rose-400" />
             <span>Row</span>
           </button>
           <button
             onClick={addColumn}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 hover:text-white cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl glass-card hover:border-[#8B7CFF]/50 hover:text-[#F4F5FF] cursor-pointer transition-all"
             title="Add column"
           >
-            <Plus className="w-3 h-3" />
+            <Plus className="w-3 h-3 text-[#42D6E8]" />
             <span>Col</span>
           </button>
         </div>
@@ -669,42 +669,42 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
 
       {/* Find & Replace Bar (Collapsible) */}
       {showSearch && (
-        <div className="border-b border-slate-800 bg-slate-900/80 px-4 py-2 flex items-center gap-3 shrink-0 text-xs">
+        <div className="border-b border-white/10 bg-[#11152A]/90 backdrop-blur-xl px-4 py-2 flex items-center gap-3 shrink-0 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium">Find:</span>
+            <span className="text-[#9BA3BD] font-medium">Find:</span>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search text..."
-              className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-white outline-none w-36"
+              className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] outline-none w-36"
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 font-medium">Replace:</span>
+            <span className="text-[#9BA3BD] font-medium">Replace:</span>
             <input
               type="text"
               value={replaceQuery}
               onChange={(e) => setReplaceQuery(e.target.value)}
               placeholder="Replace with..."
-              className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-white outline-none w-36"
+              className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] outline-none w-36"
             />
           </div>
           <button
             onClick={() => handleSearchAndReplace(false)}
-            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold"
+            className="px-3 py-1 rounded-xl glass-card hover:bg-white/[0.08] text-[#F4F5FF] font-semibold cursor-pointer"
           >
             Replace Next
           </button>
           <button
             onClick={() => handleSearchAndReplace(true)}
-            className="px-2.5 py-1 rounded bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-300 font-semibold border border-emerald-500/30"
+            className="px-3 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-semibold border border-emerald-500/30 cursor-pointer"
           >
             Replace All
           </button>
           <button
             onClick={() => setShowSearch(false)}
-            className="p-1 text-slate-500 hover:text-slate-300 ml-auto"
+            className="p-1 text-[#9BA3BD] hover:text-[#F4F5FF] ml-auto"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -712,13 +712,13 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
       )}
 
       {/* Formula Bar */}
-      <div className="h-10 border-b border-slate-800 bg-slate-900/60 px-4 flex items-center gap-3 shrink-0">
-        <div className="px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-mono text-xs font-bold w-14 text-center">
+      <div className="h-10 border-b border-white/10 bg-[#11152A]/50 backdrop-blur-xl px-4 flex items-center gap-3 shrink-0">
+        <div className="px-2.5 py-1 rounded-xl glass-card border-white/10 text-[#42D6E8] font-mono text-xs font-bold w-14 text-center">
           {activeCoord}
         </div>
 
-        <div className="flex-1 flex items-center bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 gap-2">
-          <Calculator className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+        <div className="flex-1 flex items-center glass-input rounded-xl px-3 py-1 gap-2">
+          <Calculator className="w-3.5 h-3.5 text-[#42D6E8] shrink-0" />
           <input
             type="text"
             value={formulaInput}
@@ -727,23 +727,23 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
               handleFormulaCommit(e.target.value);
             }}
             placeholder="Enter value or formula e.g. =SUM(B2:E2), =AVERAGE(B2:B5), =IF(B2>50, 'High', 'Low'), =VLOOKUP(...)"
-            className="w-full bg-transparent text-xs text-white outline-none font-mono"
+            className="w-full bg-transparent text-xs text-[#F4F5FF] outline-none font-mono placeholder:text-[#9BA3BD]/50"
           />
         </div>
       </div>
 
       {/* Spreadsheet Grid View */}
-      <div className="flex-1 overflow-auto bg-slate-950 p-2">
+      <div className="flex-1 overflow-auto bg-[#080B18]/50 p-2 custom-scrollbar">
         <div className="inline-block min-w-full align-middle">
           <table className="border-collapse table-fixed select-none text-xs">
             <thead>
               <tr>
                 {/* Top-left corner */}
-                <th className="w-12 h-7 bg-slate-900 border border-slate-800 text-slate-500 font-mono text-[10px] text-center" />
+                <th className="w-12 h-7 bg-[#11152A]/90 border border-white/10 text-[#9BA3BD] font-mono text-[10px] text-center" />
                 {Array.from({ length: colCount }, (_, cIdx) => (
                   <th
                     key={cIdx}
-                    className="w-32 h-7 bg-slate-900 border border-slate-800 text-slate-400 font-mono text-[11px] font-semibold text-center"
+                    className="w-32 h-7 bg-[#11152A]/90 border border-white/10 text-[#9BA3BD] font-mono text-[11px] font-semibold text-center"
                   >
                     {indexToColumnLetter(cIdx)}
                   </th>
@@ -754,7 +754,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
               {Array.from({ length: Math.max(rowCount, 20) }, (_, rIdx) => (
                 <tr key={rIdx}>
                   {/* Row number */}
-                  <td className="w-12 h-7 bg-slate-900/80 border border-slate-800 text-slate-500 font-mono text-[10px] text-center font-bold">
+                  <td className="w-12 h-7 bg-[#11152A]/70 border border-white/10 text-[#9BA3BD] font-mono text-[10px] text-center font-bold">
                     {rIdx + 1}
                   </td>
 
@@ -786,12 +786,12 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
                           color: style.color || undefined,
                           backgroundColor: style.bgColor || undefined,
                         }}
-                        className={`h-7 px-2 border border-slate-800/90 truncate transition-colors cursor-cell ${
+                        className={`h-7 px-2 border border-white/10 truncate transition-colors cursor-cell ${
                           isSelected
-                            ? 'bg-emerald-950/40 outline-2 outline-emerald-500 z-10'
+                            ? 'bg-[#8B7CFF]/25 outline-2 outline-[#8B7CFF] z-10 text-[#F4F5FF]'
                             : isHeader
-                            ? 'bg-slate-900 text-slate-200'
-                            : 'bg-slate-950/70 hover:bg-slate-800/40 text-slate-300'
+                            ? 'bg-white/[0.06] text-[#F4F5FF] font-semibold'
+                            : 'bg-transparent hover:bg-white/[0.04] text-[#F4F5FF]'
                         }`}
                       >
                         {isSelected ? (
@@ -802,13 +802,13 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
                               setFormulaInput(e.target.value);
                               handleCellChange(rIdx, cIdx, e.target.value);
                             }}
-                            className="w-full bg-transparent outline-none text-white font-mono text-xs"
+                            className="w-full bg-transparent outline-none text-[#F4F5FF] font-mono text-xs"
                             autoFocus
                           />
                         ) : (
                           <span
                             className={`font-mono text-xs ${
-                              typeof displayVal === 'number' && displayVal < 0 ? 'text-red-400' : ''
+                              typeof displayVal === 'number' && displayVal < 0 ? 'text-rose-400' : ''
                             }`}
                           >
                             {formatted !== '' ? String(formatted) : ''}
@@ -825,7 +825,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
       </div>
 
       {/* Bottom Worksheet Tab Bar */}
-      <div className="h-10 border-t border-slate-800 bg-slate-900/90 px-3 flex items-center justify-between shrink-0 overflow-x-auto gap-2">
+      <div className="h-10 border-t border-white/10 bg-[#11152A]/90 backdrop-blur-xl px-3 flex items-center justify-between shrink-0 overflow-x-auto gap-2">
         <div className="flex items-center gap-1.5">
           {sheetOrder.map((name) => {
             const isActive = name === activeSheetName;
@@ -835,10 +835,10 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
               <div
                 key={name}
                 onClick={() => !isEditing && setActiveSheetName(name)}
-                className={`group flex items-center gap-1.5 px-3 py-1 rounded-t-md text-xs font-semibold cursor-pointer border-t-2 transition-colors ${
+                className={`group flex items-center gap-1.5 px-3 py-1 rounded-t-xl text-xs font-semibold cursor-pointer border-t-2 transition-all ${
                   isActive
-                    ? 'bg-slate-950 text-emerald-400 border-emerald-500 shadow-sm'
-                    : 'bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-transparent'
+                    ? 'bg-[#080B18]/80 text-[#42D6E8] border-[#42D6E8] shadow-md shadow-[#42D6E8]/10'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#9BA3BD] hover:text-[#F4F5FF] border-transparent'
                 }`}
               >
                 {isEditing ? (
@@ -849,7 +849,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
                     onBlur={handleCommitRename}
                     onKeyDown={(e) => e.key === 'Enter' && handleCommitRename()}
                     autoFocus
-                    className="bg-slate-900 text-white px-1 py-0.5 rounded outline-none border border-emerald-500 w-24 text-xs"
+                    className="glass-input text-[#F4F5FF] px-1 py-0.5 rounded outline-none border-[#42D6E8] w-24 text-xs"
                   />
                 ) : (
                   <span onDoubleClick={() => handleStartRename(name)}>{name}</span>
@@ -884,7 +884,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
                         handleDeleteSheet(name);
                       }}
                       title="Delete Sheet"
-                      className="p-0.5 hover:text-red-400"
+                      className="p-0.5 hover:text-rose-400"
                     >
                       <Trash2 className="w-2.5 h-2.5" />
                     </button>
@@ -897,30 +897,30 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           {/* Add Sheet Button */}
           <button
             onClick={handleAddSheet}
-            className="flex items-center justify-center w-7 h-7 rounded hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer"
+            className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-white/10 text-[#9BA3BD] hover:text-[#42D6E8] transition-colors cursor-pointer"
             title="Add New Worksheet"
           >
             <Plus className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="text-[11px] text-slate-500 font-mono hidden sm:block">
+        <div className="text-[11px] text-[#9BA3BD] font-mono hidden sm:block">
           Active: {activeSheetName} · {gridData.length} Rows · {colCount} Cols
         </div>
       </div>
 
       {/* Interactive Chart Modal */}
       {showChartModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-2xl w-full p-5 shadow-2xl flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="glass-panel border-white/15 rounded-2xl max-w-2xl w-full p-5 shadow-2xl flex flex-col gap-4 text-[#F4F5FF]">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-sm font-bold text-white">Data Visualization & Chart Generator</h3>
+                <BarChart2 className="w-5 h-5 text-[#42D6E8]" />
+                <h3 className="text-sm font-bold text-[#F4F5FF]">Data Visualization &amp; Chart Generator</h3>
               </div>
               <button
                 onClick={() => setShowChartModal(false)}
-                className="p-1 text-slate-400 hover:text-white rounded"
+                className="p-1 text-[#9BA3BD] hover:text-[#F4F5FF] rounded-lg hover:bg-white/10 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -928,35 +928,35 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
 
             {/* Chart Type Selector */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400 font-medium">Chart Type:</span>
+              <span className="text-xs text-[#9BA3BD] font-medium">Chart Type:</span>
               <button
                 onClick={() => setChartType('bar')}
-                className={`px-3 py-1 rounded text-xs font-semibold ${chartType === 'bar' ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-300'}`}
+                className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${chartType === 'bar' ? 'glass-btn-primary glow-purple' : 'glass-card text-[#9BA3BD]'}`}
               >
                 Bar Chart
               </button>
               <button
                 onClick={() => setChartType('line')}
-                className={`px-3 py-1 rounded text-xs font-semibold ${chartType === 'line' ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-300'}`}
+                className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${chartType === 'line' ? 'glass-btn-primary glow-purple' : 'glass-card text-[#9BA3BD]'}`}
               >
                 Line Chart
               </button>
               <button
                 onClick={() => setChartType('pie')}
-                className={`px-3 py-1 rounded text-xs font-semibold ${chartType === 'pie' ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-300'}`}
+                className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${chartType === 'pie' ? 'glass-btn-primary glow-purple' : 'glass-card text-[#9BA3BD]'}`}
               >
                 Pie Chart
               </button>
               <button
                 onClick={() => setChartType('area')}
-                className={`px-3 py-1 rounded text-xs font-semibold ${chartType === 'area' ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-300'}`}
+                className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${chartType === 'area' ? 'glass-btn-primary glow-purple' : 'glass-card text-[#9BA3BD]'}`}
               >
                 Area Chart
               </button>
             </div>
 
             {/* Render SVG Chart */}
-            <div className="h-64 bg-slate-950 rounded-lg p-4 flex items-center justify-center border border-slate-800">
+            <div className="h-64 bg-[#080B18]/60 rounded-xl p-4 flex items-center justify-center border border-white/10">
               {(() => {
                 const { categories, series } = getChartData();
                 const colors = ['#06b6d4', '#10b981', '#6366f1', '#f59e0b', '#ec4899'];

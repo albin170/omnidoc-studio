@@ -191,24 +191,24 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
   const completedCount = jobs.filter((j) => j.status === 'completed').length;
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 text-[#F4F5FF] custom-scrollbar">
       {/* Top Banner and Actions */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-900/80 p-6 rounded-2xl border border-slate-800">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glass-panel p-6 rounded-2xl border border-white/10">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-bold text-white">Conversion Hub</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+            <h1 className="text-xl md:text-2xl font-bold text-[#F4F5FF]">Conversion Hub</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30">
               Universal Engine
             </span>
           </div>
-          <p className="text-xs md:text-sm text-slate-400 mt-1">
+          <p className="text-xs md:text-sm text-[#9BA3BD] mt-1">
             Convert documents, presentations, spreadsheets, and images with full precision and local privacy.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <label className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer transition-all">
-            <Plus className="w-4 h-4 text-indigo-400" />
+          <label className="flex items-center gap-1.5 px-3 py-2 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
+            <Plus className="w-4 h-4 text-[#8B7CFF]" />
             <span>Add More Files</span>
             <input
               type="file"
@@ -223,7 +223,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
               <button
                 onClick={handleConvertAll}
                 disabled={isProcessingAll || jobs.every((j) => j.status === 'completed')}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl glass-btn-primary disabled:opacity-50 text-xs font-semibold shadow-lg shadow-[#8B7CFF]/25 transition-all cursor-pointer"
               >
                 {isProcessingAll ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -236,7 +236,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
               {completedCount > 0 && (
                 <button
                   onClick={handleDownloadAllZip}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/30 transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold shadow-md transition-all cursor-pointer"
                 >
                   <Archive className="w-4 h-4" />
                   <span>Download ZIP ({completedCount})</span>
@@ -245,7 +245,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
 
               <button
                 onClick={() => setJobs([])}
-                className="p-2 rounded-xl text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-[#9BA3BD] hover:text-rose-400 glass-card transition-colors cursor-pointer"
                 title="Clear all jobs"
               >
                 <Trash2 className="w-4 h-4" />
@@ -256,13 +256,13 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
       </div>
 
       {/* Conversion Options Card */}
-      <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-wrap items-center justify-between gap-4 text-xs">
-        <div className="flex items-center gap-2 text-slate-300 font-semibold">
-          <Settings2 className="w-4 h-4 text-indigo-400" />
+      <div className="p-4 rounded-2xl glass-card border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs">
+        <div className="flex items-center gap-2 text-[#F4F5FF] font-semibold">
+          <Settings2 className="w-4 h-4 text-[#42D6E8]" />
           <span>Conversion Settings:</span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 text-slate-400">
+        <div className="flex flex-wrap items-center gap-4 text-[#9BA3BD]">
           <div className="flex items-center gap-2">
             <span>Image Quality:</span>
             <input
@@ -274,9 +274,9 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
               onChange={(e) =>
                 setGlobalOptions((prev) => ({ ...prev, quality: parseFloat(e.target.value) }))
               }
-              className="accent-indigo-500 w-24 cursor-pointer"
+              className="accent-[#8B7CFF] w-24 cursor-pointer"
             />
-            <span className="text-slate-200 font-mono">
+            <span className="text-[#F4F5FF] font-mono">
               {Math.round((globalOptions.quality || 0.92) * 100)}%
             </span>
           </div>
@@ -291,10 +291,10 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                   pageOrientation: e.target.value as 'portrait' | 'landscape',
                 }))
               }
-              className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-slate-200 cursor-pointer"
+              className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] cursor-pointer"
             >
-              <option value="portrait">Portrait</option>
-              <option value="landscape">Landscape</option>
+              <option value="portrait" className="bg-[#11152A] text-white">Portrait</option>
+              <option value="landscape" className="bg-[#11152A] text-white">Landscape</option>
             </select>
           </div>
 
@@ -305,12 +305,12 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
               onChange={(e) =>
                 setGlobalOptions((prev) => ({ ...prev, ocrLanguage: e.target.value }))
               }
-              className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-slate-200 cursor-pointer"
+              className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] cursor-pointer"
             >
-              <option value="eng">English</option>
-              <option value="spa">Spanish (Español)</option>
-              <option value="fra">French (Français)</option>
-              <option value="deu">German (Deutsch)</option>
+              <option value="eng" className="bg-[#11152A] text-white">English</option>
+              <option value="spa" className="bg-[#11152A] text-white">Spanish (Español)</option>
+              <option value="fra" className="bg-[#11152A] text-white">French (Français)</option>
+              <option value="deu" className="bg-[#11152A] text-white">German (Deutsch)</option>
             </select>
           </div>
         </div>
@@ -318,13 +318,13 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
 
       {/* Jobs Queue Table */}
       {jobs.length === 0 ? (
-        <div className="text-center py-16 border-2 border-dashed border-slate-800 rounded-2xl p-6 bg-slate-900/30">
-          <RefreshCw className="w-10 h-10 mx-auto text-slate-600 mb-3" />
-          <h3 className="text-base font-semibold text-slate-300">No conversion tasks queued</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4">
+        <div className="text-center py-16 border-2 border-dashed border-white/15 rounded-3xl p-6 glass-panel">
+          <RefreshCw className="w-10 h-10 mx-auto text-[#9BA3BD]/50 mb-3" />
+          <h3 className="text-base font-semibold text-[#F4F5FF]">No conversion tasks queued</h3>
+          <p className="text-xs text-[#9BA3BD] max-w-sm mx-auto mt-1 mb-4">
             Upload files from the Dashboard or click below to start converting documents and media.
           </p>
-          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer">
+          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl glass-btn-primary text-xs font-semibold cursor-pointer shadow-lg shadow-[#8B7CFF]/20">
             <Plus className="w-4 h-4" />
             <span>Select Files</span>
             <input
@@ -343,7 +343,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
             return (
               <div
                 key={job.id}
-                className="p-4 rounded-xl bg-slate-900/70 border border-slate-800/80 hover:border-slate-700/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
+                className="p-4 rounded-2xl glass-card border-white/10 hover:border-[#8B7CFF]/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
               >
                 {/* File Info */}
                 <div className="flex items-center gap-3 min-w-[240px] max-w-md">

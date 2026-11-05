@@ -402,25 +402,25 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
       {/* Top Header */}
-      <div className="h-14 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
         <div className="flex items-center gap-3">
           <input
             type="text"
             value={imageName}
             onChange={(e) => setImageName(e.target.value)}
-            className="bg-transparent text-sm font-bold text-white border-b border-transparent hover:border-slate-700 focus:border-purple-500 px-1 py-0.5 outline-none w-48 md:w-60"
+            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-[#8B7CFF] px-1 py-0.5 outline-none w-48 md:w-60 transition-colors"
           />
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 font-semibold border border-purple-500/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8B7CFF]/20 text-[#8B7CFF] font-semibold border border-[#8B7CFF]/30">
             GRAPHICS STUDIO
           </span>
         </div>
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
-            <Upload className="w-3.5 h-3.5 text-purple-400" />
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
+            <Upload className="w-3.5 h-3.5 text-[#8B7CFF]" />
             <span className="hidden sm:inline">Open Photo</span>
             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && loadImageFile(e.target.files[0])} />
           </label>
@@ -428,7 +428,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
           <button
             onClick={handleRemoveBackground}
             disabled={isProcessing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/25 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#8B7CFF]/25 cursor-pointer"
           >
             <Scissors className="w-3.5 h-3.5" />
             <span>Remove BG</span>
@@ -437,29 +437,29 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(imageName, { adjustments, hasBackgroundRemoved, bgReplacementType, bgValue, layers })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
               title="Save Image Project"
             >
-              <Save className="w-3.5 h-3.5 text-purple-400" />
+              <Save className="w-3.5 h-3.5 text-[#8B7CFF]" />
               <span>Save</span>
             </button>
           )}
 
-          <div className="flex items-center bg-slate-800 rounded-lg p-0.5 text-xs">
+          <div className="flex items-center glass-card border-white/10 rounded-xl p-0.5 text-xs">
             <select
               value={exportFormat}
               onChange={(e) => setExportFormat(e.target.value as any)}
-              className="bg-transparent text-slate-200 font-semibold px-2 py-1 outline-none uppercase text-xs cursor-pointer"
+              className="bg-transparent text-[#F4F5FF] font-semibold px-2 py-1 outline-none uppercase text-xs cursor-pointer"
             >
-              <option value="png">.PNG</option>
-              <option value="jpg">.JPG</option>
-              <option value="webp">.WEBP</option>
-              <option value="pdf">.PDF</option>
+              <option value="png" className="bg-[#11152A] text-white">.PNG</option>
+              <option value="jpg" className="bg-[#11152A] text-white">.JPG</option>
+              <option value="webp" className="bg-[#11152A] text-white">.WEBP</option>
+              <option value="pdf" className="bg-[#11152A] text-white">.PDF</option>
             </select>
             <button
               onClick={handleExport}
               disabled={isProcessing}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-600 hover:bg-purple-500 text-white font-semibold cursor-pointer shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-1 rounded-lg glass-btn-primary text-xs font-semibold cursor-pointer shadow-sm"
             >
               <DownloadCloud className="w-3.5 h-3.5" />
               <span>Export</span>
@@ -469,23 +469,23 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
       </div>
 
       {/* Transform & Tool Ribbon */}
-      <div className="h-11 border-b border-slate-800 bg-slate-900/60 px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-xs text-slate-300">
+      <div className="h-11 border-b border-white/10 bg-[#11152A]/60 backdrop-blur-xl px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-xs text-[#9BA3BD]">
         <div className="flex items-center gap-1.5">
           {/* Rotate */}
           <button
             onClick={() => handleRotate(270)}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 text-slate-300"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl hover:bg-white/[0.06] text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
             title="Rotate Left 90°"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-purple-400" />
+            <RotateCcw className="w-3.5 h-3.5 text-[#8B7CFF]" />
             <span>90° L</span>
           </button>
           <button
             onClick={() => handleRotate(90)}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 text-slate-300"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl hover:bg-white/[0.06] text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
             title="Rotate Right 90°"
           >
-            <RotateCw className="w-3.5 h-3.5 text-purple-400" />
+            <RotateCw className="w-3.5 h-3.5 text-[#8B7CFF]" />
             <span>90° R</span>
           </button>
 
@@ -652,37 +652,37 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
       {/* Editor Main Canvas & Sidebar Controls */}
       <div className="flex-1 flex overflow-hidden">
         {/* Center Canvas Viewport */}
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex items-center justify-center bg-slate-950 checkerboard-bg relative select-none">
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex items-center justify-center bg-[#080B18]/50 checkerboard-bg relative select-none custom-scrollbar">
           <canvas
             ref={canvasRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            className={`max-w-full max-h-[70vh] object-contain rounded-xl shadow-2xl border border-slate-800 ${
+            className={`max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-white/15 ${
               isEraserActive ? 'cursor-crosshair' : 'cursor-default'
             }`}
           />
         </div>
 
         {/* Right Adjustments & Layers Panel */}
-        <div className="w-72 border-l border-slate-800 bg-slate-900/60 p-4 overflow-y-auto space-y-6 shrink-0 hidden md:block">
+        <div className="w-72 border-l border-white/10 bg-[#11152A]/40 backdrop-blur-xl p-4 overflow-y-auto space-y-6 shrink-0 hidden md:block custom-scrollbar">
           {/* Overlays */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-purple-400" />
+            <h4 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#8B7CFF]" />
               <span>Overlays &amp; Layers</span>
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={handleAddTextLayer}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
               >
-                <Type className="w-3.5 h-3.5 text-indigo-400" />
+                <Type className="w-3.5 h-3.5 text-[#8B7CFF]" />
                 <span>Add Text</span>
               </button>
               <button
                 onClick={handleAddSticker}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl glass-card hover:border-amber-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>Sticker</span>
@@ -691,7 +691,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
             {layers.length > 0 && (
               <button
                 onClick={() => setLayers([])}
-                className="w-full py-1 text-[11px] text-slate-500 hover:text-red-400 text-center cursor-pointer"
+                className="w-full py-1 text-[11px] text-[#9BA3BD] hover:text-rose-400 text-center cursor-pointer transition-colors"
               >
                 Clear all overlays ({layers.length})
               </button>
@@ -700,16 +700,16 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
 
           {/* Background Replacement */}
           {hasBackgroundRemoved && (
-            <div className="space-y-3 pt-3 border-t border-slate-800">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="space-y-3 pt-3 border-t border-white/10">
+              <h4 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-1.5">
                 <Palette className="w-3.5 h-3.5 text-pink-400" />
                 <span>Replace Background</span>
               </h4>
               <div className="grid grid-cols-3 gap-1.5 text-xs">
                 <button
                   onClick={() => setBgReplacementType('transparent')}
-                  className={`py-1.5 rounded-lg border cursor-pointer ${
-                    bgReplacementType === 'transparent' ? 'border-purple-500 bg-purple-500/20 text-white' : 'border-slate-800 text-slate-400'
+                  className={`py-1.5 rounded-xl border cursor-pointer transition-all ${
+                    bgReplacementType === 'transparent' ? 'border-[#8B7CFF] bg-[#8B7CFF]/20 text-white' : 'border-white/10 glass-card text-[#9BA3BD]'
                   }`}
                 >
                   Alpha
@@ -719,8 +719,8 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
                     setBgReplacementType('color');
                     setBgValue('#ffffff');
                   }}
-                  className={`py-1.5 rounded-lg border cursor-pointer ${
-                    bgReplacementType === 'color' ? 'border-purple-500 bg-purple-500/20 text-white' : 'border-slate-800 text-slate-400'
+                  className={`py-1.5 rounded-xl border cursor-pointer transition-all ${
+                    bgReplacementType === 'color' ? 'border-[#8B7CFF] bg-[#8B7CFF]/20 text-white' : 'border-white/10 glass-card text-[#9BA3BD]'
                   }`}
                 >
                   White
@@ -729,8 +729,8 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
                   onClick={() => {
                     setBgReplacementType('gradient');
                   }}
-                  className={`py-1.5 rounded-lg border cursor-pointer ${
-                    bgReplacementType === 'gradient' ? 'border-purple-500 bg-purple-500/20 text-white' : 'border-slate-800 text-slate-400'
+                  className={`py-1.5 rounded-xl border cursor-pointer transition-all ${
+                    bgReplacementType === 'gradient' ? 'border-[#8B7CFF] bg-[#8B7CFF]/20 text-white' : 'border-white/10 glass-card text-[#9BA3BD]'
                   }`}
                 >
                   Sunset
@@ -740,10 +740,10 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
           )}
 
           {/* Filter Sliders */}
-          <div className="space-y-4 pt-3 border-t border-slate-800">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+          <div className="space-y-4 pt-3 border-t border-white/10">
+            <h4 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-indigo-400" />
+                <Sliders className="w-3.5 h-3.5 text-[#8B7CFF]" />
                 <span>Adjustments</span>
               </span>
               <button

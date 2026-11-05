@@ -27,23 +27,23 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in">
+    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in">
       <div 
-        className="w-full max-w-2xl bg-white rounded-[28px] border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+        className="w-full max-w-2xl glass-panel rounded-[28px] border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-[#F4F5FF]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between bg-[#11152A]/80">
           <div className="flex items-center gap-3">
             <OmniDocLogo size={34} />
             <div>
-              <h2 className="text-base font-extrabold text-slate-900 leading-tight flex items-center gap-2">
+              <h2 className="text-base font-extrabold text-[#F4F5FF] leading-tight flex items-center gap-2">
                 <span>OmniDoc Studio Help &amp; Shortcuts</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-100 text-blue-700 font-bold">
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30 font-bold">
                   v2.0
                 </span>
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#9BA3BD]">
                 Quick guide and hotkeys for power productivity
               </p>
             </div>
@@ -51,25 +51,25 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-full hover:bg-white/10 text-[#9BA3BD] hover:text-[#F4F5FF] flex items-center justify-center cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700">
+        <div className="p-6 overflow-y-auto space-y-6 text-xs text-[#9BA3BD] custom-scrollbar">
           {/* Shortcuts Grid */}
           <div>
-            <div className="font-bold text-slate-900 mb-3 flex items-center gap-2 text-sm">
-              <Keyboard className="w-4 h-4 text-blue-600" />
+            <div className="font-bold text-[#F4F5FF] mb-3 flex items-center gap-2 text-sm">
+              <Keyboard className="w-4 h-4 text-[#42D6E8]" />
               <span>Keyboard Shortcuts</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {shortcuts.map((s, idx) => (
-                <div key={idx} className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3">
-                  <span className="text-slate-600 font-medium">{s.desc}</span>
-                  <kbd className="px-2 py-1 rounded-lg bg-white border border-slate-300 font-mono text-[11px] font-bold text-slate-800 shadow-sm shrink-0">
+                <div key={idx} className="p-3 rounded-2xl glass-card border-white/10 flex items-center justify-between gap-3">
+                  <span className="text-[#9BA3BD] font-medium">{s.desc}</span>
+                  <kbd className="px-2 py-1 rounded-lg bg-white/10 border border-white/15 font-mono text-[11px] font-bold text-[#F4F5FF] shadow-sm shrink-0">
                     {s.key}
                   </kbd>
                 </div>
@@ -79,18 +79,18 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
 
           {/* Privacy & Architecture Features */}
           <div>
-            <div className="font-bold text-slate-900 mb-3 flex items-center gap-2 text-sm">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <div className="font-bold text-[#F4F5FF] mb-3 flex items-center gap-2 text-sm">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Key Architecture &amp; Privacy Rules</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {features.map((f, idx) => (
-                <div key={idx} className="p-3.5 rounded-2xl bg-blue-50/40 border border-blue-100/80 space-y-1">
-                  <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <div key={idx} className="p-3.5 rounded-2xl glass-card border-white/10 space-y-1">
+                  <div className="font-bold text-[#F4F5FF] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#8B7CFF]" />
                     <span>{f.title}</span>
                   </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <p className="text-[11px] text-[#9BA3BD] leading-relaxed">
                     {f.desc}
                   </p>
                 </div>
@@ -100,11 +100,11 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span className="text-slate-500">Need more assistance? Drop feedback in Settings.</span>
+        <div className="p-4 bg-[#11152A]/90 border-t border-white/10 flex items-center justify-between text-xs">
+          <span className="text-[#9BA3BD]">Need more assistance? Drop feedback in Settings.</span>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold cursor-pointer transition-all"
+            className="px-5 py-2 rounded-xl glass-btn-primary font-bold cursor-pointer transition-all shadow-md shadow-[#8B7CFF]/20"
           >
             Got it
           </button>
