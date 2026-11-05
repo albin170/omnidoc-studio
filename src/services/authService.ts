@@ -1,5 +1,6 @@
 import { UserRole, PlanTier, UserSession } from './storageService';
 import { AuditLogEntry } from '../types';
+import { omniDocClient, BackendUserRegisterPayload } from '../sdk/omnidocClient';
 
 const AUDIT_LOGS_KEY = 'omnidoc_audit_logs_v2';
 
@@ -45,6 +46,14 @@ export interface SecureAuthSession extends UserSession {
   issuedAt?: number;
   expiresAt?: number;
   deviceId?: string;
+  jwtToken?: string;
+  authSource?: 'backend' | 'local_sandbox';
+  consent?: {
+    termsAccepted: boolean;
+    privacyAccepted: boolean;
+    aiConsent: boolean;
+    marketingConsent: boolean;
+  };
 }
 
 /**
@@ -59,6 +68,7 @@ export async function computeSessionSignature(session: Partial<SecureAuthSession
     session.isAuthenticated ? '1' : '0',
     session.issuedAt || 0,
     session.expiresAt || 0,
+    session.jwtToken || '',
     getDeviceAuthSecret(),
   ].join('::');
 
@@ -117,7 +127,107 @@ export function getAuditLogs(): AuditLogEntry[] {
 }
 
 /**
- * Authenticate and issue a cryptographically signed session token
+ * Register user via real FastAPI Backend with mandatory policy consents
+ */
+export async function registerWithBackend(
+  data: BackendUserRegisterPayload
+): Promise<SecureAuthSession> {
+  try {
+    const user = await omniDocClient.register(data);
+    // After registration, automatically authenticate and obtain JWT
+    const tokenData = await omniDocClient.login(data.email, data.password);
+    
+    const now = Date.now();
+    const session: SecureAuthSession = {
+      isGuest: false,
+      userEmail: user.email,
+      userName: user.full_name,
+      role: (user.role as UserRole) || 'user',
+      planTier: 'pro',
+      storageUsedBytes: 0,
+      isAuthenticated: true,
+      issuedAt: now,
+      expiresAt: now + 24 * 60 * 60 * 1000,
+      jwtToken: tokenData.access_token,
+      authSource: 'backend',
+      consent: {
+        termsAccepted: user.terms_accepted,
+        privacyAccepted: user.privacy_accepted,
+        aiConsent: user.ai_consent,
+        marketingConsent: user.marketing_consent,
+      },
+    };
+
+    session.signature = await computeSessionSignature(session);
+    recordAuditLog('BACKEND_REGISTER_SUCCESS', session.userEmail || data.email, `Registered user with server-verified consent (Terms v${data.terms_version || '2026.1'})`);
+    return session;
+  } catch (err: any) {
+    recordAuditLog('BACKEND_REGISTER_FAILED', data.email, err?.message || 'Registration failed', 'warn');
+    throw err;
+  }
+}
+
+/**
+ * Authenticate credentials via real FastAPI Backend and obtain secure JWT
+ */
+export async function loginWithBackend(
+  email: string,
+  password: string
+): Promise<SecureAuthSession> {
+  try {
+    const tokenData = await omniDocClient.login(email, password);
+    const profile = await omniDocClient.getProfile().catch(() => ({
+      email: tokenData.email,
+      full_name: tokenData.full_name || email.split('@')[0],
+      role: tokenData.role || 'user',
+      terms_accepted: true,
+      privacy_accepted: true,
+      ai_consent: true,
+      marketing_consent: false,
+    }));
+
+    const now = Date.now();
+    const session: SecureAuthSession = {
+      isGuest: false,
+      userEmail: profile.email,
+      userName: profile.full_name || tokenData.full_name || email.split('@')[0],
+      role: (profile.role as UserRole) || (tokenData.role as UserRole) || 'user',
+      planTier: (tokenData.plan_tier as PlanTier) || 'pro',
+      storageUsedBytes: 0,
+      isAuthenticated: true,
+      issuedAt: now,
+      expiresAt: now + 24 * 60 * 60 * 1000,
+      jwtToken: tokenData.access_token,
+      authSource: 'backend',
+      consent: {
+        termsAccepted: Boolean(profile.terms_accepted),
+        privacyAccepted: Boolean(profile.privacy_accepted),
+        aiConsent: Boolean(profile.ai_consent),
+        marketingConsent: Boolean(profile.marketing_consent),
+      },
+    };
+
+    session.signature = await computeSessionSignature(session);
+    recordAuditLog('BACKEND_LOGIN_SUCCESS', session.userEmail || email, `Server-authenticated JWT issued for role: ${session.role}`);
+    return session;
+  } catch (err: any) {
+    recordAuditLog('BACKEND_LOGIN_FAILED', email, err?.message || 'Authentication failed', 'warn');
+    throw err;
+  }
+}
+
+/**
+ * Log out user from both backend and local session
+ */
+export async function logoutUser(userEmail?: string): Promise<void> {
+  try {
+    await omniDocClient.logout();
+  } catch {}
+  recordAuditLog('LOGOUT_SUCCESS', userEmail || 'anonymous', 'Session terminated and JWT purged');
+}
+
+/**
+ * Local Sandbox fallback session creation (for testing or zero-network mode)
  */
 export async function createSecureSession(
   email: string,
@@ -137,10 +247,17 @@ export async function createSecureSession(
     issuedAt: now,
     expiresAt: now + 7 * 24 * 60 * 60 * 1000, // 7 days expiration
     deviceId: `dev-${Math.random().toString(36).substring(2, 9)}`,
+    authSource: 'local_sandbox',
+    consent: {
+      termsAccepted: true,
+      privacyAccepted: true,
+      aiConsent: true,
+      marketingConsent: false,
+    },
   };
 
   session.signature = await computeSessionSignature(session);
-  recordAuditLog('SESSION_CREATED', session.userEmail || '', `Session issued for role: ${role}, tier: ${planTier}`);
+  recordAuditLog('SANDBOX_SESSION_CREATED', session.userEmail || '', `Sandbox session issued for role: ${role}`);
   return session;
 }
 
@@ -260,4 +377,5 @@ export function deleteUserAccount(email: string): void {
   localStorage.removeItem('omnidoc_user_auth_v1');
   localStorage.removeItem('omnidoc_projects_v1');
   localStorage.removeItem('omnidoc_history_v1');
+  localStorage.removeItem('omnidoc_backend_jwt');
 }
