@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Bold, 
   Italic, 
@@ -16,9 +16,18 @@ import {
   DownloadCloud, 
   Upload, 
   Save,
-  Clock
+  Clock,
+  Undo,
+  Redo,
+  RemoveFormatting,
+  X
 } from 'lucide-react';
-import { createDocxBlob, convertTextOrDocxToPdf, extractTextFromDocxFile } from '../../services/docxService';
+import { 
+  createDocxBlob, 
+  convertTextOrDocxToPdf, 
+  extractTextFromDocxFile,
+  htmlToDocxItems
+} from '../../services/docxService';
 import { escapeHtml } from '../../services/converter';
 import saveAs from 'file-saver';
 import confetti from 'canvas-confetti';
@@ -29,119 +38,200 @@ interface DocxStudioProps {
   onSaveToProjects?: (title: string, data: any) => void;
 }
 
+const DEFAULT_INITIAL_HTML = `
+<h1>Executive Strategy Overview</h1>
+<h2>1. Project Objectives</h2>
+<p>OmniDoc Studio delivers an end-to-end multi-format document workspace running directly in browser memory.</p>
+<h3>Key Milestones</h3>
+<ul>
+  <li>High-fidelity PDF rendering and vector modification.</li>
+  <li>Rich DOCX import and packaging with OpenXML compliance.</li>
+  <li>PowerPoint slide generation and presentation decks.</li>
+  <li>Tabular data calculations with real spreadsheet formulas.</li>
+</ul>
+<h2>2. Technical Architecture</h2>
+<p>The core engine executes client-side WebAssembly and JavaScript engines to guarantee <strong>100% offline privacy</strong> and <em>zero latency server bottlenecks</em>.</p>
+<table style="width:100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 12px;">
+  <thead>
+    <tr style="background-color: #1e293b; color: #f8fafc;">
+      <th style="border: 1px solid #475569; padding: 8px;">Module</th>
+      <th style="border: 1px solid #475569; padding: 8px;">Standard</th>
+      <th style="border: 1px solid #475569; padding: 8px;">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #334155; padding: 8px;">PDF Engine</td>
+      <td style="border: 1px solid #334155; padding: 8px;">ISO 32000-1</td>
+      <td style="border: 1px solid #334155; padding: 8px; color: #34d399;">Production Verified</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #334155; padding: 8px;">Word Engine</td>
+      <td style="border: 1px solid #334155; padding: 8px;">ECMA-376</td>
+      <td style="border: 1px solid #334155; padding: 8px; color: #34d399;">Production Verified</td>
+    </tr>
+  </tbody>
+</table>
+`;
+
 export const DocxStudio: React.FC<DocxStudioProps> = ({
   initialContent,
   initialTitle,
   onSaveToProjects,
 }) => {
-  const [docTitle, setDocTitle] = useState(initialTitle || 'Untitled Document');
-  const [content, setContent] = useState(
-    initialContent ||
-`# Executive Strategy Overview
-
-## 1. Project Objectives
-OmniDoc Studio delivers an end-to-end multi-format document workspace running directly in browser memory.
-
-### Key Milestones
-- High-fidelity PDF rendering and vector modification.
-- Rich DOCX import and packaging with OpenXML compliance.
-- PowerPoint slide generation and presentation decks.
-- Tabular data calculations with real spreadsheet formulas.
-
-## 2. Technical Architecture
-The core engine executes client-side WebAssembly and JavaScript engines to guarantee 100% offline privacy and zero latency server bottlenecks.`
-  );
-
-  // Find & Replace
+  const [docTitle, setDocTitle] = useState(initialTitle || 'Strategic Document');
   const [isFindOpen, setIsFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState('');
   const [replaceQuery, setReplaceQuery] = useState('');
   const [exportFormat, setExportFormat] = useState<'docx' | 'pdf' | 'txt' | 'html'>('docx');
   const [isExporting, setIsExporting] = useState(false);
+  const [wordsCount, setWordsCount] = useState(0);
+  const [charsCount, setCharsCount] = useState(0);
 
-  // Synchronize state when external file or project is loaded
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  // Initialize editor content
+  useEffect(() => {
+    if (editorRef.current) {
+      if (initialContent) {
+        if (initialContent.includes('<') && initialContent.includes('>')) {
+          editorRef.current.innerHTML = initialContent;
+        } else {
+          // Plain text / markdown to paragraphs
+          const paragraphs = initialContent
+            .split('\n\n')
+            .map((p) => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
+            .join('');
+          editorRef.current.innerHTML = paragraphs;
+        }
+      } else {
+        editorRef.current.innerHTML = DEFAULT_INITIAL_HTML;
+      }
+      updateStats();
+    }
+  }, [initialContent]);
+
   useEffect(() => {
     if (initialTitle) setDocTitle(initialTitle);
   }, [initialTitle]);
 
-  useEffect(() => {
-    if (initialContent !== undefined) setContent(initialContent);
-  }, [initialContent]);
+  const updateStats = () => {
+    if (!editorRef.current) return;
+    const text = editorRef.current.innerText || '';
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    setWordsCount(words);
+    setCharsCount(text.length);
+  };
 
-  // Statistics
-  const wordsCount = content.trim().split(/\s+/).filter(Boolean).length;
-  const charsCount = content.length;
-  const readTimeMin = Math.max(1, Math.ceil(wordsCount / 200));
+  const executeCommand = (cmd: string, val: string | undefined = undefined) => {
+    document.execCommand(cmd, false, val);
+    if (editorRef.current) {
+      editorRef.current.focus();
+      updateStats();
+    }
+  };
+
+  const handleInsertTable = () => {
+    const tableHtml = `
+      <table style="width:100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 12px;">
+        <thead>
+          <tr style="background-color: #1e293b; color: #f8fafc;">
+            <th style="border: 1px solid #475569; padding: 8px;">Header 1</th>
+            <th style="border: 1px solid #475569; padding: 8px;">Header 2</th>
+            <th style="border: 1px solid #475569; padding: 8px;">Header 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border: 1px solid #334155; padding: 8px;">Cell 1</td>
+            <td style="border: 1px solid #334155; padding: 8px;">Cell 2</td>
+            <td style="border: 1px solid #334155; padding: 8px;">Cell 3</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #334155; padding: 8px;">Cell 4</td>
+            <td style="border: 1px solid #334155; padding: 8px;">Cell 5</td>
+            <td style="border: 1px solid #334155; padding: 8px;">Cell 6</td>
+          </tr>
+        </tbody>
+      </table><p><br></p>
+    `;
+    executeCommand('insertHTML', tableHtml);
+  };
 
   const handleImportDocx = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setDocTitle(file.name.replace(/\.[^/.]+$/, ''));
-    if (file.name.endsWith('.docx')) {
-      const text = await extractTextFromDocxFile(file);
-      setContent(text);
-    } else {
-      const text = await file.text();
-      setContent(text);
+    try {
+      if (file.name.endsWith('.docx')) {
+        const text = await extractTextFromDocxFile(file);
+        if (editorRef.current) {
+          const paras = text.split('\n\n').filter(Boolean).map((p) => `<p>${escapeHtml(p)}</p>`).join('');
+          editorRef.current.innerHTML = paras || `<p>${escapeHtml(text)}</p>`;
+        }
+      } else if (file.name.endsWith('.html')) {
+        const html = await file.text();
+        if (editorRef.current) {
+          editorRef.current.innerHTML = html;
+        }
+      } else {
+        const text = await file.text();
+        if (editorRef.current) {
+          editorRef.current.innerText = text;
+        }
+      }
+      updateStats();
+      confetti({ particleCount: 30, spread: 50 });
+    } catch (err: any) {
+      console.error('Import failed:', err);
+      alert('Failed to import file: ' + (err.message || 'Unknown error'));
     }
   };
 
   const handleFindReplace = () => {
-    if (!findQuery) return;
+    if (!findQuery || !editorRef.current) return;
+    const currentHtml = editorRef.current.innerHTML;
     const escaped = findQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(escaped, 'gi');
-    const updated = content.replace(regex, replaceQuery);
-    setContent(updated);
+    editorRef.current.innerHTML = currentHtml.replace(regex, replaceQuery);
+    updateStats();
   };
 
   const handleExport = async () => {
+    if (!editorRef.current) return;
     setIsExporting(true);
+    const html = editorRef.current.innerHTML;
+    const text = editorRef.current.innerText;
+
     try {
       if (exportFormat === 'docx') {
-        const lines = content.split('\n');
-        const items = lines.map((line) => {
-          if (line.startsWith('# ')) {
-            return { type: 'h1' as const, text: line.replace('# ', '') };
-          } else if (line.startsWith('## ')) {
-            return { type: 'h2' as const, text: line.replace('## ', '') };
-          } else if (line.startsWith('### ')) {
-            return { type: 'h3' as const, text: line.replace('### ', '') };
-          } else if (line.startsWith('- ') || line.startsWith('• ')) {
-            return { type: 'bullet' as const, text: line.replace(/^[-•]\s*/, '') };
-          } else {
-            return { type: 'paragraph' as const, text: line };
-          }
-        });
-
+        const items = htmlToDocxItems(html);
         const docxBlob = await createDocxBlob(docTitle, items);
         saveAs(docxBlob, `${docTitle}.docx`);
       } else if (exportFormat === 'pdf') {
-        const pdfBytes = await convertTextOrDocxToPdf(docTitle, content);
+        const pdfBytes = await convertTextOrDocxToPdf(docTitle, text);
         const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
         saveAs(blob, `${docTitle}.pdf`);
       } else if (exportFormat === 'txt') {
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
         saveAs(blob, `${docTitle}.txt`);
       } else if (exportFormat === 'html') {
-        const escapedTitle = escapeHtml(docTitle);
-        const bodyContent = content.split('\n\n').map(p => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`).join('\n');
-        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapedTitle}</title></head><body><h1>${escapedTitle}</h1>${bodyContent}</body></html>`;
-        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(docTitle)}</title></head><body style="font-family:sans-serif;max-width:800px;margin:40px auto;line-height:1.6;"><h1>${escapeHtml(docTitle)}</h1>${html}</body></html>`;
+        const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
         saveAs(blob, `${docTitle}.html`);
       }
 
       confetti({ particleCount: 40, spread: 60 });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Export failed:', err);
+      alert('Export failed: ' + (err.message || 'Unknown error'));
     } finally {
       setIsExporting(false);
     }
   };
 
-  const insertSnippet = (prefix: string, suffix: string = '') => {
-    setContent((prev) => `${prev}\n${prefix}Heading${suffix}`);
-  };
+  const readTimeMin = Math.max(1, Math.ceil(wordsCount / 200));
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
@@ -156,7 +246,7 @@ The core engine executes client-side WebAssembly and JavaScript engines to guara
             placeholder="Document Title"
           />
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-semibold border border-blue-500/30">
-            DOCX
+            RICH DOCX
           </span>
         </div>
 
@@ -170,7 +260,7 @@ The core engine executes client-side WebAssembly and JavaScript engines to guara
 
           {onSaveToProjects && (
             <button
-              onClick={() => onSaveToProjects(docTitle, { content })}
+              onClick={() => onSaveToProjects(docTitle, { content: editorRef.current?.innerHTML })}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
             >
               <Save className="w-3.5 h-3.5 text-indigo-400" />
@@ -202,24 +292,42 @@ The core engine executes client-side WebAssembly and JavaScript engines to guara
       </div>
 
       {/* Editor Formatting Toolbar */}
-      <div className="h-11 border-b border-slate-800/80 bg-slate-900/60 px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2">
-        <div className="flex items-center gap-1 text-slate-400">
+      <div className="h-11 border-b border-slate-800/80 bg-slate-900/60 px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-slate-400">
+        <div className="flex items-center gap-1">
           <button
-            onClick={() => insertSnippet('# ')}
+            onClick={() => executeCommand('undo')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            title="Undo"
+          >
+            <Undo className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => executeCommand('redo')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            title="Redo"
+          >
+            <Redo className="w-3.5 h-3.5" />
+          </button>
+
+          <div className="h-4 w-px bg-slate-800 mx-1" />
+
+          {/* Heading formats */}
+          <button
+            onClick={() => executeCommand('formatBlock', '<h1>')}
             className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
             title="Heading 1"
           >
             <Heading1 className="w-4 h-4" />
           </button>
           <button
-            onClick={() => insertSnippet('## ')}
+            onClick={() => executeCommand('formatBlock', '<h2>')}
             className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
             title="Heading 2"
           >
             <Heading2 className="w-4 h-4" />
           </button>
           <button
-            onClick={() => insertSnippet('### ')}
+            onClick={() => executeCommand('formatBlock', '<h3>')}
             className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
             title="Heading 3"
           >
@@ -228,41 +336,93 @@ The core engine executes client-side WebAssembly and JavaScript engines to guara
 
           <div className="h-4 w-px bg-slate-800 mx-1" />
 
+          {/* Inline styles */}
           <button
-            onClick={() => setContent((prev) => `${prev} **Bold Text**`)}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
-            title="Bold"
+            onClick={() => executeCommand('bold')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white font-bold"
+            title="Bold (Ctrl+B)"
           >
             <Bold className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setContent((prev) => `${prev} *Italic Text*`)}
-            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
-            title="Italic"
+            onClick={() => executeCommand('italic')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white italic"
+            title="Italic (Ctrl+I)"
           >
             <Italic className="w-4 h-4" />
           </button>
           <button
-            onClick={() => insertSnippet('- ')}
+            onClick={() => executeCommand('underline')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white underline"
+            title="Underline (Ctrl+U)"
+          >
+            <Underline className="w-4 h-4" />
+          </button>
+
+          <div className="h-4 w-px bg-slate-800 mx-1" />
+
+          {/* Lists */}
+          <button
+            onClick={() => executeCommand('insertUnorderedList')}
             className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
-            title="Bullet list"
+            title="Bullet List"
           >
             <List className="w-4 h-4" />
           </button>
-
           <button
-            onClick={() =>
-              setContent(
-                (prev) =>
-                  `${prev}\n\n| Item | Description | Cost |\n|---|---|---|\n| 1 | Development | $5,000 |\n| 2 | Testing | $2,000 |\n`
-              )
-            }
+            onClick={() => executeCommand('insertOrderedList')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            title="Numbered List"
+          >
+            <ListOrdered className="w-4 h-4" />
+          </button>
+
+          <div className="h-4 w-px bg-slate-800 mx-1" />
+
+          {/* Alignment */}
+          <button
+            onClick={() => executeCommand('justifyLeft')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            title="Align Left"
+          >
+            <AlignLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => executeCommand('justifyCenter')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            title="Align Center"
+          >
+            <AlignCenter className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => executeCommand('justifyRight')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            title="Align Right"
+          >
+            <AlignRight className="w-4 h-4" />
+          </button>
+
+          <div className="h-4 w-px bg-slate-800 mx-1" />
+
+          {/* Table */}
+          <button
+            onClick={handleInsertTable}
             className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
             title="Insert Table"
           >
             <TableIcon className="w-4 h-4" />
           </button>
 
+          {/* Clear format */}
+          <button
+            onClick={() => executeCommand('removeFormat')}
+            className="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+            title="Clear Formatting"
+          >
+            <RemoveFormatting className="w-4 h-4" />
+          </button>
+
+          {/* Search */}
           <button
             onClick={() => setIsFindOpen(!isFindOpen)}
             className={`p-1.5 rounded hover:bg-slate-800 ${isFindOpen ? 'text-indigo-400 bg-slate-800' : ''}`}
@@ -272,7 +432,7 @@ The core engine executes client-side WebAssembly and JavaScript engines to guara
           </button>
         </div>
 
-        {/* Word and character count pill */}
+        {/* Word and character count */}
         <div className="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
           <span>{wordsCount} words</span>
           <span>{charsCount} chars</span>
@@ -310,19 +470,20 @@ The core engine executes client-side WebAssembly and JavaScript engines to guara
             onClick={() => setIsFindOpen(false)}
             className="text-slate-500 hover:text-slate-300 ml-auto"
           >
-            Close
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {/* Document Writing Surface (A4 styled paper) */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center bg-slate-950">
-        <div className="w-full max-w-4xl bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl p-6 md:p-12 min-h-[750px] flex flex-col">
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full flex-1 bg-transparent text-slate-100 font-sans text-sm md:text-base leading-relaxed outline-none resize-none"
-            placeholder="Start typing your document or paste text..."
+        <div className="w-full max-w-4xl bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl p-6 md:p-12 min-h-[750px] flex flex-col text-slate-100">
+          <div
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={updateStats}
+            className="w-full flex-1 outline-none text-slate-100 font-sans text-sm md:text-base leading-relaxed space-y-3 focus:ring-0 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-white [&>h1]:mb-3 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-slate-100 [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:text-slate-200 [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:mb-2 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table_th]:border [&>table_th]:border-slate-700 [&>table_th]:p-2 [&>table_td]:border [&>table_td]:border-slate-800 [&>table_td]:p-2"
           />
         </div>
       </div>

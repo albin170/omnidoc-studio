@@ -6,19 +6,18 @@ import {
   Copy, 
   Play, 
   DownloadCloud, 
+  Upload,
   Palette, 
   Type, 
-  Square, 
   ArrowUp, 
   ArrowDown, 
   X, 
   ChevronLeft, 
   ChevronRight,
-  Save,
-  Sparkles
+  Save
 } from 'lucide-react';
-import { SlideElement, SlideItem } from '../../types';
-import { createPresentationBlob, convertSlidesToPdf } from '../../services/pptxService';
+import { SlideItem } from '../../types';
+import { createPresentationBlob, convertSlidesToPdf, extractTextFromPptxFile } from '../../services/pptxService';
 import saveAs from 'file-saver';
 import confetti from 'canvas-confetti';
 
@@ -204,6 +203,61 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
     );
   };
 
+  const handleImportPptx = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setDeckTitle(file.name.replace(/\.[^/.]+$/, ''));
+      const slidesText = await extractTextFromPptxFile(file);
+      const parsedSlides: SlideItem[] = slidesText.map((slideContent, idx) => {
+        const lines = slideContent.split('\n').filter(Boolean);
+        const titleLine = lines[0] || `Slide ${idx + 1}`;
+        const bodyLines = lines.slice(1).join('\n') || '';
+
+        return {
+          id: `slide-imported-${idx}-${Date.now()}`,
+          title: titleLine.length > 30 ? titleLine.slice(0, 28) + '…' : titleLine,
+          bgColor: '#0f172a',
+          layout: idx === 0 ? 'title' : 'content',
+          elements: [
+            {
+              id: `el-title-${idx}`,
+              type: 'title',
+              content: titleLine,
+              x: 8,
+              y: idx === 0 ? 25 : 12,
+              width: 84,
+              height: 20,
+              fontSize: idx === 0 ? 40 : 32,
+              fontColor: '#ffffff',
+            },
+            ...(bodyLines ? [{
+              id: `el-body-${idx}`,
+              type: 'text' as const,
+              content: bodyLines,
+              x: 8,
+              y: idx === 0 ? 50 : 35,
+              width: 84,
+              height: 55,
+              fontSize: 18,
+              fontColor: '#cbd5e1',
+            }] : []),
+          ],
+        };
+      });
+
+      if (parsedSlides.length > 0) {
+        setSlides(parsedSlides);
+        setActiveSlideIndex(0);
+        confetti({ particleCount: 35, spread: 55 });
+      }
+    } catch (err: any) {
+      console.error('PPTX Import error:', err);
+      alert('Failed to import presentation: ' + (err.message || 'Unknown error'));
+    }
+  };
+
   // Export handlers
   const handleExportPptx = async () => {
     setIsExporting(true);
@@ -251,6 +305,12 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
+            <Upload className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Import PPTX</span>
+            <input type="file" accept=".pptx" className="hidden" onChange={handleImportPptx} />
+          </label>
+
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(deckTitle, { slides })}

@@ -153,10 +153,41 @@ export interface TemplateItem {
 }
 
 // PDF Workspace Types
+export interface PdfTextItem {
+  id: string;
+  str: string;
+  pdfX: number;
+  pdfY: number;
+  viewportX: number;
+  viewportY: number;
+  width: number;
+  height: number;
+  fontSize: number;
+  fontName?: string;
+}
+
+export interface PdfTextEdit {
+  id: string;
+  pageIndex: number; // 0-based
+  originalText: string;
+  newText: string;
+  pdfX: number;
+  pdfY: number;
+  width: number;
+  height: number;
+  fontSize?: number;
+  fontColor?: string;
+  fontWeight?: 'normal' | 'bold';
+  fontStyle?: 'normal' | 'italic';
+  textAlign?: 'left' | 'center' | 'right';
+  isRedaction?: boolean;
+  isDeleted?: boolean;
+}
+
 export interface PDFAnnotation {
   id: string;
   pageIndex: number;
-  type: 'text' | 'watermark' | 'redact' | 'signature' | 'highlight';
+  type: 'text' | 'watermark' | 'redact' | 'signature' | 'highlight' | 'underline' | 'strikethrough' | 'rectangle' | 'line' | 'comment' | 'image';
   x: number;
   y: number;
   width?: number;
@@ -166,7 +197,7 @@ export interface PDFAnnotation {
   color?: string;
   opacity?: number;
   rotation?: number;
-  dataUrl?: string; // for drawn signatures / stamps
+  dataUrl?: string; // for drawn signatures / stamps / images
 }
 
 // Slide Workspace Types

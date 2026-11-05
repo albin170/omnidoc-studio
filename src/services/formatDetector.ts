@@ -16,7 +16,7 @@ export const FORMAT_REGISTRY: Record<FileFormat, FormatMetadata> = {
     mimeType: 'application/pdf',
     category: 'document',
     color: '#ef4444',
-    allowedConversions: ['docx', 'txt', 'png', 'jpg', 'pptx'],
+    allowedConversions: ['docx', 'txt', 'png', 'jpg', 'pptx', 'pdf'],
   },
   docx: {
     format: 'docx',
@@ -32,7 +32,7 @@ export const FORMAT_REGISTRY: Record<FileFormat, FormatMetadata> = {
     mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     category: 'presentation',
     color: '#ea580c',
-    allowedConversions: ['pdf', 'png'],
+    allowedConversions: ['pdf', 'png', 'jpg', 'docx', 'txt'],
   },
   xlsx: {
     format: 'xlsx',
@@ -40,7 +40,7 @@ export const FORMAT_REGISTRY: Record<FileFormat, FormatMetadata> = {
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     category: 'spreadsheet',
     color: '#16a34a',
-    allowedConversions: ['csv', 'pdf', 'html'],
+    allowedConversions: ['csv', 'pdf', 'html', 'txt'],
   },
   csv: {
     format: 'csv',

@@ -70,6 +70,19 @@ export async function executeFileConversion(
   if (sourceFormat === 'pdf') {
     const arrayBuffer = await file.arrayBuffer();
 
+    if (targetFormat === 'pdf') {
+      updateProgress(40, 'Re-compressing and optimizing PDF streams...');
+      const { PDFDocument } = await import('pdf-lib');
+      const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+      const optimizedBytes = await pdfDoc.save({ useObjectStreams: true });
+      updateProgress(100, 'PDF optimization completed');
+      return {
+        blob: new Blob([optimizedBytes as any], { type: 'application/pdf' }),
+        fileName: `${baseName}_optimized.pdf`,
+        mimeType: 'application/pdf',
+      };
+    }
+
     if (targetFormat === 'txt') {
       updateProgress(40, 'Extracting selectable text from PDF pages...');
       const text = await extractTextFromPdf(arrayBuffer);

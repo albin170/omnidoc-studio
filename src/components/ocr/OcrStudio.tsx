@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ScanText, 
   Upload, 
   Copy, 
   Check, 
-  DownloadCloud, 
   Loader2, 
   Sparkles, 
   PenTool, 
   Clock, 
   Gauge, 
-  FileCheck,
-  FileText
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
 import { OCRResult } from '../../types';
-import { performOcr } from '../../services/ocrService';
+import { performOcr, renderPdfPageToCanvas } from '../../services/ocrService';
 import { createDocxBlob, convertTextOrDocxToPdf } from '../../services/docxService';
 import saveAs from 'file-saver';
 import confetti from 'canvas-confetti';
@@ -26,8 +27,13 @@ interface OcrStudioProps {
 export const OcrStudio: React.FC<OcrStudioProps> = ({
   onSendToWordEditor,
 }) => {
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [isPdf, setIsPdf] = useState<boolean>(false);
+  const [pdfDoc, setPdfDoc] = useState<any>(null);
+  const [pdfPageCount, setPdfPageCount] = useState<number>(0);
+  const [currentPdfPage, setCurrentPdfPage] = useState<number>(1);
+
   const [selectedLanguage, setSelectedLanguage] = useState<string>('eng');
   const [isRecognizing, setIsRecognizing] = useState<boolean>(false);
   const [progressStatus, setProgressStatus] = useState<string>('');
@@ -36,22 +42,68 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
   const [editableText, setEditableText] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
 
-  const handleSelectImage = (file: File) => {
-    setImageFile(file);
-    setImagePreviewUrl(URL.createObjectURL(file));
+  const pdfCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  const handleSelectFile = async (file: File) => {
+    setSourceFile(file);
     setOcrResult(null);
     setEditableText('');
+
+    const isPdfFile = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    setIsPdf(isPdfFile);
+
+    if (isPdfFile) {
+      setImagePreviewUrl(null);
+      try {
+        const buffer = await file.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: buffer });
+        const doc = await loadingTask.promise;
+        setPdfDoc(doc);
+        setPdfPageCount(doc.numPages);
+        setCurrentPdfPage(1);
+      } catch (err) {
+        console.error('Failed to load PDF preview:', err);
+      }
+    } else {
+      setPdfDoc(null);
+      setPdfPageCount(0);
+      setImagePreviewUrl(URL.createObjectURL(file));
+    }
   };
 
+  // Render PDF page whenever pdfDoc or currentPdfPage changes
+  useEffect(() => {
+    if (!isPdf || !pdfDoc || !pdfCanvasRef.current) return;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const tempCanvas = await renderPdfPageToCanvas(pdfDoc, currentPdfPage, 1.3);
+        if (!isMounted || !pdfCanvasRef.current) return;
+        const targetCanvas = pdfCanvasRef.current;
+        targetCanvas.width = tempCanvas.width;
+        targetCanvas.height = tempCanvas.height;
+        const ctx = targetCanvas.getContext('2d')!;
+        ctx.drawImage(tempCanvas, 0, 0);
+      } catch (e) {
+        console.error('Render PDF page error:', e);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isPdf, pdfDoc, currentPdfPage]);
+
   const handleRunOcr = async () => {
-    if (!imageFile) return;
+    if (!sourceFile) return;
 
     setIsRecognizing(true);
     setProgressStatus('Initializing OCR engine...');
     setProgressPct(5);
 
     try {
-      const res = await performOcr(imageFile, selectedLanguage, (status, pct) => {
+      const res = await performOcr(sourceFile, selectedLanguage, (status, pct) => {
         setProgressStatus(status);
         setProgressPct(pct);
       });
@@ -75,7 +127,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
 
   const handleExportTxt = () => {
     const blob = new Blob([editableText], { type: 'text/plain;charset=utf-8' });
-    saveAs(blob, `${imageFile?.name.replace(/\.[^/.]+$/, '')}_ocr.txt`);
+    saveAs(blob, `${sourceFile?.name.replace(/\.[^/.]+$/, '')}_ocr.txt`);
   };
 
   const handleExportDocx = async () => {
@@ -84,13 +136,13 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
       text: p,
     }));
     const blob = await createDocxBlob('OCR Scanned Document', paragraphs);
-    saveAs(blob, `${imageFile?.name.replace(/\.[^/.]+$/, '')}_ocr.docx`);
+    saveAs(blob, `${sourceFile?.name.replace(/\.[^/.]+$/, '')}_ocr.docx`);
   };
 
   const handleExportPdf = async () => {
     const pdfBytes = await convertTextOrDocxToPdf('OCR Scanned Document', editableText);
     const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
-    saveAs(blob, `${imageFile?.name.replace(/\.[^/.]+$/, '')}_searchable.pdf`);
+    saveAs(blob, `${sourceFile?.name.replace(/\.[^/.]+$/, '')}_searchable.pdf`);
   };
 
   return (
@@ -103,7 +155,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
             <h2 className="text-sm font-bold text-white tracking-tight">OCR Document Scanner</h2>
           </div>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30">
-            TESSERACT AI
+            TESSERACT AI · PDF &amp; IMAGES
           </span>
         </div>
 
@@ -126,18 +178,18 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
 
           <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
             <Upload className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Select Image / Scan</span>
+            <span>Select PDF / Image</span>
             <input
               type="file"
               accept="image/*,.pdf"
               className="hidden"
-              onChange={(e) => e.target.files?.[0] && handleSelectImage(e.target.files[0])}
+              onChange={(e) => e.target.files?.[0] && handleSelectFile(e.target.files[0])}
             />
           </label>
 
           <button
             onClick={handleRunOcr}
-            disabled={!imageFile || isRecognizing}
+            disabled={!sourceFile || isRecognizing}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white text-xs font-semibold shadow-md shadow-cyan-600/30 cursor-pointer"
           >
             {isRecognizing ? (
@@ -152,15 +204,45 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
 
       {/* Main OCR Split Workspace */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Left: Original Scanned Image */}
+        {/* Left: Original Scanned Image or PDF */}
         <div className="w-full md:w-1/2 border-r border-slate-800 bg-slate-900/30 flex flex-col overflow-hidden">
           <div className="p-3 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
             <span>Original Scanned Source</span>
-            {imageFile && <span className="text-[10px] text-slate-500 font-mono">{imageFile.name}</span>}
+            {sourceFile && (
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-slate-500 font-mono truncate max-w-[150px]">{sourceFile.name}</span>
+                {isPdf && pdfPageCount > 1 && (
+                  <div className="flex items-center gap-1 text-[11px] text-slate-300 font-normal">
+                    <button
+                      onClick={() => setCurrentPdfPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPdfPage <= 1}
+                      className="p-0.5 rounded hover:bg-slate-800 disabled:opacity-30"
+                      title="Previous Page"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="font-mono">{currentPdfPage} / {pdfPageCount}</span>
+                    <button
+                      onClick={() => setCurrentPdfPage((p) => Math.min(pdfPageCount, p + 1))}
+                      disabled={currentPdfPage >= pdfPageCount}
+                      className="p-0.5 rounded hover:bg-slate-800 disabled:opacity-30"
+                      title="Next Page"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-slate-950">
-            {imagePreviewUrl ? (
+            {isPdf ? (
+              <canvas
+                ref={pdfCanvasRef}
+                className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-xl border border-slate-800"
+              />
+            ) : imagePreviewUrl ? (
               <img
                 src={imagePreviewUrl}
                 alt="Source scan"
@@ -171,18 +253,18 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
                 <div className="w-14 h-14 mx-auto rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
                   <ScanText className="w-7 h-7" />
                 </div>
-                <h4 className="text-sm font-bold text-slate-200">No Image Uploaded</h4>
+                <h4 className="text-sm font-bold text-slate-200">No Document Uploaded</h4>
                 <p className="text-xs text-slate-500">
-                  Upload a photo of a document, certificate, invoice, receipt, or scanned note to extract editable text.
+                  Upload a scanned PDF, document photo, certificate, invoice, receipt, or image note to extract editable text.
                 </p>
                 <label className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer">
                   <Upload className="w-3.5 h-3.5" />
-                  <span>Choose Photo</span>
+                  <span>Choose PDF / Image</span>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.pdf"
                     className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleSelectImage(e.target.files[0])}
+                    onChange={(e) => e.target.files?.[0] && handleSelectFile(e.target.files[0])}
                   />
                 </label>
               </div>
@@ -219,7 +301,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
                     onClick={() =>
                       onSendToWordEditor(
                         editableText,
-                        imageFile?.name.replace(/\.[^/.]+$/, '') || 'OCR Document'
+                        sourceFile?.name.replace(/\.[^/.]+$/, '') || 'OCR Document'
                       )
                     }
                     className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-blue-300 text-xs flex items-center gap-1 cursor-pointer"
@@ -229,6 +311,14 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
                     <span>Open in Word</span>
                   </button>
                 )}
+
+                <button
+                  onClick={handleExportTxt}
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
+                  title="Download as TXT"
+                >
+                  TXT
+                </button>
 
                 <button
                   onClick={handleExportDocx}
@@ -249,49 +339,50 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
             )}
           </div>
 
-          {/* Recognition Progress Bar */}
+          {/* Progress Banner */}
           {isRecognizing && (
             <div className="p-4 bg-cyan-950/30 border-b border-cyan-800/40 space-y-2">
-              <div className="flex items-center justify-between text-xs text-cyan-300">
-                <span className="font-semibold">{progressStatus}...</span>
+              <div className="flex justify-between text-xs text-cyan-300">
+                <span className="font-semibold">{progressStatus || 'Processing OCR recognition...'}</span>
                 <span className="font-mono">{progressPct}%</span>
               </div>
-              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-cyan-400 transition-all duration-200"
+                  className="h-full bg-cyan-500 rounded-full transition-all duration-300"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
             </div>
           )}
 
-          {/* Editable text area for manual proofreading */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            {editableText ? (
-              <textarea
-                value={editableText}
-                onChange={(e) => setEditableText(e.target.value)}
-                className="w-full h-full bg-transparent text-slate-100 font-mono text-xs md:text-sm leading-relaxed outline-none resize-none"
-                placeholder="OCR recognized text will appear here..."
-              />
-            ) : (
-              <div className="text-center py-20 text-slate-600 text-xs">
-                Run OCR scan to extract words, paragraphs, and tables into editable text.
-              </div>
-            )}
+          {/* Text Editor Area */}
+          <div className="flex-1 p-4 flex flex-col overflow-hidden">
+            <textarea
+              value={editableText}
+              onChange={(e) => setEditableText(e.target.value)}
+              placeholder="OCR extracted text will appear here. You can directly edit, fix errors, or export to DOCX/PDF/TXT."
+              className="w-full flex-1 bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 text-slate-100 font-sans text-sm leading-relaxed outline-none focus:border-cyan-500/60 resize-none font-mono"
+            />
           </div>
 
-          {/* Bottom stats footer */}
+          {/* Footer Metrics */}
           {ocrResult && (
-            <div className="p-3 border-t border-slate-800/80 bg-slate-900/40 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-              <span className="flex items-center gap-1.5">
-                <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
-                {ocrResult.wordsCount} words extracted
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-slate-500" />
-                Processed in {ocrResult.processingTimeMs} ms
-              </span>
+            <div className="h-10 border-t border-slate-800 bg-slate-900/60 px-4 flex items-center justify-between text-[11px] text-slate-400 font-mono shrink-0">
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1">
+                  <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                  {ocrResult.wordsCount} words
+                </span>
+                <span className="flex items-center gap-1">
+                  <Gauge className="w-3.5 h-3.5 text-emerald-400" />
+                  {ocrResult.confidence}% confidence
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-purple-400" />
+                  {ocrResult.processingTimeMs}ms
+                </span>
+              </div>
+              <span className="text-slate-500 uppercase">{ocrResult.language} MODEL</span>
             </div>
           )}
         </div>

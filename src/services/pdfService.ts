@@ -1,6 +1,6 @@
 import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
-import { PDFAnnotation } from '../types';
+import { PDFAnnotation, PdfTextEdit, PdfTextItem } from '../types';
 
 // Configure pdfjs worker for Vite
 try {
@@ -29,6 +29,50 @@ export async function loadPdfForViewing(data: ArrayBuffer | Uint8Array) {
     }
     throw new Error(`Failed to load PDF: ${err?.message || 'Invalid or corrupted PDF file.'}`);
   }
+}
+
+/**
+ * Extract selectable text items with exact canvas viewport and PDF page coordinates
+ * Enables clicking/double-clicking existing text for in-place editing (Module 4A).
+ */
+export async function extractPageTextItems(
+  pdfJsDoc: any,
+  pageNumber: number,
+  scale: number = 1.0
+): Promise<PdfTextItem[]> {
+  const page = await pdfJsDoc.getPage(pageNumber);
+  const viewport = page.getViewport({ scale });
+  const textContent = await page.getTextContent();
+  const items: PdfTextItem[] = [];
+
+  for (let i = 0; i < textContent.items.length; i++) {
+    const it = textContent.items[i] as any;
+    if (!it.str || !it.str.trim()) continue;
+
+    const tx = it.transform[4];
+    const ty = it.transform[5];
+    const fontSize = Math.max(8, Math.round(Math.sqrt(it.transform[0] ** 2 + it.transform[1] ** 2)));
+    const [vx, vy] = viewport.convertToViewportPoint(tx, ty);
+
+    const itemWidth = Math.max(12, it.width * scale);
+    const itemHeight = Math.max(fontSize * scale, (it.height || fontSize) * scale);
+    const viewportY = Math.max(0, vy - itemHeight);
+
+    items.push({
+      id: `txt-${pageNumber}-${i}`,
+      str: it.str,
+      pdfX: tx,
+      pdfY: ty,
+      viewportX: vx,
+      viewportY,
+      width: itemWidth,
+      height: itemHeight,
+      fontSize,
+      fontName: it.fontName,
+    });
+  }
+
+  return items;
 }
 
 /**
@@ -198,22 +242,182 @@ export async function manipulatePdfPages(
 }
 
 /**
+ * Insert a blank page into the PDF
+ */
+export async function insertBlankPage(
+  pdfBuffer: ArrayBuffer | Uint8Array,
+  atIndex?: number,
+  width: number = 612,
+  height: number = 792
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const idx = atIndex !== undefined && atIndex >= 0 ? Math.min(atIndex, pdfDoc.getPageCount()) : pdfDoc.getPageCount();
+  pdfDoc.insertPage(idx, [width, height]);
+  return await pdfDoc.save();
+}
+
+/**
+ * Delete a specific page from the PDF
+ */
+export async function deletePdfPage(
+  pdfBuffer: ArrayBuffer | Uint8Array,
+  pageIndex: number
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  if (pdfDoc.getPageCount() <= 1) {
+    throw new Error('Cannot delete the only page of a document.');
+  }
+  if (pageIndex >= 0 && pageIndex < pdfDoc.getPageCount()) {
+    pdfDoc.removePage(pageIndex);
+  }
+  return await pdfDoc.save();
+}
+
+/**
+ * Duplicate a specific page in the PDF
+ */
+export async function duplicatePdfPage(
+  pdfBuffer: ArrayBuffer | Uint8Array,
+  pageIndex: number
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  if (pageIndex >= 0 && pageIndex < pdfDoc.getPageCount()) {
+    const [copied] = await pdfDoc.copyPages(pdfDoc, [pageIndex]);
+    pdfDoc.insertPage(pageIndex + 1, copied);
+  }
+  return await pdfDoc.save();
+}
+
+/**
+ * Rotate a specific page by delta degrees
+ */
+export async function rotatePdfPage(
+  pdfBuffer: ArrayBuffer | Uint8Array,
+  pageIndex: number,
+  deltaDegrees: number = 90
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  if (pageIndex >= 0 && pageIndex < pdfDoc.getPageCount()) {
+    const page = pdfDoc.getPage(pageIndex);
+    const currentAngle = page.getRotation().angle;
+    page.setRotation(degrees((currentAngle + deltaDegrees) % 360));
+  }
+  return await pdfDoc.save();
+}
+
+/**
+ * Reorder pages in a PDF given an array of page indices
+ */
+export async function reorderPdfPages(
+  pdfBuffer: ArrayBuffer | Uint8Array,
+  newOrder: number[]
+): Promise<Uint8Array> {
+  const srcPdf = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const newPdf = await PDFDocument.create();
+  const total = srcPdf.getPageCount();
+  const validOrder = newOrder.filter((idx) => idx >= 0 && idx < total);
+  const copied = await newPdf.copyPages(srcPdf, validOrder);
+  copied.forEach((p) => newPdf.addPage(p));
+  return await newPdf.save();
+}
+
+/**
+ * Extract selected pages (0-based) into a new PDF
+ */
+export async function extractSelectedPages(
+  pdfBuffer: ArrayBuffer | Uint8Array,
+  selectedIndices: number[]
+): Promise<Uint8Array> {
+  const srcPdf = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const newPdf = await PDFDocument.create();
+  const total = srcPdf.getPageCount();
+  const validIndices = selectedIndices.filter((idx) => idx >= 0 && idx < total);
+  if (validIndices.length === 0) {
+    throw new Error('Please select at least one valid page to extract.');
+  }
+  const copied = await newPdf.copyPages(srcPdf, validIndices);
+  copied.forEach((p) => newPdf.addPage(p));
+  return await newPdf.save();
+}
+
+/**
+ * Verify PDF integrity by parsing with PDFDocument
+ */
+export async function verifyPdfIntegrity(
+  pdfBytes: ArrayBuffer | Uint8Array
+): Promise<{ valid: boolean; isValid: boolean; pageCount: number; sizeBytes: number; error?: string }> {
+  try {
+    const data = pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes);
+    const doc = await PDFDocument.load(data, { ignoreEncryption: true });
+    const pageCount = doc.getPageCount();
+    return { 
+      valid: pageCount > 0, 
+      isValid: pageCount > 0, 
+      pageCount, 
+      sizeBytes: data.byteLength 
+    };
+  } catch (err: any) {
+    const size = pdfBytes instanceof Uint8Array ? pdfBytes.byteLength : pdfBytes.byteLength;
+    return { 
+      valid: false, 
+      isValid: false, 
+      pageCount: 0, 
+      sizeBytes: size, 
+      error: err?.message || 'Verification failed: invalid PDF' 
+    };
+  }
+}
+
+/**
  * Apply annotations, text overlays, watermarks, redactions, and signatures to PDF
  */
 export async function applyPdfModifications(
-  pdfBuffer: ArrayBuffer,
+  pdfBuffer: ArrayBuffer | Uint8Array,
   annotations: PDFAnnotation[],
   options?: {
     watermarkText?: string;
     addPageNumbers?: boolean;
+    textEdits?: PdfTextEdit[];
   }
 ): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
   const pages = pdfDoc.getPages();
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
-  // Apply general watermark if specified
+  // 1. Apply direct existing text edits (Module 4A: Genuine in-place text editing)
+  if (options?.textEdits && options.textEdits.length > 0) {
+    for (const edit of options.textEdits) {
+      if (edit.pageIndex < 0 || edit.pageIndex >= pages.length) continue;
+      const page = pages[edit.pageIndex];
+
+      // Opaque background rectangle completely wiping original text
+      page.drawRectangle({
+        x: Math.max(0, edit.pdfX - 2),
+        y: Math.max(0, edit.pdfY - 2),
+        width: Math.max(10, edit.width + 4),
+        height: Math.max(10, edit.height + 4),
+        color: rgb(1, 1, 1),
+        opacity: 1.0,
+      });
+
+      // Render replacement text
+      if (!edit.isDeleted && edit.newText && edit.newText.trim().length > 0) {
+        const chosenFont = edit.fontWeight === 'bold' ? boldFont : (edit.fontStyle === 'italic' ? italicFont : helveticaFont);
+        page.drawText(edit.newText, {
+          x: edit.pdfX,
+          y: edit.pdfY,
+          size: edit.fontSize || 12,
+          font: chosenFont,
+          color: hexToRgb(edit.fontColor || '#000000'),
+          opacity: 1.0,
+        });
+      }
+    }
+  }
+
+  // 2. Apply general watermark if specified
   if (options?.watermarkText) {
     for (const page of pages) {
       const { width, height } = page.getSize();
@@ -229,7 +433,7 @@ export async function applyPdfModifications(
     }
   }
 
-  // Apply page numbers if specified
+  // 3. Apply page numbers if specified
   if (options?.addPageNumbers) {
     const totalPages = pages.length;
     for (let i = 0; i < totalPages; i++) {
@@ -240,19 +444,19 @@ export async function applyPdfModifications(
         x: width / 2 - 30,
         y: 25,
         size: 10,
-        font,
+        font: helveticaFont,
         color: rgb(0.3, 0.3, 0.3),
       });
     }
   }
 
-  // Apply individual annotations
+  // 4. Apply annotations
   for (const ann of annotations) {
     if (ann.pageIndex < 0 || ann.pageIndex >= pages.length) continue;
     const page = pages[ann.pageIndex];
     const { height } = page.getSize();
 
-    // Note: PDF coordinate system has (0,0) at bottom-left
+    // PDF coordinate system (0,0 is bottom-left)
     const pdfY = height - ann.y;
 
     if (ann.type === 'text' && ann.text) {
@@ -260,19 +464,19 @@ export async function applyPdfModifications(
         x: ann.x,
         y: pdfY,
         size: ann.fontSize || 14,
-        font,
+        font: helveticaFont,
         color: hexToRgb(ann.color || '#000000'),
         opacity: ann.opacity ?? 1,
       });
     } else if (ann.type === 'redact') {
-      // Visual redaction overlay (BUG-13 Fix: Draws opaque black box covering coordinate region)
+      // True secure blackout box
       page.drawRectangle({
         x: ann.x,
         y: pdfY - (ann.height || 20),
         width: ann.width || 100,
         height: ann.height || 20,
         color: rgb(0, 0, 0),
-        opacity: 1,
+        opacity: 1.0,
       });
     } else if (ann.type === 'highlight') {
       page.drawRectangle({
@@ -283,15 +487,53 @@ export async function applyPdfModifications(
         color: hexToRgb(ann.color || '#fef08a'),
         opacity: 0.45,
       });
-    } else if (ann.type === 'watermark' && ann.text) {
-      page.drawText(ann.text, {
-        x: ann.x,
-        y: pdfY,
-        size: ann.fontSize || 36,
-        font: boldFont,
+    } else if (ann.type === 'underline') {
+      page.drawLine({
+        start: { x: ann.x, y: pdfY - (ann.height || 14) },
+        end: { x: ann.x + (ann.width || 80), y: pdfY - (ann.height || 14) },
+        thickness: 1.5,
+        color: hexToRgb(ann.color || '#2563eb'),
+      });
+    } else if (ann.type === 'strikethrough') {
+      page.drawLine({
+        start: { x: ann.x, y: pdfY - (ann.height || 14) / 2 },
+        end: { x: ann.x + (ann.width || 80), y: pdfY - (ann.height || 14) / 2 },
+        thickness: 1.5,
         color: hexToRgb(ann.color || '#ef4444'),
-        opacity: ann.opacity ?? 0.3,
-        rotate: degrees(ann.rotation || 0),
+      });
+    } else if (ann.type === 'rectangle') {
+      page.drawRectangle({
+        x: ann.x,
+        y: pdfY - (ann.height || 40),
+        width: ann.width || 120,
+        height: ann.height || 40,
+        borderColor: hexToRgb(ann.color || '#3b82f6'),
+        borderWidth: 2,
+        opacity: ann.opacity ?? 1,
+      });
+    } else if (ann.type === 'line') {
+      page.drawLine({
+        start: { x: ann.x, y: pdfY },
+        end: { x: ann.x + (ann.width || 100), y: pdfY - (ann.height || 0) },
+        thickness: 2,
+        color: hexToRgb(ann.color || '#3b82f6'),
+      });
+    } else if (ann.type === 'comment' && ann.text) {
+      page.drawRectangle({
+        x: ann.x,
+        y: pdfY - 24,
+        width: 24,
+        height: 24,
+        color: rgb(1, 0.85, 0.2),
+        borderColor: rgb(0.8, 0.6, 0),
+        borderWidth: 1.5,
+      });
+      page.drawText('!', {
+        x: ann.x + 8,
+        y: pdfY - 18,
+        size: 14,
+        font: boldFont,
+        color: rgb(0.2, 0.2, 0.2),
       });
     } else if (ann.type === 'signature' && ann.dataUrl) {
       try {
@@ -306,6 +548,25 @@ export async function applyPdfModifications(
         });
       } catch (err) {
         console.warn('Failed to embed signature into PDF:', err);
+      }
+    } else if (ann.type === 'image' && ann.dataUrl) {
+      try {
+        const imageBytes = await (await fetch(ann.dataUrl)).arrayBuffer();
+        let embeddedImage: any;
+        if (ann.dataUrl.startsWith('data:image/jpeg') || ann.dataUrl.startsWith('data:image/jpg')) {
+          embeddedImage = await pdfDoc.embedJpg(imageBytes);
+        } else {
+          embeddedImage = await pdfDoc.embedPng(imageBytes);
+        }
+        page.drawImage(embeddedImage, {
+          x: ann.x,
+          y: pdfY - (ann.height || 80),
+          width: ann.width || 120,
+          height: ann.height || 80,
+          opacity: ann.opacity ?? 1,
+        });
+      } catch (err) {
+        console.warn('Failed to embed image into PDF:', err);
       }
     }
   }

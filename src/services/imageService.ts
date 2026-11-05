@@ -288,3 +288,80 @@ export async function convertImageFormat(
     canvas.toBlob((b) => resolve(b || new Blob([])), mime, quality);
   });
 }
+
+/**
+ * Rotate canvas by degrees (90, 180, 270)
+ */
+export function rotateCanvas(canvas: HTMLCanvasElement, degrees: number): HTMLCanvasElement {
+  const normDeg = ((degrees % 360) + 360) % 360;
+  const output = document.createElement('canvas');
+
+  if (normDeg === 90 || normDeg === 270) {
+    output.width = canvas.height;
+    output.height = canvas.width;
+  } else {
+    output.width = canvas.width;
+    output.height = canvas.height;
+  }
+
+  const ctx = output.getContext('2d')!;
+  ctx.translate(output.width / 2, output.height / 2);
+  ctx.rotate((normDeg * Math.PI) / 180);
+  ctx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+  return output;
+}
+
+/**
+ * Flip canvas horizontally and/or vertically
+ */
+export function flipCanvas(canvas: HTMLCanvasElement, horizontal: boolean, vertical: boolean): HTMLCanvasElement {
+  const output = document.createElement('canvas');
+  output.width = canvas.width;
+  output.height = canvas.height;
+  const ctx = output.getContext('2d')!;
+
+  ctx.translate(horizontal ? canvas.width : 0, vertical ? canvas.height : 0);
+  ctx.scale(horizontal ? -1 : 1, vertical ? -1 : 1);
+  ctx.drawImage(canvas, 0, 0);
+  return output;
+}
+
+/**
+ * Crop canvas to bounding rectangle
+ */
+export function cropCanvas(
+  canvas: HTMLCanvasElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): HTMLCanvasElement {
+  const output = document.createElement('canvas');
+  const safeW = Math.max(1, Math.min(width, canvas.width - x));
+  const safeH = Math.max(1, Math.min(height, canvas.height - y));
+  output.width = safeW;
+  output.height = safeH;
+
+  const ctx = output.getContext('2d')!;
+  ctx.drawImage(canvas, x, y, safeW, safeH, 0, 0, safeW, safeH);
+  return output;
+}
+
+/**
+ * Resize canvas to target dimensions
+ */
+export function resizeCanvas(
+  canvas: HTMLCanvasElement,
+  targetWidth: number,
+  targetHeight: number
+): HTMLCanvasElement {
+  const output = document.createElement('canvas');
+  output.width = Math.max(1, Math.round(targetWidth));
+  output.height = Math.max(1, Math.round(targetHeight));
+
+  const ctx = output.getContext('2d')!;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(canvas, 0, 0, output.width, output.height);
+  return output;
+}

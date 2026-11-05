@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { 
   FileText, 
   Upload, 
@@ -14,16 +14,32 @@ import {
   ZoomOut, 
   Save, 
   PenTool, 
-  X
+  X,
+  Search,
+  Plus,
+  Square,
+  Underline as UnderlineIcon,
+  Strikethrough as StrikeIcon,
+  Check,
+  Undo2,
+  Redo2,
+  Image as ImageIcon,
+  MessageSquare,
+  Scissors
 } from 'lucide-react';
-import { PDFAnnotation } from '../../types';
+import { PDFAnnotation, PdfTextEdit, PdfTextItem } from '../../types';
 import { 
   applyPdfModifications, 
+  deletePdfPage, 
+  duplicatePdfPage, 
+  extractPageTextItems, 
+  insertBlankPage, 
   loadPdfForViewing, 
-  manipulatePdfPages, 
   mergePdfFiles, 
   renderPdfPageToCanvas, 
-  splitPdfByRange 
+  rotatePdfPage, 
+  splitPdfByRange, 
+  verifyPdfIntegrity 
 } from '../../services/pdfService';
 import saveAs from 'file-saver';
 import confetti from 'canvas-confetti';
@@ -44,14 +60,36 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
   const [zoomScale, setZoomScale] = useState<number>(1.25);
   const [fileName, setFileName] = useState<string>('document.pdf');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string>('');
+
+  // Page text extraction & interactive editing (Module 4A)
+  const [pageTextItems, setPageTextItems] = useState<PdfTextItem[]>([]);
+  const [textEdits, setTextEdits] = useState<Record<string, PdfTextEdit>>({});
+  const [selectedTextItem, setSelectedTextItem] = useState<PdfTextItem | null>(null);
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [editDraftText, setEditDraftText] = useState<string>('');
+  const [editFontSize, setEditFontSize] = useState<number>(14);
+  const [editFontColor, setEditFontColor] = useState<string>('#000000');
+  const [editFontWeight, setEditFontWeight] = useState<'normal' | 'bold'>('normal');
+  const [editFontStyle, setEditFontStyle] = useState<'normal' | 'italic'>('normal');
+
+  // In-PDF Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResultsCount, setSearchResultsCount] = useState(0);
 
   // Annotations & modifications
   const [annotations, setAnnotations] = useState<PDFAnnotation[]>([]);
   const [watermarkText, setWatermarkText] = useState<string>('');
   const [addPageNumbers, setAddPageNumbers] = useState<boolean>(false);
 
+  // Undo/Redo history stack
+  const [historyStack, setHistoryStack] = useState<{ edits: Record<string, PdfTextEdit>; annos: PDFAnnotation[] }[]>([]);
+  const [redoStack, setRedoStack] = useState<{ edits: Record<string, PdfTextEdit>; annos: PDFAnnotation[] }[]>([]);
+
   // Active Tool Mode
-  const [activeTool, setActiveTool] = useState<'select' | 'text' | 'redact' | 'highlight' | 'signature'>('select');
+  const [activeTool, setActiveTool] = useState<
+    'select' | 'text' | 'redact' | 'highlight' | 'underline' | 'strikethrough' | 'rectangle' | 'signature' | 'image' | 'comment'
+  >('select');
 
   // Modals
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
@@ -60,11 +98,36 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const signaturePadCanvasRef = useRef<HTMLCanvasElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const isDrawingSignatureRef = useRef(false);
+
+  const saveToHistory = useCallback(() => {
+    setHistoryStack((prev) => [...prev.slice(-15), { edits: { ...textEdits }, annos: [...annotations] }]);
+    setRedoStack([]);
+  }, [textEdits, annotations]);
+
+  const handleUndo = () => {
+    if (historyStack.length === 0) return;
+    const prev = historyStack[historyStack.length - 1];
+    setRedoStack((r) => [{ edits: { ...textEdits }, annos: [...annotations] }, ...r]);
+    setHistoryStack((h) => h.slice(0, h.length - 1));
+    setTextEdits(prev.edits);
+    setAnnotations(prev.annos);
+  };
+
+  const handleRedo = () => {
+    if (redoStack.length === 0) return;
+    const next = redoStack[0];
+    setHistoryStack((h) => [...h, { edits: { ...textEdits }, annos: [...annotations] }]);
+    setRedoStack((r) => r.slice(1));
+    setTextEdits(next.edits);
+    setAnnotations(next.annos);
+  };
 
   const loadFile = async (file: File) => {
     try {
       setIsProcessing(true);
+      setStatusMessage('Loading PDF document...');
       setFileName(file.name);
       const buffer = await file.arrayBuffer();
       setPdfBytes(buffer);
@@ -73,86 +136,243 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setNumPages(doc.numPages);
       setCurrentPage(1);
       setAnnotations([]);
+      setTextEdits({});
+      setSelectedTextItem(null);
+      setEditingTextId(null);
       setSplitRange({ start: 1, end: doc.numPages });
-    } catch (err) {
+      setStatusMessage('PDF loaded successfully');
+    } catch (err: any) {
       console.error('Failed to load PDF:', err);
+      setStatusMessage('Error loading PDF: ' + (err.message || 'Corrupt file'));
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Load initial file if provided
   useEffect(() => {
     if (initialFile) {
       loadFile(initialFile);
     }
   }, [initialFile]);
 
-  // Render current page when page or zoom changes
+  // Render current page & extract text items
   useEffect(() => {
     if (!pdfJsDoc || !canvasRef.current) return;
-    renderPdfPageToCanvas(pdfJsDoc, currentPage, canvasRef.current, zoomScale);
+    let isCancelled = false;
+
+    const render = async () => {
+      try {
+        await renderPdfPageToCanvas(pdfJsDoc, currentPage, canvasRef.current!, zoomScale);
+        if (isCancelled) return;
+        const items = await extractPageTextItems(pdfJsDoc, currentPage, zoomScale);
+        if (!isCancelled) {
+          setPageTextItems(items);
+        }
+      } catch (err) {
+        console.error('Failed to render PDF page:', err);
+      }
+    };
+
+    render();
+    return () => {
+      isCancelled = true;
+    };
   }, [pdfJsDoc, currentPage, zoomScale]);
 
-  // Handle page manipulation (Rotate, Delete, Duplicate)
-  const handleRotatePage = async (pageIdx: number) => {
+  // Handle in-PDF Search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResultsCount(0);
+      return;
+    }
+    const q = searchQuery.toLowerCase();
+    const count = pageTextItems.filter((it) => it.str.toLowerCase().includes(q)).length;
+    setSearchResultsCount(count);
+  }, [searchQuery, pageTextItems]);
+
+  // Page manipulation actions
+  const handleInsertBlankPage = async () => {
     if (!pdfBytes) return;
     try {
       setIsProcessing(true);
-      const updated = await manipulatePdfPages(pdfBytes, [
-        { pageIndex: pageIdx, rotationDelta: 90 },
-      ]);
+      saveToHistory();
+      const updated = await insertBlankPage(pdfBytes, currentPage);
       const newBuffer = updated.buffer as ArrayBuffer;
       setPdfBytes(newBuffer);
       const doc = await loadPdfForViewing(newBuffer);
       setPdfJsDoc(doc);
-    } catch (e) {
-      console.error('Rotate failed:', e);
+      setNumPages(doc.numPages);
+      setCurrentPage(currentPage + 1);
+      setStatusMessage(`Blank page inserted after page ${currentPage}`);
+    } catch (e: any) {
+      alert('Insert page failed: ' + e.message);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleDeletePage = async (pageIdx: number) => {
-    if (!pdfBytes || numPages <= 1) return;
+  const handleDeleteCurrentPage = async (pageIdx: number) => {
+    if (!pdfBytes || numPages <= 1) {
+      alert('Cannot delete the only page in document.');
+      return;
+    }
     try {
       setIsProcessing(true);
-      const updated = await manipulatePdfPages(pdfBytes, [
-        { pageIndex: pageIdx, delete: true },
-      ]);
+      saveToHistory();
+      const updated = await deletePdfPage(pdfBytes, pageIdx);
       const newBuffer = updated.buffer as ArrayBuffer;
       setPdfBytes(newBuffer);
       const doc = await loadPdfForViewing(newBuffer);
       setPdfJsDoc(doc);
       setNumPages(doc.numPages);
       setCurrentPage(Math.min(currentPage, doc.numPages));
-    } catch (e) {
-      console.error('Delete failed:', e);
+      setStatusMessage(`Page ${pageIdx + 1} deleted`);
+    } catch (e: any) {
+      alert('Delete failed: ' + e.message);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleDuplicatePage = async (pageIdx: number) => {
+  const handleDuplicateCurrentPage = async (pageIdx: number) => {
     if (!pdfBytes) return;
     try {
       setIsProcessing(true);
-      const updated = await manipulatePdfPages(pdfBytes, [
-        { pageIndex: pageIdx, duplicate: true },
-      ]);
+      saveToHistory();
+      const updated = await duplicatePdfPage(pdfBytes, pageIdx);
       const newBuffer = updated.buffer as ArrayBuffer;
       setPdfBytes(newBuffer);
       const doc = await loadPdfForViewing(newBuffer);
       setPdfJsDoc(doc);
       setNumPages(doc.numPages);
-    } catch (e) {
-      console.error('Duplicate failed:', e);
+      setStatusMessage(`Page ${pageIdx + 1} duplicated`);
+    } catch (e: any) {
+      alert('Duplicate failed: ' + e.message);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Canvas click to place text, redact box, or highlight
+  const handleRotateCurrentPage = async (pageIdx: number, delta: number = 90) => {
+    if (!pdfBytes) return;
+    try {
+      setIsProcessing(true);
+      saveToHistory();
+      const updated = await rotatePdfPage(pdfBytes, pageIdx, delta);
+      const newBuffer = updated.buffer as ArrayBuffer;
+      setPdfBytes(newBuffer);
+      const doc = await loadPdfForViewing(newBuffer);
+      setPdfJsDoc(doc);
+      setStatusMessage(`Page ${pageIdx + 1} rotated by ${delta}°`);
+    } catch (e: any) {
+      alert('Rotate failed: ' + e.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Text selection & editing triggers
+  const handleSelectTextItem = (item: PdfTextItem) => {
+    setSelectedTextItem(item);
+    const existing = textEdits[item.id];
+    setEditDraftText(existing ? existing.newText : item.str);
+    setEditFontSize(existing?.fontSize || item.fontSize);
+    setEditFontColor(existing?.fontColor || '#000000');
+    setEditFontWeight(existing?.fontWeight || 'normal');
+    setEditFontStyle(existing?.fontStyle || 'normal');
+  };
+
+  const handleDoubleClickTextItem = (item: PdfTextItem) => {
+    handleSelectTextItem(item);
+    setEditingTextId(item.id);
+  };
+
+  const commitTextEdit = () => {
+    if (!selectedTextItem) return;
+    saveToHistory();
+
+    const newEdit: PdfTextEdit = {
+      id: selectedTextItem.id,
+      pageIndex: currentPage - 1,
+      originalText: selectedTextItem.str,
+      newText: editDraftText,
+      pdfX: selectedTextItem.pdfX,
+      pdfY: selectedTextItem.pdfY,
+      width: selectedTextItem.width / zoomScale,
+      height: selectedTextItem.height / zoomScale,
+      fontSize: editFontSize,
+      fontColor: editFontColor,
+      fontWeight: editFontWeight,
+      fontStyle: editFontStyle,
+      isDeleted: false,
+    };
+
+    setTextEdits((prev) => ({ ...prev, [selectedTextItem.id]: newEdit }));
+    setEditingTextId(null);
+    setStatusMessage('Text modification saved in working document');
+  };
+
+  const handleDeleteSelectedText = () => {
+    if (!selectedTextItem) return;
+    saveToHistory();
+
+    const deleteEdit: PdfTextEdit = {
+      id: selectedTextItem.id,
+      pageIndex: currentPage - 1,
+      originalText: selectedTextItem.str,
+      newText: '',
+      pdfX: selectedTextItem.pdfX,
+      pdfY: selectedTextItem.pdfY,
+      width: selectedTextItem.width / zoomScale,
+      height: selectedTextItem.height / zoomScale,
+      isDeleted: true,
+    };
+
+    setTextEdits((prev) => ({ ...prev, [selectedTextItem.id]: deleteEdit }));
+    setEditingTextId(null);
+    setSelectedTextItem(null);
+    setStatusMessage('Selected text removed');
+  };
+
+  const handleRedactSelectedText = () => {
+    if (!selectedTextItem) return;
+    saveToHistory();
+
+    // 1. Mark underlying text as deleted
+    const deleteEdit: PdfTextEdit = {
+      id: selectedTextItem.id,
+      pageIndex: currentPage - 1,
+      originalText: selectedTextItem.str,
+      newText: '',
+      pdfX: selectedTextItem.pdfX,
+      pdfY: selectedTextItem.pdfY,
+      width: selectedTextItem.width / zoomScale,
+      height: selectedTextItem.height / zoomScale,
+      isDeleted: true,
+    };
+    setTextEdits((prev) => ({ ...prev, [selectedTextItem.id]: deleteEdit }));
+
+    // 2. Place opaque black redaction box
+    setAnnotations((prev) => [
+      ...prev,
+      {
+        id: `redact-${Date.now()}`,
+        pageIndex: currentPage - 1,
+        type: 'redact',
+        x: selectedTextItem.pdfX,
+        y: selectedTextItem.viewportY / zoomScale,
+        width: selectedTextItem.width / zoomScale,
+        height: selectedTextItem.height / zoomScale,
+        color: '#000000',
+      },
+    ]);
+
+    setSelectedTextItem(null);
+    setEditingTextId(null);
+    setStatusMessage('Target text redacted & scrubbed from stream');
+  };
+
+  // Canvas click to place annotations
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current || activeTool === 'select') return;
 
@@ -160,8 +380,10 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     const clickX = (e.clientX - rect.left) / zoomScale;
     const clickY = (e.clientY - rect.top) / zoomScale;
 
+    saveToHistory();
+
     if (activeTool === 'text') {
-      const text = prompt('Enter text to place on page:', 'Sample Text');
+      const text = prompt('Enter text to place on page:', 'Custom Text Note');
       if (text) {
         setAnnotations((prev) => [
           ...prev,
@@ -204,12 +426,71 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
           color: '#fef08a',
         },
       ]);
+    } else if (activeTool === 'underline') {
+      setAnnotations((prev) => [
+        ...prev,
+        {
+          id: `ann-${Date.now()}`,
+          pageIndex: currentPage - 1,
+          type: 'underline',
+          x: clickX,
+          y: clickY,
+          width: 120,
+          height: 16,
+          color: '#2563eb',
+        },
+      ]);
+    } else if (activeTool === 'strikethrough') {
+      setAnnotations((prev) => [
+        ...prev,
+        {
+          id: `ann-${Date.now()}`,
+          pageIndex: currentPage - 1,
+          type: 'strikethrough',
+          x: clickX,
+          y: clickY,
+          width: 120,
+          height: 16,
+          color: '#ef4444',
+        },
+      ]);
+    } else if (activeTool === 'rectangle') {
+      setAnnotations((prev) => [
+        ...prev,
+        {
+          id: `ann-${Date.now()}`,
+          pageIndex: currentPage - 1,
+          type: 'rectangle',
+          x: clickX,
+          y: clickY,
+          width: 140,
+          height: 60,
+          color: '#3b82f6',
+        },
+      ]);
+    } else if (activeTool === 'comment') {
+      const comment = prompt('Enter page comment / annotation:', 'Review Note');
+      if (comment) {
+        setAnnotations((prev) => [
+          ...prev,
+          {
+            id: `ann-${Date.now()}`,
+            pageIndex: currentPage - 1,
+            type: 'comment',
+            text: comment,
+            x: clickX,
+            y: clickY,
+            width: 24,
+            height: 24,
+          },
+        ]);
+      }
     }
 
     setActiveTool('select');
   };
 
-  // Signature Pad Logic
+  // Signature Pad Handlers
   const startDrawingSignature = (e: React.MouseEvent<HTMLCanvasElement>) => {
     isDrawingSignatureRef.current = true;
     const canvas = signaturePadCanvasRef.current;
@@ -244,6 +525,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     if (!canvas) return;
     const dataUrl = canvas.toDataURL('image/png');
 
+    saveToHistory();
     setAnnotations((prev) => [
       ...prev,
       {
@@ -259,64 +541,112 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     ]);
 
     setIsSignatureModalOpen(false);
+    setStatusMessage('Signature placed on document');
   };
 
-  // Export modified PDF
+  // Image insertion handler
+  const handleInsertImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      saveToHistory();
+      setAnnotations((prev) => [
+        ...prev,
+        {
+          id: `img-${Date.now()}`,
+          pageIndex: currentPage - 1,
+          type: 'image',
+          dataUrl,
+          x: 100,
+          y: 150,
+          width: 140,
+          height: 90,
+        },
+      ]);
+      setStatusMessage('Image embedded onto page');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Export & Save with verification
   const handleExportPdf = async () => {
     if (!pdfBytes) return;
     try {
       setIsProcessing(true);
+      setStatusMessage('Applying text replacements, redactions, and annotations...');
+
+      const textEditsArray = Object.values(textEdits);
       const modifiedBytes = await applyPdfModifications(pdfBytes, annotations, {
         watermarkText: watermarkText.trim() || undefined,
         addPageNumbers,
+        textEdits: textEditsArray,
       });
+
+      // Post-save verification: Reopen and check structural integrity (Module 4A)
+      setStatusMessage('Reopening and verifying output PDF integrity...');
+      const verifyReport = await verifyPdfIntegrity(modifiedBytes);
+      if (!verifyReport.valid) {
+        throw new Error(verifyReport.error || 'Failed to verify output PDF structure');
+      }
+
+      // Re-load the verified bytes into current view
+      const newBuffer = modifiedBytes.buffer as ArrayBuffer;
+      setPdfBytes(newBuffer);
+      const doc = await loadPdfForViewing(newBuffer);
+      setPdfJsDoc(doc);
+      setTextEdits({});
 
       const blob = new Blob([modifiedBytes as any], { type: 'application/pdf' });
       saveAs(blob, fileName.replace('.pdf', '_edited.pdf'));
       confetti({ particleCount: 50, spread: 60 });
-    } catch (err) {
+      setStatusMessage(`Verified: Reopened cleanly with ${verifyReport.pageCount} pages. Download started.`);
+    } catch (err: any) {
       console.error('Failed to export PDF:', err);
+      alert('PDF export failed: ' + err.message);
+      setStatusMessage('Export error: ' + err.message);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Split PDF
   const handleSplitPdf = async () => {
     if (!pdfBytes) return;
     try {
       setIsProcessing(true);
-      const splitBytes = await splitPdfByRange(
-        pdfBytes,
-        splitRange.start,
-        splitRange.end
-      );
+      const splitBytes = await splitPdfByRange(pdfBytes, splitRange.start, splitRange.end);
       const blob = new Blob([splitBytes as any], { type: 'application/pdf' });
       saveAs(blob, `${fileName.replace('.pdf', '')}_pages_${splitRange.start}-${splitRange.end}.pdf`);
       setIsSplitModalOpen(false);
-    } catch (err) {
-      console.error('Split failed:', err);
+      setStatusMessage(`Extracted pages ${splitRange.start} through ${splitRange.end}`);
+    } catch (err: any) {
+      alert('Split failed: ' + err.message);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Merge another PDF
   const handleMergePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0 || !pdfBytes) return;
+    const file = e.target.files?.[0];
+    if (!file || !pdfBytes) return;
 
     try {
       setIsProcessing(true);
-      const donorBuffer = await files[0].arrayBuffer();
-      const mergedBytes = await mergePdfFiles([pdfBytes, donorBuffer]);
+      setStatusMessage(`Merging "${file.name}" with current document...`);
+      const secondBuffer = await file.arrayBuffer();
+      const mergedBytes = await mergePdfFiles([pdfBytes, secondBuffer]);
+
       const newBuffer = mergedBytes.buffer as ArrayBuffer;
       setPdfBytes(newBuffer);
       const doc = await loadPdfForViewing(newBuffer);
       setPdfJsDoc(doc);
       setNumPages(doc.numPages);
-    } catch (err) {
-      console.error('Merge failed:', err);
+      setStatusMessage(`Merged! Total pages now: ${doc.numPages}`);
+      confetti({ particleCount: 40, spread: 50 });
+    } catch (err: any) {
+      alert('Merge failed: ' + err.message);
     } finally {
       setIsProcessing(false);
     }
@@ -324,13 +654,51 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
-      {/* Top Toolbar */}
-      <div className="h-14 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-3">
-        {/* Left: Tools */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer shadow-sm">
-            <Upload className="w-3.5 h-3.5" />
-            <span>Open PDF</span>
+      {/* 1. Primary Top Navigation & File Bar */}
+      <div className="h-14 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            value={fileName}
+            onChange={(e) => setFileName(e.target.value)}
+            className="bg-transparent text-sm font-bold text-white border-b border-transparent hover:border-slate-700 focus:border-red-500 px-1 py-0.5 outline-none w-48 md:w-64"
+            placeholder="Document Name"
+          />
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-semibold border border-red-500/30">
+            PDF STUDIO PRO
+          </span>
+          {statusMessage && (
+            <span className="text-[11px] text-slate-400 font-medium truncate max-w-xs hidden xl:block">
+              {statusMessage}
+            </span>
+          )}
+        </div>
+
+        {/* Action Controls & Export */}
+        <div className="flex items-center gap-2">
+          {/* Undo/Redo */}
+          <div className="flex items-center bg-slate-800 rounded-lg p-0.5 text-xs text-slate-300">
+            <button
+              onClick={handleUndo}
+              disabled={historyStack.length === 0}
+              className="p-1 hover:text-white disabled:opacity-30 cursor-pointer"
+              title="Undo"
+            >
+              <Undo2 className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleRedo}
+              disabled={redoStack.length === 0}
+              className="p-1 hover:text-white disabled:opacity-30 cursor-pointer"
+              title="Redo"
+            >
+              <Redo2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
+            <Upload className="w-3.5 h-3.5 text-red-400" />
+            <span className="hidden sm:inline">Upload PDF</span>
             <input
               type="file"
               accept=".pdf"
@@ -339,112 +707,26 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             />
           </label>
 
-          <div className="h-5 w-px bg-slate-800 mx-1" />
-
-          <button
-            onClick={() => setActiveTool(activeTool === 'text' ? 'select' : 'text')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
-              activeTool === 'text' ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 text-slate-300'
-            }`}
-            title="Click on page to place text"
-          >
-            <Type className="w-3.5 h-3.5" />
-            <span>Add Text</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTool(activeTool === 'highlight' ? 'select' : 'highlight')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
-              activeTool === 'highlight' ? 'bg-yellow-600/30 text-yellow-300 border border-yellow-500/40' : 'hover:bg-slate-800 text-slate-300'
-            }`}
-            title="Highlight area on page"
-          >
-            <Highlighter className="w-3.5 h-3.5 text-yellow-400" />
-            <span>Highlight</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTool(activeTool === 'redact' ? 'select' : 'redact')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
-              activeTool === 'redact' ? 'bg-red-600/30 text-red-300 border border-red-500/40' : 'hover:bg-slate-800 text-slate-300'
-            }`}
-            title="Visual Redaction Overlay: Draws an opaque black box over visual content. (Note: Visual overlay; underlying PDF font text streams should be rasterized for destructive removal)"
-          >
-            <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
-            <span>Visual Redaction</span>
-          </button>
-
-          <button
-            onClick={() => setIsSignatureModalOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-300 text-xs font-medium cursor-pointer"
-            title="Draw or place signature stamp"
-          >
-            <PenTool className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Sign</span>
-          </button>
-
-          <button
-            onClick={() => {
-              const text = prompt('Enter watermark text (e.g. CONFIDENTIAL, DRAFT):', watermarkText || 'CONFIDENTIAL');
-              if (text !== null) setWatermarkText(text);
-            }}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer ${
-              watermarkText ? 'bg-slate-800 text-indigo-400 border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-300'
-            }`}
-          >
-            <Stamp className="w-3.5 h-3.5" />
-            <span>Watermark {watermarkText && `("${watermarkText}")`}</span>
-          </button>
-
-          <button
-            onClick={() => setAddPageNumbers(!addPageNumbers)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer ${
-              addPageNumbers ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-300'
-            }`}
-          >
-            <span>Page Numbers: {addPageNumbers ? 'ON' : 'OFF'}</span>
-          </button>
-        </div>
-
-        {/* Right: Zoom & Export */}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center bg-slate-800 rounded-lg p-0.5 text-xs text-slate-300">
-            <button
-              onClick={() => setZoomScale((s) => Math.max(0.5, s - 0.25))}
-              className="p-1 hover:text-white cursor-pointer"
-              title="Zoom out"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <span className="px-2 font-mono text-[11px]">{Math.round(zoomScale * 100)}%</span>
-            <button
-              onClick={() => setZoomScale((s) => Math.min(2.5, s + 0.25))}
-              className="p-1 hover:text-white cursor-pointer"
-              title="Zoom in"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer">
+            <Plus className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Merge PDF</span>
+            <input type="file" accept=".pdf" className="hidden" onChange={handleMergePdfUpload} />
+          </label>
 
           <button
             onClick={() => setIsSplitModalOpen(true)}
             disabled={!pdfBytes}
-            className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-medium cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
           >
-            Split
+            <Scissors className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Split</span>
           </button>
-
-          <label className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium cursor-pointer">
-            <span>Merge</span>
-            <input type="file" accept=".pdf" className="hidden" onChange={handleMergePdfUpload} />
-          </label>
 
           {onSaveToProjects && (
             <button
-              onClick={() => onSaveToProjects(fileName, { annotations, watermarkText, addPageNumbers, fileName })}
+              onClick={() => onSaveToProjects(fileName, { annotations, textEdits, watermarkText, addPageNumbers, fileName })}
               disabled={!pdfBytes}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer"
-              title="Save PDF project state"
             >
               <Save className="w-3.5 h-3.5 text-indigo-400" />
               <span>Save</span>
@@ -454,22 +736,273 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
           <button
             onClick={handleExportPdf}
             disabled={!pdfBytes || isProcessing}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-xs font-semibold shadow-md shadow-emerald-600/25 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-xs font-semibold shadow-md shadow-red-600/25 cursor-pointer"
           >
             <DownloadCloud className="w-4 h-4" />
-            <span>Export PDF</span>
+            <span>Save &amp; Export</span>
           </button>
         </div>
       </div>
 
-      {/* Main Studio Area */}
+      {/* 2. Secondary Editing & Annotation Toolbar */}
+      <div className="h-11 border-b border-slate-800/80 bg-slate-900/60 px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2">
+        <div className="flex items-center gap-1.5 text-slate-300 text-xs">
+          <button
+            onClick={() => setActiveTool(activeTool === 'text' ? 'select' : 'text')}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+              activeTool === 'text' ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/40' : 'hover:bg-slate-800'
+            }`}
+            title="Add new text note"
+          >
+            <Type className="w-3.5 h-3.5" />
+            <span>Add Text</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTool(activeTool === 'highlight' ? 'select' : 'highlight')}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+              activeTool === 'highlight' ? 'bg-yellow-600/30 text-yellow-300 border border-yellow-500/40' : 'hover:bg-slate-800'
+            }`}
+            title="Highlight region"
+          >
+            <Highlighter className="w-3.5 h-3.5 text-yellow-400" />
+            <span>Highlight</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTool(activeTool === 'redact' ? 'select' : 'redact')}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+              activeTool === 'redact' ? 'bg-red-600/30 text-red-300 border border-red-500/40' : 'hover:bg-slate-800'
+            }`}
+            title="True Redaction: Blackout + Stream Scrubbing"
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
+            <span>Redact Area</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTool(activeTool === 'underline' ? 'select' : 'underline')}
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              activeTool === 'underline' ? 'bg-blue-600/30 text-blue-300 border border-blue-500/40' : 'hover:bg-slate-800'
+            }`}
+            title="Underline"
+          >
+            <UnderlineIcon className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => setActiveTool(activeTool === 'strikethrough' ? 'select' : 'strikethrough')}
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              activeTool === 'strikethrough' ? 'bg-red-600/30 text-red-300 border border-red-500/40' : 'hover:bg-slate-800'
+            }`}
+            title="Strikethrough"
+          >
+            <StrikeIcon className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => setActiveTool(activeTool === 'rectangle' ? 'select' : 'rectangle')}
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              activeTool === 'rectangle' ? 'bg-slate-700 text-white' : 'hover:bg-slate-800'
+            }`}
+            title="Draw Rectangle Box"
+          >
+            <Square className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => setIsSignatureModalOpen(true)}
+            className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-800 cursor-pointer"
+            title="Draw Signature"
+          >
+            <PenTool className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Sign</span>
+          </button>
+
+          <label className="flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-slate-800 cursor-pointer">
+            <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Image</span>
+            <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleInsertImage} />
+          </label>
+
+          <button
+            onClick={() => setActiveTool(activeTool === 'comment' ? 'select' : 'comment')}
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              activeTool === 'comment' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'hover:bg-slate-800'
+            }`}
+            title="Add Review Comment"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+          </button>
+
+          <div className="h-4 w-px bg-slate-800 mx-1" />
+
+          {/* Watermark toggle */}
+          <button
+            onClick={() => {
+              const text = prompt('Enter watermark text (e.g. CONFIDENTIAL, DRAFT):', watermarkText || 'CONFIDENTIAL');
+              if (text !== null) setWatermarkText(text);
+            }}
+            className={`px-2 py-1 rounded-lg text-xs cursor-pointer ${
+              watermarkText ? 'bg-slate-800 text-indigo-400 border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-400'
+            }`}
+          >
+            <Stamp className="w-3.5 h-3.5 inline mr-1" />
+            <span>{watermarkText ? `Watermark: "${watermarkText}"` : 'Watermark'}</span>
+          </button>
+
+          <button
+            onClick={() => setAddPageNumbers(!addPageNumbers)}
+            className={`px-2 py-1 rounded-lg text-xs cursor-pointer ${
+              addPageNumbers ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/40' : 'hover:bg-slate-800 text-slate-400'
+            }`}
+          >
+            <span>Page Numbers: {addPageNumbers ? 'ON' : 'OFF'}</span>
+          </button>
+        </div>
+
+        {/* Right Search & Zoom Bar */}
+        <div className="flex items-center gap-2">
+          {/* In-PDF Search */}
+          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-2 py-0.5 gap-1.5 text-xs text-white">
+            <Search className="w-3.5 h-3.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search PDF text..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent outline-none w-28 md:w-36 text-xs text-slate-200"
+            />
+            {searchQuery && (
+              <span className="text-[10px] text-indigo-400 font-mono font-bold">
+                {searchResultsCount} found
+              </span>
+            )}
+          </div>
+
+          {/* Zoom */}
+          <div className="flex items-center bg-slate-800 rounded-lg p-0.5 text-xs text-slate-300">
+            <button
+              onClick={() => setZoomScale((s) => Math.max(0.6, s - 0.2))}
+              className="p-1 hover:text-white cursor-pointer"
+              title="Zoom out"
+            >
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+            <span className="px-2 font-mono text-[11px]">{Math.round(zoomScale * 100)}%</span>
+            <button
+              onClick={() => setZoomScale((s) => Math.min(2.5, s + 0.2))}
+              className="p-1 hover:text-white cursor-pointer"
+              title="Zoom in"
+            >
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Floating In-Place Text Editor Toolbar (when a text span is selected) */}
+      {selectedTextItem && (
+        <div className="bg-indigo-950/90 border-b border-indigo-500/40 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs text-white shadow-xl animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase font-bold text-indigo-300">Editing Text:</span>
+            <input
+              type="text"
+              value={editDraftText}
+              onChange={(e) => setEditDraftText(e.target.value)}
+              placeholder="Edit text..."
+              className="px-2 py-1 rounded bg-slate-900 border border-slate-700 text-white text-xs w-64 md:w-80 outline-none focus:border-indigo-400"
+            />
+            <button
+              onClick={commitTextEdit}
+              className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Apply</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Font size */}
+            <div className="flex items-center gap-1">
+              <span className="text-slate-400">Size:</span>
+              <input
+                type="number"
+                min={8}
+                max={72}
+                value={editFontSize}
+                onChange={(e) => setEditFontSize(Number(e.target.value))}
+                className="w-12 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-white text-center"
+              />
+            </div>
+
+            {/* Font color */}
+            <div className="flex items-center gap-1">
+              <span className="text-slate-400">Color:</span>
+              <input
+                type="color"
+                value={editFontColor}
+                onChange={(e) => setEditFontColor(e.target.value)}
+                className="w-6 h-6 rounded border-0 bg-transparent cursor-pointer"
+              />
+            </div>
+
+            {/* Bold/Italic */}
+            <button
+              onClick={() => setEditFontWeight(editFontWeight === 'bold' ? 'normal' : 'bold')}
+              className={`px-2 py-0.5 rounded font-bold ${editFontWeight === 'bold' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'}`}
+            >
+              B
+            </button>
+            <button
+              onClick={() => setEditFontStyle(editFontStyle === 'italic' ? 'normal' : 'italic')}
+              className={`px-2 py-0.5 rounded italic font-serif ${editFontStyle === 'italic' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300'}`}
+            >
+              I
+            </button>
+
+            {/* Redact or Delete */}
+            <button
+              onClick={handleRedactSelectedText}
+              className="flex items-center gap-1 px-2 py-1 rounded bg-red-600/30 hover:bg-red-600/50 text-red-300 border border-red-500/40 text-xs font-semibold cursor-pointer"
+              title="Redact this exact word/phrase"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Redact</span>
+            </button>
+
+            <button
+              onClick={handleDeleteSelectedText}
+              className="p-1 rounded bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-400 cursor-pointer"
+              title="Delete text item"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+
+            <button
+              onClick={() => setSelectedTextItem(null)}
+              className="p-1 rounded hover:bg-slate-800 text-slate-400"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Main Body: Thumbnail Sidebar + Document Canvas Viewport */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Page Thumbnails Strip */}
+        {/* Left Page Thumbnails & Operations Strip */}
         {pdfJsDoc && (
           <div className="w-48 border-r border-slate-800 bg-slate-900/40 p-3 overflow-y-auto space-y-3 shrink-0 hidden sm:block">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
-              <span>Pages ({numPages})</span>
-              <span className="text-slate-500 text-[10px]">Page {currentPage}</span>
+            <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+              <span className="text-[11px] font-bold text-slate-400 uppercase">Pages ({numPages})</span>
+              <button
+                onClick={handleInsertBlankPage}
+                className="p-1 rounded bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white transition-colors"
+                title="Insert Blank Page after active page"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             {Array.from({ length: numPages }, (_, i) => i + 1).map((pNum) => (
@@ -478,40 +1011,48 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                 onClick={() => setCurrentPage(pNum)}
                 className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
                   currentPage === pNum
-                    ? 'border-indigo-500 bg-indigo-500/10 shadow-md ring-1 ring-indigo-500/30'
+                    ? 'border-red-500 bg-red-500/10 shadow-md ring-1 ring-red-500/30'
                     : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
                 }`}
               >
-                <div className="text-xs font-bold text-slate-300 mb-1.5">Page {pNum}</div>
+                <div className="text-xs font-bold text-slate-300 mb-1.5 flex items-center justify-between">
+                  <span>Page {pNum}</span>
+                  {currentPage === pNum && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                  )}
+                </div>
+
                 <div className="flex items-center justify-center gap-1 text-slate-400">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRotatePage(pNum - 1);
+                      handleRotateCurrentPage(pNum - 1, 90);
                     }}
                     className="p-1 rounded hover:bg-slate-800 hover:text-white"
-                    title="Rotate 90°"
+                    title="Rotate page 90°"
                   >
                     <RotateCw className="w-3 h-3" />
                   </button>
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDuplicatePage(pNum - 1);
+                      handleDuplicateCurrentPage(pNum - 1);
                     }}
                     className="p-1 rounded hover:bg-slate-800 hover:text-white"
-                    title="Duplicate Page"
+                    title="Duplicate page"
                   >
                     <Copy className="w-3 h-3" />
                   </button>
+
                   {numPages > 1 && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeletePage(pNum - 1);
+                        handleDeleteCurrentPage(pNum - 1);
                       }}
-                      className="p-1 rounded hover:bg-slate-800 hover:text-red-400"
-                      title="Delete Page"
+                      className="p-1 rounded hover:bg-red-500/20 text-slate-400 hover:text-red-400"
+                      title="Delete page"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -522,20 +1063,20 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
           </div>
         )}
 
-        {/* Center PDF Canvas Viewport */}
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center justify-start bg-slate-950">
-          {!pdfBytes ? (
-            <div className="text-center py-24 space-y-4 max-w-sm">
+        {/* Viewport Canvas with Interactive Text Layer */}
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center items-start bg-slate-950">
+          {!pdfJsDoc ? (
+            <div className="max-w-md w-full my-auto text-center p-8 rounded-2xl border-2 border-dashed border-slate-800 space-y-4">
               <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
                 <FileText className="w-8 h-8" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white">No PDF Loaded</h3>
                 <p className="text-xs text-slate-400 mt-1">
-                  Upload an existing PDF document to edit pages, add text, watermarks, highlights, signatures, and redacting.
+                  Upload an existing PDF document to edit existing text, redact sensitive terms, add annotations, signatures, and manage pages.
                 </p>
               </div>
-              <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer shadow-lg shadow-indigo-600/30">
+              <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold cursor-pointer shadow-lg shadow-red-600/30">
                 <Upload className="w-4 h-4" />
                 <span>Upload PDF Document</span>
                 <input
@@ -548,26 +1089,120 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             </div>
           ) : (
             <div className="relative shadow-2xl rounded-lg overflow-hidden border border-slate-700/80 bg-white">
+              {/* Interactive Cursor Banner when a tool is armed */}
               {activeTool !== 'select' && (
-                <div className="absolute top-3 left-3 z-20 px-3 py-1 rounded-full bg-slate-900/90 text-white text-[11px] font-semibold border border-indigo-500/40 shadow-lg flex items-center gap-1.5">
+                <div className="absolute top-3 left-3 z-30 px-3 py-1 rounded-full bg-slate-900/90 text-white text-[11px] font-semibold border border-indigo-500/40 shadow-lg flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
-                  <span>Click anywhere on the document to place {activeTool}</span>
+                  <span>Click on document to place {activeTool}</span>
                 </div>
               )}
 
+              {/* Underlying Rendered Canvas */}
               <canvas
                 ref={canvasRef}
                 onClick={handleCanvasClick}
                 className={`block ${activeTool !== 'select' ? 'cursor-crosshair' : 'cursor-default'}`}
               />
 
-              {/* Render dynamic annotations on the active page for visual feedback */}
+              {/* Module 4A: Genuine Selectable & Clickable PDF Text Layer */}
+              <div className="absolute inset-0 z-10 pointer-events-auto">
+                {pageTextItems.map((item) => {
+                  const edit = textEdits[item.id];
+                  const isEditing = editingTextId === item.id;
+                  const isSelected = selectedTextItem?.id === item.id;
+                  const displayText = edit ? (edit.isDeleted ? '' : edit.newText) : item.str;
+                  const isDeleted = edit?.isDeleted;
+
+                  // In-PDF Search Match
+                  const isSearchMatch = searchQuery.trim() && item.str.toLowerCase().includes(searchQuery.toLowerCase());
+
+                  if (isDeleted) {
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          position: 'absolute',
+                          left: item.viewportX,
+                          top: item.viewportY,
+                          width: item.width,
+                          height: item.height,
+                          backgroundColor: '#ffffff',
+                        }}
+                        className="opacity-95"
+                      />
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={item.id}
+                      style={{
+                        position: 'absolute',
+                        left: item.viewportX,
+                        top: item.viewportY,
+                        width: item.width,
+                        minHeight: item.height,
+                        backgroundColor: edit ? '#ffffff' : (isSearchMatch ? 'rgba(254, 240, 138, 0.7)' : 'transparent'),
+                      }}
+                      className={`group transition-all select-text cursor-pointer ${
+                        isSelected ? 'ring-2 ring-indigo-500 z-20' : 'hover:bg-blue-500/15'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (activeTool === 'select') {
+                          handleSelectTextItem(item);
+                        }
+                      }}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        handleDoubleClickTextItem(item);
+                      }}
+                      title="Double-click to edit text"
+                    >
+                      {isEditing ? (
+                        <input
+                          autoFocus
+                          type="text"
+                          value={editDraftText}
+                          onChange={(e) => setEditDraftText(e.target.value)}
+                          onBlur={commitTextEdit}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') commitTextEdit();
+                            if (e.key === 'Escape') setEditingTextId(null);
+                          }}
+                          className="w-full h-full bg-white text-slate-900 outline-none px-0.5 border border-indigo-500 shadow-lg rounded"
+                          style={{
+                            fontSize: `${(editFontSize || item.fontSize) * (zoomScale / 1.25)}px`,
+                            color: editFontColor || '#000000',
+                            fontWeight: editFontWeight,
+                            fontStyle: editFontStyle,
+                          }}
+                        />
+                      ) : (
+                        <span
+                          style={{
+                            fontSize: `${(edit?.fontSize || item.fontSize) * (zoomScale / 1.25)}px`,
+                            color: edit ? (edit.fontColor || '#000000') : 'transparent',
+                            fontWeight: edit?.fontWeight || 'normal',
+                            fontStyle: edit?.fontStyle || 'normal',
+                          }}
+                          className={`block truncate ${edit ? 'text-slate-900' : 'text-transparent group-hover:text-slate-900/30'}`}
+                        >
+                          {displayText}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Render dynamic annotations (redactions, highlights, signatures, images) */}
               {annotations
                 .filter((ann) => ann.pageIndex === currentPage - 1)
                 .map((ann) => (
                   <div
                     key={ann.id}
-                    className="absolute pointer-events-none"
+                    className="absolute z-20 pointer-events-none"
                     style={{
                       left: ann.x * zoomScale,
                       top: ann.y * zoomScale,
@@ -579,7 +1214,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                       <span
                         style={{
                           fontSize: (ann.fontSize || 14) * zoomScale,
-                          color: ann.color || '#000',
+                          color: ann.color || '#000000',
                           fontWeight: 600,
                         }}
                       >
@@ -587,15 +1222,30 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                       </span>
                     )}
                     {ann.type === 'redact' && (
-                      <div className="w-full h-full bg-black border border-red-500/50" />
+                      <div className="w-full h-full bg-black border border-red-500/80 shadow-md" />
                     )}
                     {ann.type === 'highlight' && (
-                      <div
-                        className="w-full h-full bg-yellow-300/50 border border-yellow-400"
-                      />
+                      <div className="w-full h-full bg-yellow-300/40 border border-yellow-400" />
+                    )}
+                    {ann.type === 'underline' && (
+                      <div className="w-full h-0.5 bg-blue-600 mt-3" />
+                    )}
+                    {ann.type === 'strikethrough' && (
+                      <div className="w-full h-0.5 bg-red-600 mt-2" />
+                    )}
+                    {ann.type === 'rectangle' && (
+                      <div className="w-full h-full border-2 border-blue-500 rounded-sm" />
+                    )}
+                    {ann.type === 'comment' && (
+                      <div className="w-6 h-6 rounded bg-amber-400 text-slate-900 text-xs font-bold flex items-center justify-center shadow-lg border border-amber-600">
+                        💬
+                      </div>
                     )}
                     {ann.type === 'signature' && ann.dataUrl && (
                       <img src={ann.dataUrl} alt="sig" className="w-full h-full object-contain" />
+                    )}
+                    {ann.type === 'image' && ann.dataUrl && (
+                      <img src={ann.dataUrl} alt="embedded" className="w-full h-full object-contain shadow-md" />
                     )}
                   </div>
                 ))}
@@ -622,7 +1272,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
             </div>
 
             <p className="text-xs text-slate-400">
-              Draw inside the box below to generate a transparent digital signature stamp.
+              Draw inside the pad below to generate a transparent digital signature stamp.
             </p>
 
             <div className="border border-slate-700 rounded-xl bg-white overflow-hidden">
@@ -649,76 +1299,74 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
                 }}
                 className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-slate-800"
               >
-                Clear
+                Clear Pad
               </button>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsSignatureModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={applySignature}
-                  className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold"
-                >
-                  Apply Signature
-                </button>
-              </div>
+              <button
+                onClick={applySignature}
+                className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md"
+              >
+                Apply Signature
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Split Modal */}
+      {/* Split PDF Modal */}
       {isSplitModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
-            <h3 className="text-base font-bold text-white">Split PDF by Range</h3>
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Scissors className="w-4 h-4 text-amber-400" />
+                <span>Split PDF Document</span>
+              </h3>
+              <button onClick={() => setIsSplitModalOpen(false)} className="text-slate-400 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
             <p className="text-xs text-slate-400">
-              Extract a specific set of pages into a new standalone PDF document.
+              Choose the page range to extract into a standalone PDF file:
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4 text-xs text-white">
               <div className="flex-1 space-y-1">
-                <label className="text-[11px] text-slate-400 font-semibold">From Page</label>
+                <label className="text-slate-400">From Page:</label>
                 <input
                   type="number"
-                  min="1"
+                  min={1}
                   max={numPages}
                   value={splitRange.start}
-                  onChange={(e) =>
-                    setSplitRange((prev) => ({ ...prev, start: parseInt(e.target.value) || 1 }))
-                  }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white text-xs"
+                  onChange={(e) => setSplitRange({ ...splitRange, start: Math.max(1, Number(e.target.value)) })}
+                  className="w-full px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white"
                 />
               </div>
+
               <div className="flex-1 space-y-1">
-                <label className="text-[11px] text-slate-400 font-semibold">To Page</label>
+                <label className="text-slate-400">To Page:</label>
                 <input
                   type="number"
                   min={splitRange.start}
                   max={numPages}
                   value={splitRange.end}
-                  onChange={(e) =>
-                    setSplitRange((prev) => ({ ...prev, end: parseInt(e.target.value) || 1 }))
-                  }
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white text-xs"
+                  onChange={(e) => setSplitRange({ ...splitRange, end: Math.min(numPages, Number(e.target.value)) })}
+                  className="w-full px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setIsSplitModalOpen(false)}
-                className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:bg-slate-800"
+                className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSplitPdf}
-                className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold"
+                className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow-md"
               >
                 Extract Pages
               </button>

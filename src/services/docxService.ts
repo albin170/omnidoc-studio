@@ -1,13 +1,22 @@
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, BorderStyle, WidthType, AlignmentType } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import JSZip from 'jszip';
+
+export interface DocxTextRun {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+}
 
 export interface DocxContentItem {
   type: 'h1' | 'h2' | 'h3' | 'paragraph' | 'bullet' | 'table';
   text?: string;
+  runs?: DocxTextRun[];
   tableData?: string[][];
   bold?: boolean;
   italic?: boolean;
+  underline?: boolean;
   align?: 'left' | 'center' | 'right';
 }
 
@@ -96,16 +105,33 @@ export async function createDocxBlob(title: string, items: DocxContentItem[]): P
       if (item.align === 'center') alignment = AlignmentType.CENTER;
       if (item.align === 'right') alignment = AlignmentType.RIGHT;
 
+      const runs: TextRun[] = [];
+      if (item.runs && item.runs.length > 0) {
+        for (const r of item.runs) {
+          runs.push(
+            new TextRun({
+              text: r.text || '',
+              bold: r.bold,
+              italics: r.italic,
+              underline: r.underline ? {} : undefined,
+            })
+          );
+        }
+      } else {
+        runs.push(
+          new TextRun({
+            text: item.text || '',
+            bold: item.bold,
+            italics: item.italic,
+            underline: item.underline ? {} : undefined,
+          })
+        );
+      }
+
       children.push(
         new Paragraph({
           alignment,
-          children: [
-            new TextRun({
-              text: item.text || '',
-              bold: item.bold,
-              italics: item.italic,
-            }),
-          ],
+          children: runs,
           spacing: { after: 140, line: 276 },
         })
       );
@@ -122,6 +148,147 @@ export async function createDocxBlob(title: string, items: DocxContentItem[]): P
   });
 
   return await Packer.toBlob(doc);
+}
+
+/**
+ * Converts rich-text HTML from the editor into structured DocxContentItem objects
+ */
+export function htmlToDocxItems(html: string): DocxContentItem[] {
+  if (typeof DOMParser === 'undefined') {
+    // Universal regex-based fallback for Node.js / non-browser environments
+    const items: DocxContentItem[] = [];
+    const trimmed = html.trim();
+
+    if (/<[a-z][\s\S]*>/i.test(trimmed)) {
+      const tagRegex = /<(h[1-3]|p|ul|ol|table)[^>]*>([\s\S]*?)<\/\1>/gi;
+      let match;
+      while ((match = tagRegex.exec(trimmed)) !== null) {
+        const tag = match[1].toLowerCase();
+        const inner = match[2];
+
+        if (tag === 'h1') {
+          items.push({ type: 'h1', text: inner.replace(/<[^>]+>/g, '').trim() });
+        } else if (tag === 'h2') {
+          items.push({ type: 'h2', text: inner.replace(/<[^>]+>/g, '').trim() });
+        } else if (tag === 'h3') {
+          items.push({ type: 'h3', text: inner.replace(/<[^>]+>/g, '').trim() });
+        } else if (tag === 'ul' || tag === 'ol') {
+          const liMatches = Array.from(inner.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi));
+          for (const lim of liMatches) {
+            items.push({ type: 'bullet', text: lim[1].replace(/<[^>]+>/g, '').trim() });
+          }
+        } else if (tag === 'table') {
+          const tableData: string[][] = [];
+          const trMatches = Array.from(inner.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi));
+          for (const trm of trMatches) {
+            const cellMatches = Array.from(trm[1].matchAll(/<(?:td|th)[^>]*>([\s\S]*?)<\/(?:td|th)>/gi));
+            const rowCells = cellMatches.map((cm) => cm[1].replace(/<[^>]+>/g, '').trim());
+            if (rowCells.length > 0) tableData.push(rowCells);
+          }
+          if (tableData.length > 0) items.push({ type: 'table', tableData });
+        } else if (tag === 'p') {
+          items.push({ type: 'paragraph', text: inner.replace(/<[^>]+>/g, '').trim() });
+        }
+      }
+
+      if (items.length > 0) return items;
+    }
+
+    // Markdown / plain text fallback
+    return html.split('\n').filter(Boolean).map((line) => {
+      const trimmedLine = line.trim();
+      if (trimmedLine.startsWith('# ')) return { type: 'h1', text: trimmedLine.replace('# ', '') };
+      if (trimmedLine.startsWith('## ')) return { type: 'h2', text: trimmedLine.replace('## ', '') };
+      if (trimmedLine.startsWith('### ')) return { type: 'h3', text: trimmedLine.replace('### ', '') };
+      if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) return { type: 'bullet', text: trimmedLine.replace(/^[-•]\s*/, '') };
+      return { type: 'paragraph', text: trimmedLine };
+    });
+  }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const items: DocxContentItem[] = [];
+
+  function extractRuns(node: Node): DocxTextRun[] {
+    const runs: DocxTextRun[] = [];
+
+    function walk(n: Node, isBold = false, isItalic = false, isUnderline = false) {
+      if (n.nodeType === Node.TEXT_NODE) {
+        const text = n.textContent || '';
+        if (text) {
+          runs.push({
+            text,
+            bold: isBold,
+            italic: isItalic,
+            underline: isUnderline,
+          });
+        }
+      } else if (n.nodeType === Node.ELEMENT_NODE) {
+        const el = n as HTMLElement;
+        const tag = el.tagName.toUpperCase();
+        const nextBold = isBold || tag === 'B' || tag === 'STRONG';
+        const nextItalic = isItalic || tag === 'I' || tag === 'EM';
+        const nextUnderline = isUnderline || tag === 'U';
+
+        for (let i = 0; i < el.childNodes.length; i++) {
+          walk(el.childNodes[i], nextBold, nextItalic, nextUnderline);
+        }
+      }
+    }
+
+    walk(node);
+    return runs.length > 0 ? runs : [{ text: node.textContent || '' }];
+  }
+
+  const children = Array.from(doc.body.children);
+  if (children.length === 0) {
+    const rawText = doc.body.textContent || '';
+    if (rawText.trim()) {
+      items.push({ type: 'paragraph', text: rawText });
+    }
+    return items;
+  }
+
+  for (const child of children) {
+    const tag = child.tagName.toUpperCase();
+    if (tag === 'H1') {
+      items.push({ type: 'h1', text: child.textContent || '' });
+    } else if (tag === 'H2') {
+      items.push({ type: 'h2', text: child.textContent || '' });
+    } else if (tag === 'H3') {
+      items.push({ type: 'h3', text: child.textContent || '' });
+    } else if (tag === 'UL' || tag === 'OL') {
+      const lis = child.querySelectorAll('li');
+      lis.forEach((li) => {
+        items.push({ type: 'bullet', text: li.textContent || '' });
+      });
+    } else if (tag === 'TABLE') {
+      const tableData: string[][] = [];
+      const trs = child.querySelectorAll('tr');
+      trs.forEach((tr) => {
+        const rowCells: string[] = [];
+        tr.querySelectorAll('th, td').forEach((cell) => {
+          rowCells.push(cell.textContent?.trim() || '');
+        });
+        if (rowCells.length > 0) {
+          tableData.push(rowCells);
+        }
+      });
+      if (tableData.length > 0) {
+        items.push({ type: 'table', tableData });
+      }
+    } else {
+      // Paragraph or div
+      const runs = extractRuns(child);
+      items.push({
+        type: 'paragraph',
+        text: child.textContent || '',
+        runs,
+      });
+    }
+  }
+
+  return items;
 }
 
 /**

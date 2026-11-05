@@ -9,8 +9,8 @@ import {
   AlertCircle, 
   Loader2, 
   Eye, 
-  SlidersHorizontal,
-  Settings2
+  Settings2,
+  X
 } from 'lucide-react';
 import { ConversionJob, ConversionOptions, FileFormat } from '../../types';
 import { FORMAT_REGISTRY, formatFileSize } from '../../services/formatDetector';
@@ -39,6 +39,35 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
     ocrLanguage: 'eng',
   });
   const [previewBlob, setPreviewBlob] = useState<{ url: string; name: string; type: string } | null>(null);
+
+  // Cancel active job
+  const cancelConversion = (jobId: string) => {
+    setJobs((prev) =>
+      prev.map((j) =>
+        j.id === jobId ? { ...j, status: 'queued', progress: 0, errorMessage: 'Conversion cancelled by user' } : j
+      )
+    );
+  };
+
+  // Switch target format and make job ready for another conversion without re-uploading
+  const handleTargetFormatChange = (jobId: string, newTarget: FileFormat) => {
+    setJobs((prev) =>
+      prev.map((j) => {
+        if (j.id === jobId) {
+          return {
+            ...j,
+            targetFormat: newTarget,
+            status: 'queued',
+            progress: 0,
+            resultBlob: undefined,
+            resultFileName: undefined,
+            errorMessage: undefined,
+          };
+        }
+        return j;
+      })
+    );
+  };
 
   // Run single job
   const runConversion = async (jobId: string) => {
@@ -339,12 +368,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                   <span className="text-slate-400">Target:</span>
                   <select
                     value={job.targetFormat}
-                    onChange={(e) => {
-                      const newTarget = e.target.value as FileFormat;
-                      setJobs((prev) =>
-                        prev.map((j) => (j.id === job.id ? { ...j, targetFormat: newTarget } : j))
-                      );
-                    }}
+                    onChange={(e) => handleTargetFormatChange(job.id, e.target.value as FileFormat)}
                     disabled={job.status === 'processing'}
                     className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 font-semibold uppercase cursor-pointer"
                   >
@@ -394,8 +418,8 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
 
                 {/* Action buttons */}
                 <div className="flex items-center gap-2 self-end md:self-center">
-                  {job.status === 'completed' ? (
-                    <>
+                  {job.status === 'completed' && (
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handlePreview(job)}
                         className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
@@ -407,22 +431,50 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                       <button
                         onClick={() => handleDownloadSingle(job)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                        title="Download converted file"
                       >
                         <DownloadCloud className="w-3.5 h-3.5" />
                         <span>Download</span>
                       </button>
-                    </>
-                  ) : (
+
+                      <button
+                        onClick={() => runConversion(job.id)}
+                        className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                        title="Convert again / Re-run"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  {job.status === 'processing' && (
+                    <button
+                      onClick={() => cancelConversion(job.id)}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-semibold cursor-pointer"
+                      title="Cancel conversion"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Cancel</span>
+                    </button>
+                  )}
+
+                  {job.status === 'error' && (
                     <button
                       onClick={() => runConversion(job.id)}
-                      disabled={job.status === 'processing'}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold cursor-pointer"
+                      title="Retry conversion"
                     >
-                      {job.status === 'processing' ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-3.5 h-3.5" />
-                      )}
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Retry</span>
+                    </button>
+                  )}
+
+                  {job.status === 'queued' && (
+                    <button
+                      onClick={() => runConversion(job.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer shadow-sm shadow-indigo-600/30"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
                       <span>Convert</span>
                     </button>
                   )}
