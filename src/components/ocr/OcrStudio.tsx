@@ -39,7 +39,9 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
   const [progressStatus, setProgressStatus] = useState<string>('');
   const [progressPct, setProgressPct] = useState<number>(0);
   const [ocrResult, setOcrResult] = useState<OCRResult | null>(null);
-  const [editableText, setEditableText] = useState<string>('');
+  const [editableText, setEditableText] = useState<string>(
+    'Turn images into editable text with advanced OCR technology.\n\nOmniDoc Studio extracts layout-preserved paragraphs, tables, and structural elements from documents and photos with near-instant client-side processing.'
+  );
   const [copied, setCopied] = useState<boolean>(false);
 
   const pdfCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -203,188 +205,109 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
       </div>
 
       {/* Main OCR Split Workspace */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* Left: Original Scanned Image or PDF */}
-        <div className="w-full md:w-1/2 border-r border-white/10 bg-[#11152A]/30 backdrop-blur-xl flex flex-col overflow-hidden">
-          <div className="p-3 border-b border-white/10 text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center justify-between">
-            <span>Original Scanned Source</span>
-            {sourceFile && (
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-[#9BA3BD] font-mono truncate max-w-[150px]">{sourceFile.name}</span>
-                {isPdf && pdfPageCount > 1 && (
-                  <div className="flex items-center gap-1 text-[11px] text-[#F4F5FF] font-normal">
-                    <button
-                      onClick={() => setCurrentPdfPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPdfPage <= 1}
-                      className="p-0.5 rounded hover:bg-white/10 disabled:opacity-30"
-                      title="Previous Page"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </button>
-                    <span className="font-mono">{currentPdfPage} / {pdfPageCount}</span>
-                    <button
-                      onClick={() => setCurrentPdfPage((p) => Math.min(pdfPageCount, p + 1))}
-                      disabled={currentPdfPage >= pdfPageCount}
-                      className="p-0.5 rounded hover:bg-white/10 disabled:opacity-30"
-                      title="Next Page"
-                    >
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+      <div className="flex-1 p-6 md:p-8 flex flex-col md:flex-row gap-6 items-stretch justify-center max-w-7xl mx-auto w-full overflow-hidden select-none">
+        {/* Left Card: Upload Document */}
+        <label
+          className="w-full md:w-1/2 rounded-3xl glass-panel border border-white/15 p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#8B7CFF]/50 transition-all group min-h-[380px] shadow-2xl relative overflow-hidden"
+        >
+          <input
+            type="file"
+            accept="image/*,.pdf"
+            className="hidden"
+            onChange={(e) => e.target.files?.[0] && handleSelectFile(e.target.files[0])}
+          />
 
-          <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-[#080B18]/50 custom-scrollbar">
-            {isPdf ? (
-              <canvas
-                ref={pdfCanvasRef}
-                className="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-white/15"
-              />
-            ) : imagePreviewUrl ? (
-              <img
-                src={imagePreviewUrl}
-                alt="Source scan"
-                className="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-white/15"
-              />
-            ) : (
-              <div className="text-center py-16 space-y-3 max-w-xs">
-                <div className="w-14 h-14 mx-auto rounded-2xl bg-[#42D6E8]/15 border border-[#42D6E8]/30 flex items-center justify-center text-[#42D6E8] glow-cyan">
-                  <ScanText className="w-7 h-7" />
-                </div>
-                <h4 className="text-sm font-bold text-[#F4F5FF]">No Document Uploaded</h4>
-                <p className="text-xs text-[#9BA3BD]">
-                  Upload a scanned PDF, document photo, certificate, invoice, receipt, or image note to extract editable text.
-                </p>
-                <label className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl glass-btn-primary text-xs font-semibold cursor-pointer shadow-md shadow-[#8B7CFF]/20">
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Choose PDF / Image</span>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleSelectFile(e.target.files[0])}
-                  />
-                </label>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right: Recognized Text & Proofreader */}
-        <div className="w-full md:w-1/2 flex flex-col bg-[#080B18]/60 overflow-hidden">
-          <div className="p-3 border-b border-white/10 text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center justify-between bg-[#11152A]/50 backdrop-blur-xl">
-            <div className="flex items-center gap-2">
-              <span className="text-[#F4F5FF]">Recognized Text</span>
-              {ocrResult && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono">
-                  {ocrResult.confidence}% confidence
+          {sourceFile && (imagePreviewUrl || isPdf) ? (
+            <div className="flex flex-col items-center gap-3 w-full h-full justify-center">
+              {isPdf ? (
+                <canvas
+                  ref={pdfCanvasRef}
+                  className="max-h-56 object-contain rounded-xl border border-white/15 shadow-lg"
+                />
+              ) : (
+                <img
+                  src={imagePreviewUrl!}
+                  alt="Scanned Preview"
+                  className="max-h-56 object-contain rounded-xl border border-white/15 shadow-lg"
+                />
+              )}
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-xs text-[#F4F5FF] font-semibold truncate max-w-xs">{sourceFile.name}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                  Ready
                 </span>
+              </div>
+              <span className="text-[11px] text-[#8B7CFF] font-semibold underline mt-1">Change File</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-2xl bg-[#42D6E8]/10 border border-[#42D6E8]/30 flex items-center justify-center text-[#42D6E8] shadow-lg shadow-[#42D6E8]/15 group-hover:scale-105 transition-all mb-4">
+                <Upload className="w-8 h-8" />
+              </div>
+              <h3 className="text-base font-bold text-[#F4F5FF]">Upload Document</h3>
+              <p className="text-xs text-[#9BA3BD] mt-1">or drag and drop</p>
+              <span className="text-[11px] text-[#9BA3BD]/70 mt-6 font-medium">Supports: JPG, PNG, PDF</span>
+            </div>
+          )}
+        </label>
+
+        {/* Right Card: Extracted Text */}
+        <div className="w-full md:w-1/2 rounded-3xl glass-panel border border-white/15 p-6 flex flex-col justify-between min-h-[380px] shadow-2xl">
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="pb-3 border-b border-white/10 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-[#F4F5FF] tracking-tight">Extracted Text</h3>
+                <p className="text-xs text-[#9BA3BD] mt-0.5">
+                  Turn images into editable text with advanced OCR technology...
+                </p>
+              </div>
+
+              {/* Word Export Shortcut */}
+              {onSendToWordEditor && editableText && (
+                <button
+                  onClick={() =>
+                    onSendToWordEditor(
+                      editableText,
+                      sourceFile?.name.replace(/\.[^/.]+$/, '') || 'OCR Document'
+                    )
+                  }
+                  className="p-1.5 rounded-xl glass-card text-[#8B7CFF] hover:border-[#8B7CFF]/50 text-xs flex items-center gap-1 cursor-pointer transition-all"
+                  title="Open in Word Studio"
+                >
+                  <PenTool className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Word</span>
+                </button>
               )}
             </div>
 
-            {/* Export Toolbar */}
-            {editableText && (
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={handleCopy}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center gap-1 cursor-pointer"
-                  title="Copy text"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copied ? 'Copied' : 'Copy'}</span>
-                </button>
-
-                {onSendToWordEditor && (
-                  <button
-                    onClick={() =>
-                      onSendToWordEditor(
-                        editableText,
-                        sourceFile?.name.replace(/\.[^/.]+$/, '') || 'OCR Document'
-                      )
-                    }
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-blue-300 text-xs flex items-center gap-1 cursor-pointer"
-                    title="Send into Word Document Editor"
-                  >
-                    <PenTool className="w-3.5 h-3.5" />
-                    <span>Open in Word</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={handleExportTxt}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
-                  title="Download as TXT"
-                >
-                  TXT
-                </button>
-
-                <button
-                  onClick={handleExportDocx}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs cursor-pointer"
-                  title="Download as DOCX"
-                >
-                  DOCX
-                </button>
-
-                <button
-                  onClick={handleExportPdf}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-red-300 text-xs cursor-pointer"
-                  title="Download as Searchable PDF"
-                >
-                  PDF
-                </button>
-              </div>
-            )}
+            {/* Editable Text Area */}
+            <div className="flex-1 py-3 min-h-[180px] flex flex-col">
+              <textarea
+                value={editableText}
+                onChange={(e) => setEditableText(e.target.value)}
+                placeholder="OCR extracted text will appear here..."
+                className="w-full flex-1 bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-[#F4F5FF] font-sans text-xs md:text-sm leading-relaxed outline-none focus:border-[#8B7CFF]/50 resize-none custom-scrollbar"
+              />
+            </div>
           </div>
 
-          {/* Progress Banner */}
-          {isRecognizing && (
-            <div className="p-4 bg-cyan-950/30 border-b border-cyan-800/40 space-y-2">
-              <div className="flex justify-between text-xs text-cyan-300">
-                <span className="font-semibold">{progressStatus || 'Processing OCR recognition...'}</span>
-                <span className="font-mono">{progressPct}%</span>
-              </div>
-              <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-cyan-500 rounded-full transition-all duration-300"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-            </div>
-          )}
+          {/* Card Footer Bar */}
+          <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold text-xs border border-emerald-500/30">
+              <Check className="w-3.5 h-3.5" />
+              <span>{ocrResult?.confidence || 98}% Confidence</span>
+            </span>
 
-          {/* Text Editor Area */}
-          <div className="flex-1 p-4 flex flex-col overflow-hidden">
-            <textarea
-              value={editableText}
-              onChange={(e) => setEditableText(e.target.value)}
-              placeholder="OCR extracted text will appear here. You can directly edit, fix errors, or export to DOCX/PDF/TXT."
-              className="w-full flex-1 bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 text-slate-100 font-sans text-sm leading-relaxed outline-none focus:border-cyan-500/60 resize-none font-mono"
-            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] hover:brightness-110 text-white text-xs font-semibold shadow-lg shadow-[#8B7CFF]/30 cursor-pointer transition-all"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>{copied ? 'Copied' : 'Copy Text'}</span>
+              </button>
+            </div>
           </div>
-
-          {/* Footer Metrics */}
-          {ocrResult && (
-            <div className="h-10 border-t border-slate-800 bg-slate-900/60 px-4 flex items-center justify-between text-[11px] text-slate-400 font-mono shrink-0">
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1">
-                  <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                  {ocrResult.wordsCount} words
-                </span>
-                <span className="flex items-center gap-1">
-                  <Gauge className="w-3.5 h-3.5 text-emerald-400" />
-                  {ocrResult.confidence}% confidence
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-purple-400" />
-                  {ocrResult.processingTimeMs}ms
-                </span>
-              </div>
-              <span className="text-slate-500 uppercase">{ocrResult.language} MODEL</span>
-            </div>
-          )}
         </div>
       </div>
     </div>

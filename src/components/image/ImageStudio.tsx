@@ -60,6 +60,10 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
     invert: 0,
   });
 
+  const handleAdjustmentChange = (key: keyof ImageAdjustments, value: number) => {
+    setAdjustments((prev) => ({ ...prev, [key]: value }));
+  };
+
   // Layers (text, stickers)
   const [layers, setLayers] = useState<ImageLayer[]>([]);
   const [exportFormat, setExportFormat] = useState<'png' | 'jpg' | 'webp' | 'pdf'>('png');
@@ -85,9 +89,95 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
   const [eraserSize, setEraserSize] = useState<number>(24);
   const [isErasing, setIsErasing] = useState(false);
 
+  // Quality slider
+  const [quality, setQuality] = useState<number>(90);
+  const [activeTool, setActiveTool] = useState<'none' | 'crop' | 'adjust' | 'filters' | 'layers'>('none');
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const processedCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const historyRef = useRef<HTMLCanvasElement[]>([]);
+
+  // Initialize demo artwork if no initial file provided
+  useEffect(() => {
+    if (!initialFile && !sourceImage) {
+      const demoCanvas = document.createElement('canvas');
+      demoCanvas.width = 600;
+      demoCanvas.height = 600;
+      const ctx = demoCanvas.getContext('2d');
+      if (ctx) {
+        // Deep background
+        const bgGrad = ctx.createRadialGradient(300, 300, 40, 300, 300, 320);
+        bgGrad.addColorStop(0, '#1a103c');
+        bgGrad.addColorStop(0.7, '#0d0b24');
+        bgGrad.addColorStop(1, '#060714');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, 600, 600);
+
+        // Ambient glow rings
+        ctx.save();
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = '#42D6E8';
+        ctx.strokeStyle = 'rgba(66, 214, 232, 0.2)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(300, 300, 240, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // 3 concentric layers of luminous petals
+        const numPetals = 16;
+        for (let layer = 3; layer >= 1; layer--) {
+          const radius = layer * 60 + 50;
+          for (let i = 0; i < numPetals; i++) {
+            const angle = (i * 2 * Math.PI) / numPetals + (layer % 2 ? 0.2 : 0);
+            ctx.save();
+            ctx.translate(300, 300);
+            ctx.rotate(angle);
+
+            const petalGrad = ctx.createLinearGradient(0, 0, 0, radius);
+            if (layer === 3) {
+              petalGrad.addColorStop(0, '#6366F1');
+              petalGrad.addColorStop(0.6, '#42D6E8');
+              petalGrad.addColorStop(1, 'rgba(66, 214, 232, 0.3)');
+            } else if (layer === 2) {
+              petalGrad.addColorStop(0, '#8B7CFF');
+              petalGrad.addColorStop(0.7, '#A855F7');
+              petalGrad.addColorStop(1, 'rgba(139, 124, 255, 0.4)');
+            } else {
+              petalGrad.addColorStop(0, '#FFFFFF');
+              petalGrad.addColorStop(0.5, '#C084FC');
+              petalGrad.addColorStop(1, '#8B7CFF');
+            }
+
+            ctx.fillStyle = petalGrad;
+            ctx.beginPath();
+            ctx.ellipse(0, radius / 2, 32 - layer * 5, radius / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        // Flower golden core
+        const centerGrad = ctx.createRadialGradient(300, 300, 4, 300, 300, 45);
+        centerGrad.addColorStop(0, '#FEF08A');
+        centerGrad.addColorStop(0.5, '#F59E0B');
+        centerGrad.addColorStop(1, '#7C3AED');
+        ctx.fillStyle = centerGrad;
+        ctx.beginPath();
+        ctx.arc(300, 300, 42, 0, Math.PI * 2);
+        ctx.fill();
+
+        const img = new Image();
+        img.src = demoCanvas.toDataURL();
+        img.onload = () => {
+          setSourceImage(img);
+          setImageName('aurora_flower.png');
+          setResizeWidth(600);
+          setResizeHeight(600);
+        };
+      }
+    }
+  }, [initialFile]);
 
   const loadImageFile = (file: File) => {
     setImageName(file.name);
@@ -403,457 +493,297 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
-      {/* Top Header */}
-      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      {/* Top Header matching reference */}
+      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-5 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-3">
-          <input
-            type="text"
-            value={imageName}
-            onChange={(e) => setImageName(e.target.value)}
-            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-[#8B7CFF] px-1 py-0.5 outline-none w-48 md:w-60 transition-colors"
-          />
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8B7CFF]/20 text-[#8B7CFF] font-semibold border border-[#8B7CFF]/30">
-            GRAPHICS STUDIO
-          </span>
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8B7CFF] to-[#42D6E8] flex items-center justify-center p-0.5 shadow-md shadow-[#8B7CFF]/20">
+            <div className="w-full h-full bg-[#080B18] rounded-[10px] flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-[#8B7CFF]" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-bold text-[#F4F5FF] tracking-tight">Image Studio</h1>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8B7CFF]/20 text-[#8B7CFF] font-semibold border border-[#8B7CFF]/30">
+                AURORA CANVAS
+              </span>
+            </div>
+            <p className="text-[11px] text-[#9BA3BD]">Edit, enhance and optimize images</p>
+          </div>
         </div>
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleUndo}
+            className="p-2 rounded-xl glass-card hover:bg-white/10 text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
+            title="Undo"
+          >
+            <Undo className="w-4 h-4" />
+          </button>
+
           <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
             <Upload className="w-3.5 h-3.5 text-[#8B7CFF]" />
-            <span className="hidden sm:inline">Open Photo</span>
+            <span>Open Photo</span>
             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && loadImageFile(e.target.files[0])} />
           </label>
-
-          <button
-            onClick={handleRemoveBackground}
-            disabled={isProcessing}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#8B7CFF]/25 cursor-pointer"
-          >
-            <Scissors className="w-3.5 h-3.5" />
-            <span>Remove BG</span>
-          </button>
 
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(imageName, { adjustments, hasBackgroundRemoved, bgReplacementType, bgValue, layers })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
+              className="p-2 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#9BA3BD] hover:text-[#8B7CFF] cursor-pointer transition-all"
               title="Save Image Project"
             >
-              <Save className="w-3.5 h-3.5 text-[#8B7CFF]" />
-              <span>Save</span>
+              <Save className="w-4 h-4" />
             </button>
           )}
-
-          <div className="flex items-center glass-card border-white/10 rounded-xl p-0.5 text-xs">
-            <select
-              value={exportFormat}
-              onChange={(e) => setExportFormat(e.target.value as any)}
-              className="bg-transparent text-[#F4F5FF] font-semibold px-2 py-1 outline-none uppercase text-xs cursor-pointer"
-            >
-              <option value="png" className="bg-[#11152A] text-white">.PNG</option>
-              <option value="jpg" className="bg-[#11152A] text-white">.JPG</option>
-              <option value="webp" className="bg-[#11152A] text-white">.WEBP</option>
-              <option value="pdf" className="bg-[#11152A] text-white">.PDF</option>
-            </select>
-            <button
-              onClick={handleExport}
-              disabled={isProcessing}
-              className="flex items-center gap-1.5 px-3.5 py-1 rounded-lg glass-btn-primary text-xs font-semibold cursor-pointer shadow-sm"
-            >
-              <DownloadCloud className="w-3.5 h-3.5" />
-              <span>Export</span>
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Transform & Tool Ribbon */}
-      <div className="h-11 border-b border-white/10 bg-[#11152A]/60 backdrop-blur-xl px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-xs text-[#9BA3BD]">
-        <div className="flex items-center gap-1.5">
-          {/* Rotate */}
-          <button
-            onClick={() => handleRotate(270)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl hover:bg-white/[0.06] text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
-            title="Rotate Left 90°"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-[#8B7CFF]" />
-            <span>90° L</span>
-          </button>
-          <button
-            onClick={() => handleRotate(90)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl hover:bg-white/[0.06] text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
-            title="Rotate Right 90°"
-          >
-            <RotateCw className="w-3.5 h-3.5 text-[#8B7CFF]" />
-            <span>90° R</span>
-          </button>
+      {/* 3-Column Studio Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Column: Tool Buttons in Rounded Glass Pills */}
+        <div className="w-44 border-r border-white/10 bg-[#11152A]/40 backdrop-blur-xl p-3 flex flex-col gap-2 shrink-0 select-none custom-scrollbar overflow-y-auto">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-[#9BA3BD] px-2 pt-1">
+            Tools
+          </span>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
-
-          {/* Flip */}
-          <button
-            onClick={() => handleFlip(true, false)}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 text-slate-300"
-            title="Flip Horizontal"
-          >
-            <FlipHorizontal className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Flip H</span>
-          </button>
-          <button
-            onClick={() => handleFlip(false, true)}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 text-slate-300"
-            title="Flip Vertical"
-          >
-            <FlipVertical className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Flip V</span>
-          </button>
-
-          <div className="h-4 w-px bg-slate-800 mx-1" />
-
-          {/* Crop Tool */}
+          {/* Crop */}
           <button
             onClick={() => {
               setIsCropActive(!isCropActive);
-              if (isEraserActive) setIsEraserActive(false);
+              setActiveTool(isCropActive ? 'none' : 'crop');
             }}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded ${isCropActive ? 'bg-purple-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'}`}
-            title="Crop Image"
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              isCropActive ? 'bg-[#8B7CFF]/25 text-[#F4F5FF] border border-[#8B7CFF]/40 shadow-sm' : 'glass-card text-[#9BA3BD] hover:text-[#F4F5FF] hover:border-white/20'
+            }`}
           >
-            <CropIcon className="w-3.5 h-3.5" />
+            <CropIcon className="w-4 h-4 text-[#8B7CFF]" />
             <span>Crop</span>
           </button>
 
-          {/* Resize Tool */}
+          {/* Resize */}
           <button
             onClick={() => setShowResizeModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300"
-            title="Resize Dimensions"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold glass-card text-[#9BA3BD] hover:text-[#F4F5FF] hover:border-white/20 transition-all cursor-pointer"
           >
-            <Maximize2 className="w-3.5 h-3.5 text-cyan-400" />
+            <Maximize2 className="w-4 h-4 text-[#42D6E8]" />
             <span>Resize</span>
           </button>
 
-          <div className="h-4 w-px bg-slate-800 mx-1" />
-
-          {/* Erase Brush Tool */}
+          {/* Rotate */}
           <button
-            onClick={() => {
-              setIsEraserActive(!isEraserActive);
-              if (isCropActive) setIsCropActive(false);
-            }}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded ${isEraserActive ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'}`}
-            title="Eraser Brush"
+            onClick={() => handleRotate(90)}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold glass-card text-[#9BA3BD] hover:text-[#F4F5FF] hover:border-white/20 transition-all cursor-pointer"
           >
-            <Eraser className="w-3.5 h-3.5" />
-            <span>Eraser</span>
+            <RotateCw className="w-4 h-4 text-[#8B7CFF]" />
+            <span>Rotate</span>
           </button>
 
-          {isEraserActive && (
-            <div className="flex items-center gap-1.5 ml-2">
-              <span className="text-[10px] text-slate-400">Size:</span>
-              <input
-                type="range"
-                min="5"
-                max="60"
-                value={eraserSize}
-                onChange={(e) => setEraserSize(parseInt(e.target.value))}
-                className="w-16 accent-amber-500"
-              />
-              <span className="text-[10px] font-mono text-slate-400">{eraserSize}px</span>
-            </div>
-          )}
+          {/* Filters */}
+          <button
+            onClick={() => setActiveTool(activeTool === 'filters' ? 'none' : 'filters')}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              activeTool === 'filters' ? 'bg-[#8B7CFF]/25 text-[#F4F5FF] border border-[#8B7CFF]/40' : 'glass-card text-[#9BA3BD] hover:text-[#F4F5FF] hover:border-white/20'
+            }`}
+          >
+            <Palette className="w-4 h-4 text-pink-400" />
+            <span>Filters</span>
+          </button>
+
+          {/* Adjust */}
+          <button
+            onClick={() => setActiveTool(activeTool === 'adjust' ? 'none' : 'adjust')}
+            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              activeTool === 'adjust' ? 'bg-[#8B7CFF]/25 text-[#F4F5FF] border border-[#8B7CFF]/40' : 'glass-card text-[#9BA3BD] hover:text-[#F4F5FF] hover:border-white/20'
+            }`}
+          >
+            <Sliders className="w-4 h-4 text-[#42D6E8]" />
+            <span>Adjust</span>
+          </button>
+
+          {/* Remove BG */}
+          <button
+            onClick={handleRemoveBackground}
+            disabled={isProcessing}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold glass-card text-[#9BA3BD] hover:text-emerald-300 hover:border-emerald-400/40 transition-all cursor-pointer"
+          >
+            <Scissors className="w-4 h-4 text-emerald-400" />
+            <span>Remove BG</span>
+          </button>
+
+          <div className="h-px bg-white/10 my-2" />
+
+          {/* Overlays */}
+          <button
+            onClick={handleAddTextLayer}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold glass-card text-[#9BA3BD] hover:text-[#F4F5FF] hover:border-white/20 transition-all cursor-pointer"
+          >
+            <Type className="w-4 h-4 text-[#8B7CFF]" />
+            <span>Add Text</span>
+          </button>
+
+          <button
+            onClick={handleAddSticker}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold glass-card text-[#9BA3BD] hover:text-amber-300 hover:border-amber-400/40 transition-all cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span>Sticker</span>
+          </button>
         </div>
 
-        {/* Undo */}
-        <button
-          onClick={handleUndo}
-          className="flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
-          title="Undo Transformation"
-        >
-          <Undo className="w-3.5 h-3.5" />
-          <span>Undo</span>
-        </button>
-      </div>
-
-      {/* Crop Controls Banner */}
-      {isCropActive && (
-        <div className="bg-purple-950/60 border-b border-purple-800/60 px-4 py-2 flex items-center justify-between text-xs text-purple-200">
-          <div className="flex items-center gap-3">
-            <span className="font-semibold text-white">Crop Area:</span>
-            <div className="flex items-center gap-1.5">
-              <span>X:</span>
-              <input
-                type="number"
-                min="0"
-                max="90"
-                value={cropRect.x}
-                onChange={(e) => setCropRect((prev) => ({ ...prev, x: parseInt(e.target.value) || 0 }))}
-                className="w-12 bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-white"
-              />
-              <span>%</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span>Y:</span>
-              <input
-                type="number"
-                min="0"
-                max="90"
-                value={cropRect.y}
-                onChange={(e) => setCropRect((prev) => ({ ...prev, y: parseInt(e.target.value) || 0 }))}
-                className="w-12 bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-white"
-              />
-              <span>%</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span>W:</span>
-              <input
-                type="number"
-                min="10"
-                max="100"
-                value={cropRect.w}
-                onChange={(e) => setCropRect((prev) => ({ ...prev, w: parseInt(e.target.value) || 10 }))}
-                className="w-12 bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-white"
-              />
-              <span>%</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span>H:</span>
-              <input
-                type="number"
-                min="10"
-                max="100"
-                value={cropRect.h}
-                onChange={(e) => setCropRect((prev) => ({ ...prev, h: parseInt(e.target.value) || 10 }))}
-                className="w-12 bg-slate-900 border border-slate-700 px-1 py-0.5 rounded text-white"
-              />
-              <span>%</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleApplyCrop}
-              className="flex items-center gap-1 px-3 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white font-semibold cursor-pointer"
-            >
-              <Check className="w-3.5 h-3.5" />
-              <span>Apply Crop</span>
-            </button>
-            <button
-              onClick={() => setIsCropActive(false)}
-              className="p-1 text-slate-400 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Editor Main Canvas & Sidebar Controls */}
-      <div className="flex-1 flex overflow-hidden">
         {/* Center Canvas Viewport */}
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex items-center justify-center bg-[#080B18]/50 checkerboard-bg relative select-none custom-scrollbar">
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex items-center justify-center bg-[#080B18]/60 relative select-none custom-scrollbar">
+          {/* Ambient Glow Aura */}
+          <div className="absolute w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-[#8B7CFF]/20 to-[#42D6E8]/20 blur-3xl pointer-events-none" />
+
           <canvas
             ref={canvasRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            className={`max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-white/15 ${
+            className={`max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-white/20 z-10 transition-all ${
               isEraserActive ? 'cursor-crosshair' : 'cursor-default'
             }`}
+            style={{
+              boxShadow: '0 0 60px rgba(66, 214, 232, 0.25), 0 20px 40px rgba(0,0,0,0.6)',
+            }}
           />
         </div>
 
-        {/* Right Adjustments & Layers Panel */}
-        <div className="w-72 border-l border-white/10 bg-[#11152A]/40 backdrop-blur-xl p-4 overflow-y-auto space-y-6 shrink-0 hidden md:block custom-scrollbar">
-          {/* Overlays */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-[#8B7CFF]" />
-              <span>Overlays &amp; Layers</span>
-            </h4>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={handleAddTextLayer}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
-              >
-                <Type className="w-3.5 h-3.5 text-[#8B7CFF]" />
-                <span>Add Text</span>
-              </button>
-              <button
-                onClick={handleAddSticker}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl glass-card hover:border-amber-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Sticker</span>
-              </button>
-            </div>
-            {layers.length > 0 && (
-              <button
-                onClick={() => setLayers([])}
-                className="w-full py-1 text-[11px] text-[#9BA3BD] hover:text-rose-400 text-center cursor-pointer transition-colors"
-              >
-                Clear all overlays ({layers.length})
-              </button>
-            )}
+        {/* Right Column: Export Settings Panel */}
+        <div className="w-72 border-l border-white/10 bg-[#11152A]/50 backdrop-blur-2xl p-5 flex flex-col gap-5 shrink-0 custom-scrollbar overflow-y-auto select-none">
+          <div className="border-b border-white/10 pb-2">
+            <h3 className="text-xs font-bold text-[#F4F5FF] uppercase tracking-wider">
+              Export Settings
+            </h3>
           </div>
 
-          {/* Background Replacement */}
-          {hasBackgroundRemoved && (
+          {/* Format Selector */}
+          <div className="space-y-2">
+            <label className="text-[11px] text-[#9BA3BD] font-medium">Format</label>
+            <select
+              value={exportFormat}
+              onChange={(e) => setExportFormat(e.target.value as any)}
+              className="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-[#F4F5FF] outline-none cursor-pointer"
+            >
+              <option value="png" className="bg-[#11152A] text-white">PNG</option>
+              <option value="jpg" className="bg-[#11152A] text-white">JPG</option>
+              <option value="webp" className="bg-[#11152A] text-white">WEBP</option>
+              <option value="pdf" className="bg-[#11152A] text-white">PDF</option>
+            </select>
+          </div>
+
+          {/* Quality Slider */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] text-[#9BA3BD] font-medium">Quality</label>
+              <span className="text-xs font-mono font-bold text-[#42D6E8]">{quality}%</span>
+            </div>
+            <input
+              type="range"
+              min="20"
+              max="100"
+              value={quality}
+              onChange={(e) => setQuality(parseInt(e.target.value))}
+              className="w-full accent-[#8B7CFF] cursor-pointer"
+            />
+          </div>
+
+          {/* Export Button */}
+          <button
+            onClick={handleExport}
+            disabled={isProcessing}
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] hover:brightness-110 text-white text-xs font-bold shadow-lg shadow-[#8B7CFF]/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
+          >
+            <DownloadCloud className="w-4 h-4" />
+            <span>Export Image</span>
+          </button>
+
+          {/* Active Tool Subpanels (Adjustments / Filters) */}
+          {activeTool === 'adjust' && (
             <div className="space-y-3 pt-3 border-t border-white/10">
-              <h4 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-1.5">
-                <Palette className="w-3.5 h-3.5 text-pink-400" />
-                <span>Replace Background</span>
+              <h4 className="text-[11px] font-bold text-[#F4F5FF] uppercase tracking-wider">
+                Adjustments
               </h4>
-              <div className="grid grid-cols-3 gap-1.5 text-xs">
-                <button
-                  onClick={() => setBgReplacementType('transparent')}
-                  className={`py-1.5 rounded-xl border cursor-pointer transition-all ${
-                    bgReplacementType === 'transparent' ? 'border-[#8B7CFF] bg-[#8B7CFF]/20 text-white' : 'border-white/10 glass-card text-[#9BA3BD]'
-                  }`}
-                >
-                  Alpha
-                </button>
-                <button
-                  onClick={() => {
-                    setBgReplacementType('color');
-                    setBgValue('#ffffff');
-                  }}
-                  className={`py-1.5 rounded-xl border cursor-pointer transition-all ${
-                    bgReplacementType === 'color' ? 'border-[#8B7CFF] bg-[#8B7CFF]/20 text-white' : 'border-white/10 glass-card text-[#9BA3BD]'
-                  }`}
-                >
-                  White
-                </button>
-                <button
-                  onClick={() => {
-                    setBgReplacementType('gradient');
-                  }}
-                  className={`py-1.5 rounded-xl border cursor-pointer transition-all ${
-                    bgReplacementType === 'gradient' ? 'border-[#8B7CFF] bg-[#8B7CFF]/20 text-white' : 'border-white/10 glass-card text-[#9BA3BD]'
-                  }`}
-                >
-                  Sunset
-                </button>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[11px] text-[#9BA3BD]">
+                  <span>Brightness</span>
+                  <span className="font-mono">{adjustments.brightness}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={adjustments.brightness}
+                  onChange={(e) => handleAdjustmentChange('brightness', parseInt(e.target.value))}
+                  className="w-full accent-[#8B7CFF]"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[11px] text-[#9BA3BD]">
+                  <span>Contrast</span>
+                  <span className="font-mono">{adjustments.contrast}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={adjustments.contrast}
+                  onChange={(e) => handleAdjustmentChange('contrast', parseInt(e.target.value))}
+                  className="w-full accent-[#8B7CFF]"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[11px] text-[#9BA3BD]">
+                  <span>Saturation</span>
+                  <span className="font-mono">{adjustments.saturation}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={adjustments.saturation}
+                  onChange={(e) => handleAdjustmentChange('saturation', parseInt(e.target.value))}
+                  className="w-full accent-[#8B7CFF]"
+                />
               </div>
             </div>
           )}
 
-          {/* Filter Sliders */}
-          <div className="space-y-4 pt-3 border-t border-white/10">
-            <h4 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-[#8B7CFF]" />
-                <span>Adjustments</span>
-              </span>
-              <button
-                onClick={() =>
-                  setAdjustments({
-                    brightness: 100,
-                    contrast: 100,
-                    saturation: 100,
-                    blur: 0,
-                    grayscale: 0,
-                    sepia: 0,
-                    invert: 0,
-                  })
-                }
-                className="text-[10px] text-slate-500 hover:text-slate-300 cursor-pointer"
-              >
-                Reset
-              </button>
-            </h4>
-
-            {/* Brightness */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-400">
-                <span>Brightness</span>
-                <span className="font-mono">{adjustments.brightness}%</span>
+          {activeTool === 'filters' && (
+            <div className="space-y-3 pt-3 border-t border-white/10">
+              <h4 className="text-[11px] font-bold text-[#F4F5FF] uppercase tracking-wider">
+                Presets &amp; Filters
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => handleAdjustmentChange('grayscale', adjustments.grayscale > 0 ? 0 : 100)}
+                  className="py-1.5 px-2 rounded-xl glass-card text-xs font-semibold text-[#F4F5FF] hover:border-white/20 cursor-pointer"
+                >
+                  Grayscale
+                </button>
+                <button
+                  onClick={() => handleAdjustmentChange('sepia', adjustments.sepia > 0 ? 0 : 100)}
+                  className="py-1.5 px-2 rounded-xl glass-card text-xs font-semibold text-[#F4F5FF] hover:border-white/20 cursor-pointer"
+                >
+                  Sepia
+                </button>
+                <button
+                  onClick={() => handleAdjustmentChange('invert', adjustments.invert > 0 ? 0 : 100)}
+                  className="py-1.5 px-2 rounded-xl glass-card text-xs font-semibold text-[#F4F5FF] hover:border-white/20 cursor-pointer"
+                >
+                  Invert
+                </button>
+                <button
+                  onClick={() => handleAdjustmentChange('blur', adjustments.blur > 0 ? 0 : 4)}
+                  className="py-1.5 px-2 rounded-xl glass-card text-xs font-semibold text-[#F4F5FF] hover:border-white/20 cursor-pointer"
+                >
+                  Blur
+                </button>
               </div>
-              <input
-                type="range"
-                min="20"
-                max="200"
-                value={adjustments.brightness}
-                onChange={(e) =>
-                  setAdjustments((prev) => ({ ...prev, brightness: parseInt(e.target.value) }))
-                }
-                className="w-full accent-purple-500 cursor-pointer"
-              />
             </div>
-
-            {/* Contrast */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-400">
-                <span>Contrast</span>
-                <span className="font-mono">{adjustments.contrast}%</span>
-              </div>
-              <input
-                type="range"
-                min="20"
-                max="200"
-                value={adjustments.contrast}
-                onChange={(e) =>
-                  setAdjustments((prev) => ({ ...prev, contrast: parseInt(e.target.value) }))
-                }
-                className="w-full accent-purple-500 cursor-pointer"
-              />
-            </div>
-
-            {/* Saturation */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-400">
-                <span>Saturation</span>
-                <span className="font-mono">{adjustments.saturation}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="250"
-                value={adjustments.saturation}
-                onChange={(e) =>
-                  setAdjustments((prev) => ({ ...prev, saturation: parseInt(e.target.value) }))
-                }
-                className="w-full accent-purple-500 cursor-pointer"
-              />
-            </div>
-
-            {/* Grayscale */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-400">
-                <span>Grayscale (B&amp;W)</span>
-                <span className="font-mono">{adjustments.grayscale}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={adjustments.grayscale}
-                onChange={(e) =>
-                  setAdjustments((prev) => ({ ...prev, grayscale: parseInt(e.target.value) }))
-                }
-                className="w-full accent-purple-500 cursor-pointer"
-              />
-            </div>
-
-            {/* Blur */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-400">
-                <span>Blur</span>
-                <span className="font-mono">{adjustments.blur}px</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="15"
-                value={adjustments.blur}
-                onChange={(e) =>
-                  setAdjustments((prev) => ({ ...prev, blur: parseInt(e.target.value) }))
-                }
-                className="w-full accent-purple-500 cursor-pointer"
-              />
-            </div>
-          </div>
+          )}
         </div>
       </div>
 

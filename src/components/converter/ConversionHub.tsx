@@ -15,7 +15,15 @@ import {
   Check,
   Ban,
   FileCode,
-  ShieldCheck
+  ShieldCheck,
+  UploadCloud,
+  ArrowRight,
+  ArrowLeftRight,
+  Crown,
+  Clock,
+  Play,
+  Pause,
+  FileText
 } from 'lucide-react';
 import { ConversionJob, ConversionOptions, FileFormat } from '../../types';
 import { FORMAT_REGISTRY, formatFileSize } from '../../services/formatDetector';
@@ -53,6 +61,10 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
 }) => {
   const [isProcessingAll, setIsProcessingAll] = useState(false);
   const [showMatrixModal, setShowMatrixModal] = useState(false);
+  const [selectedSourceFmt, setSelectedSourceFmt] = useState<FileFormat>('pdf');
+  const [selectedTargetFmt, setSelectedTargetFmt] = useState<FileFormat>('docx');
+  const [isDragOverDropzone, setIsDragOverDropzone] = useState(false);
+
   const [globalOptions, setGlobalOptions] = useState<ConversionOptions>({
     quality: 0.92,
     pageOrientation: 'portrait',
@@ -60,10 +72,10 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
   });
   const [previewBlob, setPreviewBlob] = useState<{ url: string; name: string; type: string } | null>(null);
 
-  // Active AbortControllers map for real in-flight worker cancellation
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllersRef = useRef<Map<string, AbortController>>(new Map());
 
-  // Cancel active job with genuine AbortSignal propagation
+  // Cancel active job
   const cancelConversion = (jobId: string) => {
     const controller = abortControllersRef.current.get(jobId);
     if (controller) {
@@ -79,7 +91,6 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
     );
   };
 
-  // Switch target format and make job ready for another conversion without re-uploading
   const handleTargetFormatChange = (jobId: string, newTarget: FileFormat) => {
     setJobs((prev) =>
       prev.map((j) => {
@@ -99,7 +110,6 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
     );
   };
 
-  // Run single job with AbortController
   const runConversion = async (jobId: string) => {
     const job = jobs.find((j) => j.id === jobId);
     if (!job || job.status === 'processing') return;
@@ -141,7 +151,6 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
         )
       );
 
-      // Record to persistent conversion history
       addConversionHistoryItem({
         id: `conv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         sourceName: job.sourceFile.name,
@@ -178,7 +187,6 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
         )
       );
 
-      // Record failed conversion in history
       addConversionHistoryItem({
         id: `conv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         sourceName: job.sourceFile.name,
@@ -194,7 +202,6 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
     }
   };
 
-  // Convert all pending jobs
   const handleConvertAll = async () => {
     setIsProcessingAll(true);
     const pendingJobs = jobs.filter((j) => j.status === 'queued' || j.status === 'error');
@@ -206,7 +213,6 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
     setIsProcessingAll(false);
   };
 
-  // Download all as ZIP
   const handleDownloadAllZip = async () => {
     const completed = jobs.filter((j) => j.status === 'completed' && j.resultBlob);
     if (completed.length === 0) return;
@@ -237,302 +243,374 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
     }
   };
 
+  // Convert now from format selector
+  const handleQuickConvertNow = () => {
+    if (jobs.length > 0) {
+      handleConvertAll();
+    } else {
+      fileInputRef.current?.click();
+    }
+  };
+
   const completedCount = jobs.filter((j) => j.status === 'completed').length;
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 text-[#F4F5FF] custom-scrollbar bg-[#080B18]/60">
-      {/* Top Banner and Actions */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 glass-panel p-6 rounded-2xl border border-white/10 shadow-2xl">
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 text-[#F4F5FF] custom-scrollbar bg-transparent">
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        multiple
+        className="hidden"
+        onChange={(e) => e.target.files && onAddFiles(Array.from(e.target.files))}
+      />
+
+      {/* ========================================================================= */}
+      {/* 1. TOP HEADER: Conversion Studio with Go Premium Button (Reference)       */}
+      {/* ========================================================================= */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.08]">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-bold text-[#F4F5FF]">Conversion Hub</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30 glow-purple">
-              Verified Pipeline
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-[#F4F5FF] tracking-tight">
+              Conversion Studio
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30 glow-purple">
+              Client-Side Native
             </span>
           </div>
-          <p className="text-xs md:text-sm text-[#9BA3BD] mt-1">
-            Convert documents, presentations, spreadsheets, and media with genuine header validation and client-side privacy.
+          <p className="text-xs sm:text-sm text-[#9BA3BD] mt-0.5 font-medium">
+            Convert your files to any supported format with 100% offline privacy.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex items-center gap-3 self-end sm:self-auto">
           <button
             onClick={() => setShowMatrixModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#42D6E8] text-xs font-semibold cursor-pointer transition-all"
-            title="View full conversion compatibility matrix"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-card hover:border-[#42D6E8]/50 text-[#42D6E8] text-xs font-semibold cursor-pointer transition-all"
+            title="View full conversion matrix"
           >
-            <Grid className="w-4 h-4 text-[#42D6E8]" />
-            <span>Compatibility Matrix</span>
+            <Grid className="w-3.5 h-3.5 text-[#42D6E8]" />
+            <span>Matrix</span>
           </button>
 
-          <label className="flex items-center gap-1.5 px-3 py-2 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
-            <Plus className="w-4 h-4 text-[#8B7CFF]" />
-            <span>Add More Files</span>
-            <input
-              type="file"
-              multiple
-              className="hidden"
-              onChange={(e) => e.target.files && onAddFiles(Array.from(e.target.files))}
-            />
-          </label>
+          {/* Go Premium Golden Crown Button (Matching Reference) */}
+          <button
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold shadow-md transition-all cursor-pointer hover:scale-105"
+          >
+            <Crown className="w-3.5 h-3.5 text-amber-300" />
+            <span>Go Premium</span>
+          </button>
+        </div>
+      </div>
 
-          {jobs.length > 0 && (
-            <>
-              <button
-                onClick={handleConvertAll}
-                disabled={isProcessingAll || jobs.every((j) => j.status === 'completed')}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl glass-btn-primary disabled:opacity-50 text-xs font-semibold shadow-lg shadow-[#8B7CFF]/25 transition-all cursor-pointer"
-              >
-                {isProcessingAll ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-                <span>Convert All ({jobs.length})</span>
-              </button>
+      {/* ========================================================================= */}
+      {/* 2. THREE-PANEL CORE LAYOUT (Exact Reference Match)                        */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Panel 1 (4 cols): Drag & Drop Zone */}
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragOverDropzone(true);
+          }}
+          onDragLeave={() => setIsDragOverDropzone(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragOverDropzone(false);
+            if (e.dataTransfer.files) onAddFiles(Array.from(e.dataTransfer.files));
+          }}
+          onClick={() => fileInputRef.current?.click()}
+          className={`lg:col-span-4 rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all relative overflow-hidden border-2 border-dashed ${
+            isDragOverDropzone
+              ? 'border-[#8B7CFF] bg-[#8B7CFF]/15 scale-[1.02] shadow-2xl shadow-[#8B7CFF]/20'
+              : 'border-white/15 glass-panel hover:border-[#8B7CFF]/50'
+          }`}
+        >
+          {/* Glowing upload cloud icon */}
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#8B7CFF]/20 to-[#42D6E8]/20 border border-white/20 flex items-center justify-center text-[#8B7CFF] mb-4 shadow-xl group-hover:scale-110 transition-transform animate-float">
+            <UploadCloud className="w-8 h-8 text-[#8B7CFF]" />
+          </div>
 
-              {completedCount > 0 && (
-                <button
-                  onClick={handleDownloadAllZip}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold shadow-md transition-all cursor-pointer"
+          <h3 className="text-sm sm:text-base font-bold text-[#F4F5FF]">
+            Drag &amp; drop files here
+          </h3>
+          <p className="text-xs text-[#9BA3BD] my-2">or</p>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              fileInputRef.current?.click();
+            }}
+            className="px-5 py-2 rounded-full bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] hover:from-[#9C8FFF] hover:to-[#7579F3] text-white text-xs font-bold shadow-lg shadow-[#8B7CFF]/25 transition-all hover:scale-105 active:scale-95"
+          >
+            Choose Files
+          </button>
+        </div>
+
+        {/* Panel 2 (4 cols): Format Selection */}
+        <div className="lg:col-span-4 rounded-3xl p-6 glass-card border border-white/10 flex flex-col justify-between space-y-4">
+          <div>
+            <h2 className="text-sm font-bold text-[#F4F5FF] pb-2 border-b border-white/[0.08]">
+              Format Selection
+            </h2>
+
+            {/* From <-> To Cards (Reference Style) */}
+            <div className="flex items-center justify-between gap-3 my-5">
+              {/* From format card */}
+              <div className="flex-1 p-3.5 rounded-2xl glass-input flex flex-col items-center justify-center gap-1.5 text-center">
+                <span className="text-[10px] uppercase font-bold text-[#9BA3BD]">From</span>
+                <div className="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-black text-xs">
+                  {selectedSourceFmt.toUpperCase()}
+                </div>
+                <select
+                  value={selectedSourceFmt}
+                  onChange={(e) => setSelectedSourceFmt(e.target.value as FileFormat)}
+                  className="bg-transparent text-xs font-bold text-[#F4F5FF] outline-none text-center cursor-pointer"
                 >
-                  <Archive className="w-4 h-4" />
-                  <span>Download ZIP ({completedCount})</span>
-                </button>
-              )}
+                  <option value="pdf" className="bg-[#11152A] text-white">PDF</option>
+                  <option value="docx" className="bg-[#11152A] text-white">DOCX</option>
+                  <option value="pptx" className="bg-[#11152A] text-white">PPTX</option>
+                  <option value="xlsx" className="bg-[#11152A] text-white">XLSX</option>
+                  <option value="png" className="bg-[#11152A] text-white">PNG</option>
+                  <option value="jpg" className="bg-[#11152A] text-white">JPG</option>
+                  <option value="txt" className="bg-[#11152A] text-white">TXT</option>
+                </select>
+              </div>
 
+              {/* Swap Button */}
               <button
-                onClick={() => setJobs([])}
-                className="p-2 rounded-xl text-[#9BA3BD] hover:text-rose-400 glass-card transition-colors cursor-pointer"
-                title="Clear all jobs"
+                onClick={() => {
+                  const temp = selectedSourceFmt;
+                  setSelectedSourceFmt(selectedTargetFmt);
+                  setSelectedTargetFmt(temp);
+                }}
+                className="w-8 h-8 rounded-full glass-card hover:border-[#8B7CFF]/50 flex items-center justify-center text-[#9BA3BD] hover:text-[#F4F5FF] transition-all cursor-pointer"
+                title="Swap formats"
               >
-                <Trash2 className="w-4 h-4" />
+                <ArrowLeftRight className="w-3.5 h-3.5 text-[#42D6E8]" />
               </button>
-            </>
-          )}
-        </div>
-      </div>
 
-      {/* Conversion Options Card */}
-      <div className="p-4 rounded-2xl glass-card border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs">
-        <div className="flex items-center gap-2 text-[#F4F5FF] font-semibold">
-          <Settings2 className="w-4 h-4 text-[#42D6E8]" />
-          <span>Conversion Settings:</span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4 text-[#9BA3BD]">
-          <div className="flex items-center gap-2">
-            <span>Image Quality:</span>
-            <input
-              type="range"
-              min="0.4"
-              max="1.0"
-              step="0.05"
-              value={globalOptions.quality}
-              onChange={(e) =>
-                setGlobalOptions((prev) => ({ ...prev, quality: parseFloat(e.target.value) }))
-              }
-              className="accent-[#8B7CFF] w-24 cursor-pointer"
-            />
-            <span className="text-[#F4F5FF] font-mono">
-              {Math.round((globalOptions.quality || 0.92) * 100)}%
-            </span>
+              {/* To format card */}
+              <div className="flex-1 p-3.5 rounded-2xl glass-input flex flex-col items-center justify-center gap-1.5 text-center">
+                <span className="text-[10px] uppercase font-bold text-[#9BA3BD]">To</span>
+                <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-black text-xs">
+                  {selectedTargetFmt.toUpperCase()}
+                </div>
+                <select
+                  value={selectedTargetFmt}
+                  onChange={(e) => setSelectedTargetFmt(e.target.value as FileFormat)}
+                  className="bg-transparent text-xs font-bold text-[#F4F5FF] outline-none text-center cursor-pointer"
+                >
+                  <option value="docx" className="bg-[#11152A] text-white">DOCX</option>
+                  <option value="pdf" className="bg-[#11152A] text-white">PDF</option>
+                  <option value="txt" className="bg-[#11152A] text-white">TXT</option>
+                  <option value="html" className="bg-[#11152A] text-white">HTML</option>
+                  <option value="csv" className="bg-[#11152A] text-white">CSV</option>
+                  <option value="xlsx" className="bg-[#11152A] text-white">XLSX</option>
+                  <option value="png" className="bg-[#11152A] text-white">PNG</option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span>Orientation:</span>
-            <select
-              value={globalOptions.pageOrientation}
-              onChange={(e) =>
-                setGlobalOptions((prev) => ({
-                  ...prev,
-                  pageOrientation: e.target.value as 'portrait' | 'landscape',
-                }))
-              }
-              className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] cursor-pointer bg-[#11152A]"
+          {/* Large Convert Now Button (Reference Style) */}
+          <button
+            onClick={handleQuickConvertNow}
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#8B7CFF] to-[#42D6E8] hover:from-[#9C8FFF] hover:to-[#5CE0F0] text-[#080B18] font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-xl shadow-[#8B7CFF]/20 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+          >
+            <span>Convert Now</span>
+            <ArrowRight className="w-4 h-4 text-[#080B18]" />
+          </button>
+        </div>
+
+        {/* Panel 3 (4 cols): Conversion Queue (Reference Style) */}
+        <div className="lg:col-span-4 rounded-3xl p-6 glass-card border border-white/10 flex flex-col justify-between space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+            <h2 className="text-sm font-bold text-[#F4F5FF]">Conversion Queue</h2>
+            <button
+              onClick={() => {
+                const el = document.getElementById('full-queue-table');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-xs text-[#8B7CFF] hover:text-[#42D6E8] font-semibold flex items-center gap-1 transition-colors"
             >
-              <option value="portrait" className="bg-[#11152A] text-white">Portrait</option>
-              <option value="landscape" className="bg-[#11152A] text-white">Landscape</option>
-            </select>
+              <span>View all</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span>OCR Language:</span>
-            <select
-              value={globalOptions.ocrLanguage}
-              onChange={(e) =>
-                setGlobalOptions((prev) => ({ ...prev, ocrLanguage: e.target.value }))
-              }
-              className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] cursor-pointer bg-[#11152A]"
-            >
-              <option value="eng" className="bg-[#11152A] text-white">English</option>
-              <option value="spa" className="bg-[#11152A] text-white">Spanish (Español)</option>
-              <option value="fra" className="bg-[#11152A] text-white">French (Français)</option>
-              <option value="deu" className="bg-[#11152A] text-white">German (Deutsch)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Jobs Queue Table */}
-      {jobs.length === 0 ? (
-        <div className="text-center py-16 border-2 border-dashed border-white/15 rounded-3xl p-6 glass-panel">
-          <RefreshCw className="w-10 h-10 mx-auto text-[#9BA3BD]/50 mb-3" />
-          <h3 className="text-base font-semibold text-[#F4F5FF]">No conversion tasks queued</h3>
-          <p className="text-xs text-[#9BA3BD] max-w-sm mx-auto mt-1 mb-4">
-            Upload files from the Dashboard or click below to start converting documents and media.
-          </p>
-          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl glass-btn-primary text-xs font-semibold cursor-pointer shadow-lg shadow-[#8B7CFF]/20">
-            <Plus className="w-4 h-4" />
-            <span>Select Files</span>
-            <input
-              type="file"
-              multiple
-              className="hidden"
-              onChange={(e) => e.target.files && onAddFiles(Array.from(e.target.files))}
-            />
-          </label>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {jobs.map((job) => {
-            const allowed = FORMAT_REGISTRY[job.sourceFormat]?.allowedConversions || ['pdf', 'txt'];
-
-            return (
-              <div
-                key={job.id}
-                className="p-4 rounded-2xl glass-card border-white/10 hover:border-[#8B7CFF]/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
-              >
-                {/* File Info */}
-                <div className="flex items-center gap-3 min-w-[240px] max-w-md">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs uppercase text-white shrink-0 shadow-md"
-                    style={{ backgroundColor: FORMAT_REGISTRY[job.sourceFormat]?.color || '#8B7CFF' }}
-                  >
-                    {job.sourceFormat}
-                  </div>
-                  <div className="overflow-hidden">
-                    <div className="text-sm font-semibold text-[#F4F5FF] truncate" title={job.sourceFile.name}>
+          {/* Queue Items matching reference (Annual_Report.pdf, Design.png, Budget.xlsx) */}
+          <div className="space-y-3 my-2">
+            {jobs.length > 0 ? (
+              jobs.slice(0, 3).map((job) => (
+                <div key={job.id} className="p-2.5 rounded-xl glass-input space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-[#F4F5FF] truncate max-w-[150px]">
                       {job.sourceFile.name}
-                    </div>
-                    <div className="text-xs text-[#9BA3BD]">
-                      {formatFileSize(job.sourceFile.size)}
-                    </div>
+                    </span>
+                    <span className="text-[10px] text-[#42D6E8] font-bold">
+                      {job.status === 'processing'
+                        ? `Converting... ${job.progress}%`
+                        : job.status === 'completed'
+                        ? 'Completed'
+                        : 'Queued'}
+                    </span>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        job.status === 'completed'
+                          ? 'bg-emerald-400 w-full'
+                          : 'bg-gradient-to-r from-[#8B7CFF] to-[#42D6E8]'
+                      }`}
+                      style={{ width: `${job.status === 'completed' ? 100 : job.progress}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              /* High fidelity demo items matching the reference screenshot */
+              <>
+                <div className="p-2.5 rounded-xl glass-input space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-[#F4F5FF] truncate max-w-[160px]">Annual_Report.pdf</span>
+                    <span className="text-[10px] text-[#42D6E8] font-bold">Converting... 68%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-[#8B7CFF] to-[#42D6E8] rounded-full w-[68%] animate-shimmer" />
                   </div>
                 </div>
 
-                {/* Conversion Selector: Source -> Target */}
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-[#9BA3BD]">Target:</span>
+                <div className="p-2.5 rounded-xl glass-input flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-[#9BA3BD]" />
+                    <span className="font-medium text-[#F4F5FF]">Design.png</span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-[#9BA3BD] font-bold">Queued</span>
+                </div>
+
+                <div className="p-2.5 rounded-xl glass-input flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="font-medium text-[#F4F5FF]">Budget.xlsx</span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">Completed</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-[#9BA3BD]">
+            <span>Active Queue: {jobs.length} files</span>
+            {completedCount > 0 && (
+              <button
+                onClick={handleDownloadAllZip}
+                className="text-[#42D6E8] font-bold hover:underline"
+              >
+                Download All ({completedCount})
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 3. DETAILED JOBS QUEUE LIST & OPTIONS                                    */}
+      {/* ========================================================================= */}
+      {jobs.length > 0 && (
+        <div id="full-queue-table" className="glass-panel p-5 rounded-3xl border border-white/10 space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-white/10">
+            <h3 className="text-sm font-bold text-[#F4F5FF]">Active Conversion Jobs ({jobs.length})</h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleConvertAll}
+                disabled={isProcessingAll || jobs.every((j) => j.status === 'completed')}
+                className="px-3 py-1.5 rounded-xl glass-btn-primary text-xs font-bold disabled:opacity-50"
+              >
+                Convert All
+              </button>
+              <button
+                onClick={() => setJobs([])}
+                className="p-1.5 rounded-xl text-[#9BA3BD] hover:text-rose-400 glass-card"
+                title="Clear queue"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {jobs.map((job) => (
+              <div
+                key={job.id}
+                className="p-3 rounded-2xl glass-card flex flex-col md:flex-row items-start md:items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs text-white"
+                    style={{ backgroundColor: FORMAT_REGISTRY[job.sourceFormat]?.color || '#8B7CFF' }}
+                  >
+                    {job.sourceFormat.toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-[#F4F5FF] truncate max-w-xs">{job.sourceFile.name}</div>
+                    <div className="text-[11px] text-[#9BA3BD]">{formatFileSize(job.sourceFile.size)}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#9BA3BD]">Target:</span>
                   <select
                     value={job.targetFormat}
                     onChange={(e) => handleTargetFormatChange(job.id, e.target.value as FileFormat)}
                     disabled={job.status === 'processing'}
-                    className="glass-input rounded-xl px-2.5 py-1.5 text-[#F4F5FF] font-semibold uppercase cursor-pointer bg-[#11152A]"
+                    className="glass-input rounded-xl px-2 py-1 text-xs font-bold text-[#F4F5FF] uppercase bg-[#11152A]"
                   >
-                    {allowed.map((fmt) => (
+                    {(FORMAT_REGISTRY[job.sourceFormat]?.allowedConversions || ['pdf', 'txt']).map((fmt) => (
                       <option key={fmt} value={fmt} className="bg-[#11152A] text-white">
-                        .{fmt.toUpperCase()} — {FORMAT_REGISTRY[fmt]?.label}
+                        .{fmt.toUpperCase()}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* Progress / Status */}
-                <div className="min-w-[140px]">
-                  {job.status === 'queued' && (
-                    <span className="text-xs text-[#9BA3BD] flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#9BA3BD]" />
-                      Ready to convert
-                    </span>
-                  )}
-                  {job.status === 'processing' && (
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[11px] text-[#8B7CFF]">
-                        <span>Converting...</span>
-                        <span>{job.progress}%</span>
-                      </div>
-                      <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-[#8B7CFF] to-[#42D6E8] rounded-full transition-all duration-300"
-                          style={{ width: `${job.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
+                <div className="flex items-center gap-2">
                   {job.status === 'completed' && (
-                    <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      Completed
-                    </span>
-                  )}
-                  {job.status === 'error' && (
-                    <span className="text-xs text-rose-400 flex items-center gap-1.5" title={job.errorMessage}>
-                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                      <span className="truncate max-w-[120px]">{job.errorMessage || 'Failed'}</span>
-                    </span>
-                  )}
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex items-center gap-2 self-end md:self-center">
-                  {job.status === 'completed' && (
-                    <div className="flex items-center gap-1.5">
+                    <>
                       <button
                         onClick={() => handlePreview(job)}
-                        className="p-2 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors cursor-pointer"
-                        title="Preview Result"
+                        className="p-1.5 rounded-xl glass-card text-[#9BA3BD] hover:text-white"
+                        title="Preview"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3.5 h-3.5" />
                       </button>
-
                       <button
                         onClick={() => handleDownloadSingle(job)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-sm transition-all cursor-pointer"
-                        title="Download converted file"
+                        className="px-3 py-1.5 rounded-xl glass-btn-primary text-xs font-bold flex items-center gap-1"
                       >
                         <DownloadCloud className="w-3.5 h-3.5" />
                         <span>Download</span>
                       </button>
-
-                      <button
-                        onClick={() => runConversion(job.id)}
-                        className="p-2 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors cursor-pointer"
-                        title="Convert again / Re-run"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    </>
                   )}
 
                   {job.status === 'processing' && (
                     <button
                       onClick={() => cancelConversion(job.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-semibold cursor-pointer transition-colors shadow-sm"
-                      title="Abort conversion"
+                      className="px-3 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center gap-1"
                     >
                       <X className="w-3.5 h-3.5" />
                       <span>Cancel</span>
                     </button>
                   )}
 
-                  {job.status === 'error' && (
-                    <button
-                      onClick={() => runConversion(job.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-semibold cursor-pointer transition-colors"
-                      title="Retry conversion"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span>Retry</span>
-                    </button>
-                  )}
-
                   {job.status === 'queued' && (
                     <button
                       onClick={() => runConversion(job.id)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold cursor-pointer shadow-sm shadow-[#8B7CFF]/20"
+                      className="px-3 py-1.5 rounded-xl glass-btn-primary text-xs font-bold flex items-center gap-1"
                     >
-                      <RefreshCw className="w-3.5 h-3.5" />
+                      <Play className="w-3.5 h-3.5 fill-current" />
                       <span>Convert</span>
                     </button>
                   )}
@@ -542,15 +620,14 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                       cancelConversion(job.id);
                       setJobs((prev) => prev.filter((j) => j.id !== job.id));
                     }}
-                    className="p-2 rounded-xl glass-card text-[#9BA3BD] hover:text-rose-400 transition-colors cursor-pointer"
-                    title="Remove item"
+                    className="p-1.5 rounded-xl text-[#9BA3BD] hover:text-rose-400 glass-card"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       )}
 
@@ -562,72 +639,62 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
               <div className="flex items-center gap-2.5">
                 <Grid className="w-5 h-5 text-[#42D6E8]" />
                 <div>
-                  <h3 className="text-base font-bold text-[#F4F5FF]">
-                    Universal Conversion Compatibility Matrix
-                  </h3>
-                  <p className="text-xs text-[#9BA3BD]">
-                    Supported client-side transformation routes with full layout and text extraction fidelity.
-                  </p>
+                  <h3 className="text-base font-bold text-[#F4F5FF]">Universal Conversion Compatibility Matrix</h3>
+                  <p className="text-xs text-[#9BA3BD]">Native browser conversion matrix with zero server bottlenecks.</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowMatrixModal(false)}
-                className="p-1.5 rounded-xl glass-card text-[#9BA3BD] hover:text-[#F4F5FF] transition-colors"
+                className="p-1.5 rounded-xl glass-card text-[#9BA3BD] hover:text-[#F4F5FF]"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="flex-1 overflow-auto p-5 custom-scrollbar">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-white/10 text-[#9BA3BD]">
-                      <th className="py-2.5 px-3 uppercase tracking-wider font-semibold">Source Format</th>
-                      <th className="py-2.5 px-3 uppercase tracking-wider font-semibold">Category</th>
-                      <th className="py-2.5 px-3 uppercase tracking-wider font-semibold">Supported Target Formats</th>
-                      <th className="py-2.5 px-3 uppercase tracking-wider font-semibold text-center">Fidelity Mode</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {SUPPORTED_MATRIX_FORMATS.map((fmt) => {
-                      const meta = FORMAT_REGISTRY[fmt];
-                      if (!meta) return null;
-                      return (
-                        <tr key={fmt} className="hover:bg-white/[0.03] transition-colors">
-                          <td className="py-2.5 px-3 font-bold flex items-center gap-2">
-                            <span
-                              className="w-2.5 h-2.5 rounded-full"
-                              style={{ backgroundColor: meta.color }}
-                            />
-                            <span className="text-[#F4F5FF] uppercase">.{fmt}</span>
-                            <span className="text-[11px] text-[#9BA3BD] font-normal">({meta.label})</span>
-                          </td>
-                          <td className="py-2.5 px-3 text-[#9BA3BD] capitalize">{meta.category}</td>
-                          <td className="py-2.5 px-3">
-                            <div className="flex flex-wrap gap-1">
-                              {meta.allowedConversions.map((tgt) => (
-                                <span
-                                  key={tgt}
-                                  className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-mono font-semibold text-[#42D6E8]"
-                                >
-                                  .{tgt.toUpperCase()}
-                                </span>
-                              ))}
-                            </div>
-                          </td>
-                          <td className="py-2.5 px-3 text-center">
-                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                              <ShieldCheck className="w-3 h-3" />
-                              Client-Side Native
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-[#9BA3BD]">
+                    <th className="py-2.5 px-3 uppercase tracking-wider font-semibold">Format</th>
+                    <th className="py-2.5 px-3 uppercase tracking-wider font-semibold">Category</th>
+                    <th className="py-2.5 px-3 uppercase tracking-wider font-semibold">Supported Targets</th>
+                    <th className="py-2.5 px-3 uppercase tracking-wider font-semibold text-center">Fidelity Mode</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {SUPPORTED_MATRIX_FORMATS.map((fmt) => {
+                    const meta = FORMAT_REGISTRY[fmt];
+                    if (!meta) return null;
+                    return (
+                      <tr key={fmt} className="hover:bg-white/[0.03] transition-colors">
+                        <td className="py-2.5 px-3 font-bold flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: meta.color }} />
+                          <span className="text-[#F4F5FF] uppercase">.{fmt}</span>
+                        </td>
+                        <td className="py-2.5 px-3 text-[#9BA3BD] capitalize">{meta.category}</td>
+                        <td className="py-2.5 px-3">
+                          <div className="flex flex-wrap gap-1">
+                            {meta.allowedConversions.map((tgt) => (
+                              <span
+                                key={tgt}
+                                className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-mono font-semibold text-[#42D6E8]"
+                              >
+                                .{tgt.toUpperCase()}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                            <ShieldCheck className="w-3 h-3" />
+                            Client-Side Native
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
             <div className="p-4 border-t border-white/10 bg-[#080B18]/50 flex justify-end">
@@ -651,7 +718,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => saveAs(previewBlob.url, previewBlob.name)}
-                  className="px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold cursor-pointer shadow-md shadow-[#8B7CFF]/20"
+                  className="px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-md shadow-[#8B7CFF]/20"
                 >
                   Download
                 </button>
@@ -660,7 +727,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                     URL.revokeObjectURL(previewBlob.url);
                     setPreviewBlob(null);
                   }}
-                  className="px-3 py-1.5 rounded-xl glass-card text-[#9BA3BD] hover:text-[#F4F5FF] text-xs cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl glass-card text-[#9BA3BD] hover:text-[#F4F5FF] text-xs"
                 >
                   Close
                 </button>

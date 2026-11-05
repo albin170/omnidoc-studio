@@ -40,39 +40,23 @@ interface DocxStudioProps {
 }
 
 const DEFAULT_INITIAL_HTML = `
-<h1>Executive Strategy Overview</h1>
-<h2>1. Project Objectives</h2>
-<p>OmniDoc Studio delivers an end-to-end multi-format document workspace running directly in browser memory.</p>
-<h3>Key Milestones</h3>
-<ul>
+<div style="display: flex; gap: 24px; align-items: center; margin-bottom: 24px;">
+  <div style="width: 150px; height: 110px; border-radius: 14px; background: linear-gradient(135deg, #1e1b4b, #3b82f6); overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.15); flex-shrink: 0;">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+  </div>
+  <div>
+    <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 0 0 8px 0; letter-spacing: -0.5px;">Professional Document Editor</h1>
+    <p style="font-size: 14px; color: #64748b; margin: 0; line-height: 1.5;">Create, edit and format your documents with professional tools.</p>
+  </div>
+</div>
+<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+<h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-top: 16px;">1. Executive Summary</h2>
+<p style="font-size: 14px; color: #334155; line-height: 1.6;">OmniDoc Studio delivers an end-to-end multi-format document workspace running directly in browser memory.</p>
+<ul style="font-size: 14px; color: #334155; line-height: 1.6; margin-left: 20px;">
   <li>High-fidelity PDF rendering and vector modification.</li>
   <li>Rich DOCX import and packaging with OpenXML compliance.</li>
-  <li>PowerPoint slide generation and presentation decks.</li>
   <li>Tabular data calculations with real spreadsheet formulas.</li>
 </ul>
-<h2>2. Technical Architecture</h2>
-<p>The core engine executes client-side WebAssembly and JavaScript engines to guarantee <strong>100% offline privacy</strong> and <em>zero latency server bottlenecks</em>.</p>
-<table style="width:100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 12px;">
-  <thead>
-    <tr style="background-color: #1e293b; color: #f8fafc;">
-      <th style="border: 1px solid #475569; padding: 8px;">Module</th>
-      <th style="border: 1px solid #475569; padding: 8px;">Standard</th>
-      <th style="border: 1px solid #475569; padding: 8px;">Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="border: 1px solid #334155; padding: 8px;">PDF Engine</td>
-      <td style="border: 1px solid #334155; padding: 8px;">ISO 32000-1</td>
-      <td style="border: 1px solid #334155; padding: 8px; color: #34d399;">Production Verified</td>
-    </tr>
-    <tr>
-      <td style="border: 1px solid #334155; padding: 8px;">Word Engine</td>
-      <td style="border: 1px solid #334155; padding: 8px;">ECMA-376</td>
-      <td style="border: 1px solid #334155; padding: 8px; color: #34d399;">Production Verified</td>
-    </tr>
-  </tbody>
-</table>
 `;
 
 export const DocxStudio: React.FC<DocxStudioProps> = ({
@@ -84,6 +68,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
   const [isFindOpen, setIsFindOpen] = useState(false);
   const [findQuery, setFindQuery] = useState('');
   const [replaceQuery, setReplaceQuery] = useState('');
+  const [zoom, setZoom] = useState(100);
   const [exportFormat, setExportFormat] = useState<'docx' | 'pdf' | 'txt' | 'html'>('docx');
   const [isExporting, setIsExporting] = useState(false);
   const [wordsCount, setWordsCount] = useState(0);
@@ -237,19 +222,23 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
-      {/* Top Action Bar */}
-      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      {/* Top Action Bar matching reference */}
+      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-5 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-3">
-          <input
-            type="text"
-            value={docTitle}
-            onChange={(e) => setDocTitle(e.target.value)}
-            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-[#8B7CFF] px-1 py-0.5 outline-none w-48 md:w-64 transition-colors"
-            placeholder="Document Title"
-          />
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8B7CFF]/20 text-[#8B7CFF] font-semibold border border-[#8B7CFF]/30">
-            RICH DOCX
-          </span>
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8B7CFF] to-[#42D6E8] flex items-center justify-center p-0.5 shadow-md shadow-[#8B7CFF]/20">
+            <div className="w-full h-full bg-[#080B18] rounded-[10px] flex items-center justify-center">
+              <TableIcon className="w-4 h-4 text-[#8B7CFF]" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-bold text-[#F4F5FF] tracking-tight">DOCX Studio</h1>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8B7CFF]/20 text-[#8B7CFF] font-semibold border border-[#8B7CFF]/30">
+                PRO WRITER
+              </span>
+            </div>
+            <p className="text-[11px] text-[#9BA3BD]">Edit and enhance your documents</p>
+          </div>
         </div>
 
         {/* Export Controls */}
@@ -284,7 +273,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-3.5 py-1 rounded-lg glass-btn-primary text-xs font-semibold cursor-pointer shadow-md shadow-[#8B7CFF]/20"
+              className="flex items-center gap-1.5 px-3.5 py-1 rounded-lg bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#8B7CFF]/20"
             >
               <DownloadCloud className="w-3.5 h-3.5" />
               <span>Export</span>
@@ -477,16 +466,54 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
         </div>
       )}
 
-      {/* Document Writing Surface (Aurora Glass styled document paper) */}
+      {/* Document Writing Surface (Clean White Paper Document matching reference) */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center bg-[#080B18]/60 custom-scrollbar">
-        <div className="w-full max-w-4xl glass-panel border border-white/15 rounded-3xl shadow-2xl p-6 md:p-12 min-h-[750px] flex flex-col text-[#F4F5FF]">
+        <div
+          style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
+          className="w-full max-w-3xl bg-white text-slate-900 rounded-2xl shadow-2xl p-8 md:p-12 min-h-[680px] flex flex-col transition-transform duration-150"
+        >
           <div
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
             onInput={updateStats}
-            className="w-full flex-1 outline-none text-[#F4F5FF] font-sans text-sm md:text-base leading-relaxed space-y-3 focus:ring-0 [&>h1]:text-2xl [&>h1]:font-black [&>h1]:text-[#F4F5FF] [&>h1]:mb-3 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-[#F4F5FF] [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:text-[#42D6E8] [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>p]:text-[#F4F5FF]/90 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:mb-2 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table_th]:border [&>table_th]:border-white/20 [&>table_th]:p-2 [&>table_th]:bg-white/[0.06] [&>table_td]:border [&>table_td]:border-white/10 [&>table_td]:p-2"
+            className="w-full flex-1 outline-none text-slate-900 font-sans text-sm md:text-base leading-relaxed space-y-3 focus:ring-0 [&>h1]:text-2xl [&>h1]:font-black [&>h1]:text-slate-900 [&>h1]:mb-3 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-slate-900 [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:text-blue-600 [&>h3]:mt-3 [&>h3]:mb-1 [&>p]:mb-2 [&>p]:text-slate-700 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:mb-2 [&>table]:w-full [&>table]:border-collapse [&>table]:my-3 [&>table_th]:border [&>table_th]:border-slate-300 [&>table_th]:p-2 [&>table_th]:bg-slate-100 [&>table_td]:border [&>table_td]:border-slate-200 [&>table_td]:p-2"
           />
+        </div>
+      </div>
+
+      {/* Bottom Status Bar matching reference */}
+      <div className="h-9 border-t border-white/10 bg-[#11152A]/90 backdrop-blur-xl px-4 flex items-center justify-between text-xs text-[#9BA3BD] font-medium shrink-0">
+        <div className="flex items-center gap-3">
+          <span className="font-semibold text-[#F4F5FF]">Page 1 of 3</span>
+          <span className="text-white/20">|</span>
+          <span>{wordsCount} words</span>
+          <span>{charsCount} characters</span>
+        </div>
+
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setZoom((z) => Math.max(50, z - 10))}
+            className="w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center text-[#F4F5FF] cursor-pointer"
+            title="Zoom Out"
+          >
+            -
+          </button>
+          <span className="font-mono text-[11px] text-[#42D6E8] w-10 text-center">{zoom}%</span>
+          <button
+            onClick={() => setZoom((z) => Math.min(200, z + 10))}
+            className="w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center text-[#F4F5FF] cursor-pointer"
+            title="Zoom In"
+          >
+            +
+          </button>
+          <button
+            onClick={() => setZoom(100)}
+            className="px-2 py-0.5 rounded text-[10px] hover:bg-white/10 text-[#9BA3BD] hover:text-white cursor-pointer ml-1"
+          >
+            Reset
+          </button>
         </div>
       </div>
     </div>

@@ -17,3 +17,4 @@ class ConsentRecord(Base):
     user_agent = Column(String(256), nullable=True)
 
     user = relationship("User", back_populates="consent_records")
+
