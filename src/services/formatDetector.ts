@@ -48,7 +48,7 @@ export const FORMAT_REGISTRY: Record<FileFormat, FormatMetadata> = {
     mimeType: 'text/csv',
     category: 'spreadsheet',
     color: '#059669',
-    allowedConversions: ['xlsx', 'pdf', 'txt'],
+    allowedConversions: ['xlsx', 'pdf', 'txt', 'html'],
   },
   png: {
     format: 'png',

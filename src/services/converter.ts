@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { ConversionJob, ConversionOptions, FileFormat } from '../types';
-import { FORMAT_REGISTRY } from './formatDetector';
+import { FORMAT_REGISTRY, validateFileFormat } from './formatDetector';
 import { extractTextFromPdf, renderPdfPagesToImages } from './pdfService';
 import { convertTextOrDocxToPdf, createDocxBlob, extractTextFromDocxFile, DocxContentItem } from './docxService';
 import { convertSpreadsheetToPdf, exportDataToCsvBlob, exportDataToXlsxBlob, parseSpreadsheetFile } from './sheetService';
@@ -44,6 +44,12 @@ export async function executeFileConversion(
     if (onProgress) onProgress(pct, msg);
   };
 
+  const checkAborted = () => {
+    if (options?.signal?.aborted) {
+      throw new DOMException('Conversion cancelled by user', 'AbortError');
+    }
+  };
+
   // Upfront error checks
   if (!file || file.size === 0) {
     throw new Error(`File "${file?.name || 'unknown'}" is empty (0 bytes). Please upload a valid document.`);
@@ -54,7 +60,26 @@ export async function executeFileConversion(
     throw new Error(`File "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 100MB browser memory limit.`);
   }
 
+  checkAborted();
+
+  // Validate conversion route capability upfront
+  const allowed = FORMAT_REGISTRY[sourceFormat]?.allowedConversions || [];
+  const isOcrFallback = targetFormat === 'txt' && ['png', 'jpg', 'webp'].includes(sourceFormat);
+  if (sourceFormat !== targetFormat && !allowed.includes(targetFormat) && !isOcrFallback) {
+    throw new Error(`Unsupported conversion route: from ${sourceFormat.toUpperCase()} to ${targetFormat.toUpperCase()}`);
+  }
+
   updateProgress(10, 'Validating file integrity and headers...');
+
+  // Format header integrity validation
+  if (file.size >= 16) {
+    const validation = await validateFileFormat(file);
+    if (!validation.valid && validation.format !== sourceFormat && !['txt', 'html', 'md', 'csv'].includes(sourceFormat)) {
+      throw new Error(validation.error || `File "${file.name}" failed format validation.`);
+    }
+  }
+
+  checkAborted();
 
   // 1. Same format passthrough
   if (sourceFormat === targetFormat) {
