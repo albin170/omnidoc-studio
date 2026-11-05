@@ -20,3 +20,4 @@ class AuditEvent(Base):
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
     organization = relationship("Organization", back_populates="audit_events")
+

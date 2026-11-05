@@ -49,6 +49,7 @@ import { DocumentForensicsModal } from './components/forensics/DocumentForensics
 import { DataLineageModal } from './components/lineage/DataLineageModal';
 import { TransformationReceiptModal } from './components/receipts/TransformationReceiptModal';
 import { AutonomousWorkspace } from './components/autonomous/AutonomousWorkspace';
+import { PrivacyGuardianModal } from './components/privacy/PrivacyGuardianModal';
 import { 
   Menu, 
   User as UserIcon, 
@@ -99,6 +100,7 @@ export const App: React.FC = () => {
   const [isForensicsOpen, setIsForensicsOpen] = useState(false);
   const [isLineageOpen, setIsLineageOpen] = useState(false);
   const [isReceiptsOpen, setIsReceiptsOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
 
   // Extract current document content for AI Assistant & Revision Diff
   const currentDocumentContent = useMemo(() => {
@@ -587,6 +589,7 @@ export const App: React.FC = () => {
         onOpenForensics={() => setIsForensicsOpen(true)}
         onOpenLineage={() => setIsLineageOpen(true)}
         onOpenReceipts={() => setIsReceiptsOpen(true)}
+        onOpenPrivacy={() => setIsPrivacyOpen(true)}
       />
 
       {/* Full-Size Dynamic Workspace Content Area */}
@@ -871,6 +874,12 @@ export const App: React.FC = () => {
       <TransformationReceiptModal
         isOpen={isReceiptsOpen}
         onClose={() => setIsReceiptsOpen(false)}
+      />
+
+      <PrivacyGuardianModal
+        isOpen={isPrivacyOpen}
+        onClose={() => setIsPrivacyOpen(false)}
+        pdfFile={currentPdfFile}
       />
 
       {/* Keyboard Shortcuts & Help Modal */}

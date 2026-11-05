@@ -25,3 +25,4 @@ async def test_storage_vault_security_and_hashing():
     with pytest.raises(HTTPException) as exc_read:
         storage_vault.read_file("wrong-org", path)
     assert exc_read.value.status_code == 404
+

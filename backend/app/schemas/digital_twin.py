@@ -108,3 +108,4 @@ class DocumentDigitalTwin(BaseModel):
     # Traceability and evidence graph
     evidence_ledger: List[SourceEvidenceRef] = []
     parent_version_hash: Optional[str] = None
+

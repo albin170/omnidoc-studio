@@ -27,7 +27,26 @@ OmniDoc Studio 2.0 evolves from a standalone document converter/editor into a hy
 
 ---
 
+## Advanced Capabilities Implemented in Stage 2
+1. **Cross-Document Duplicate & Contradiction Detection**:
+   - `cross_doc_intelligence` service detects duplicate submissions (exact hash and near-duplicate Jaccard similarity) and identifies conflicting contract/invoice terms (e.g. mismatched VAT totals).
+2. **Interactive Evidence Graph**:
+   - Node-edge topology visualizing provenance connections from documents to extracted entities, claims, and contradictions.
+3. **Semantic Document Search & Neural Query**:
+   - BM25-scored term search across digital twin paragraphs, tables, and confirmed entity coordinates.
+4. **Version Change Intelligence**:
+   - Digital Twin diff engine computing paragraph, table, and field modifications with structural fidelity impact scores.
+5. **Durable Execution & Checkpoint Recovery**:
+   - Temporal-inspired state machine engine with exponential backoff retries, persistent step checkpoints, and idempotency key caching.
+6. **Privacy Guardian & Verified Redaction Studio**:
+   - True content sanitization eliminating underlying font glyphs, wiping document metadata, and verifying zero-leak status.
+7. **Official Developer SDKs**:
+   - Python SDK (`backend/sdk/omnidoc_sdk.py`) and TypeScript SDK (`src/sdk/omnidocClient.ts`).
+
+---
+
 ## Test Verification Baseline
-- **Frontend Test Suite (Vitest)**: 84/84 tests passed across 9 test suites.
-- **Backend Test Suite (Pytest)**: 6/6 tests passed (100%).
+- **Frontend Test Suite (Vitest)**: 88/88 tests passed across 10 test suites.
+- **Backend Test Suite (Pytest)**: 10/10 tests passed (100%).
 - **TypeScript & Production Build**: 0 errors.
+

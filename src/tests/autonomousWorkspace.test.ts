@@ -92,3 +92,4 @@ describe('Autonomous Document Engineering Engine (OmniDoc 2.0)', () => {
     expect(cancelled.plan.nodes.every((n) => n.status === 'skipped')).toBe(true);
   });
 });
+

@@ -21,3 +21,4 @@ class DocumentOut(BaseModel):
 
 class DocumentDetailOut(DocumentOut):
     digital_twin: Optional[DocumentDigitalTwin] = None
+

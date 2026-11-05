@@ -29,3 +29,4 @@ class Document(Base):
     organization = relationship("Organization", back_populates="documents")
     owner = relationship("User", back_populates="documents")
     verifications = relationship("VerificationReceipt", back_populates="document", cascade="all, delete-orphan")
+

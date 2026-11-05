@@ -27,3 +27,4 @@ class ToolInvocationResult(BaseModel):
     execution_time_ms: int
     idempotency_key: Optional[str] = None
     audit_event_id: Optional[str] = None
+

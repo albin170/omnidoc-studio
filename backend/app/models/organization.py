@@ -17,3 +17,4 @@ class Organization(Base):
     documents = relationship("Document", back_populates="organization", cascade="all, delete-orphan")
     jobs = relationship("Job", back_populates="organization", cascade="all, delete-orphan")
     audit_events = relationship("AuditEvent", back_populates="organization", cascade="all, delete-orphan")
+

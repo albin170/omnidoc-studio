@@ -22,3 +22,4 @@ class VerificationReceipt(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     document = relationship("Document", back_populates="verifications")
+

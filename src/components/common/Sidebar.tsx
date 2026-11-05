@@ -47,6 +47,7 @@ interface SidebarProps {
   onOpenForensics?: () => void;
   onOpenLineage?: () => void;
   onOpenReceipts?: () => void;
+  onOpenPrivacy?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -69,6 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenForensics,
   onOpenLineage,
   onOpenReceipts,
+  onOpenPrivacy,
 }) => {
   const navItems = [
     {
@@ -323,6 +325,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <Boxes className="w-4 h-4 mb-0.5 text-yellow-400" />
                 <span className="text-[9px] font-bold">Receipts</span>
+              </button>
+            )}
+            {onOpenPrivacy && (
+              <button
+                onClick={onOpenPrivacy}
+                className="flex flex-col items-center justify-center p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-all cursor-pointer"
+                title="Privacy Guardian & Verified Redaction"
+              >
+                <ShieldAlert className="w-4 h-4 mb-0.5 text-rose-400" />
+                <span className="text-[9px] font-bold">Privacy</span>
               </button>
             )}
           </div>

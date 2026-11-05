@@ -51,3 +51,4 @@ async def health_check():
         "storage": "vault_isolated",
         "mode": "hybrid"
     }
+

@@ -19,3 +19,4 @@ class User(Base):
     organization = relationship("Organization", back_populates="users")
     documents = relationship("Document", back_populates="owner")
     jobs = relationship("Job", back_populates="creator")
+

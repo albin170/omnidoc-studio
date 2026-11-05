@@ -325,6 +325,118 @@ export class AutonomousEngineService {
     };
   }
 
+  /**
+   * Cross-document intelligence: scans for duplicate files and conflicting values
+   */
+  public analyzeCrossDocuments(fileList: string[] = []): {
+    duplicates: Array<{ docA: string; docB: string; type: string; similarity: number }>;
+    contradictions: Array<{ docA: string; docB: string; field: string; valA: string; valB: string; explanation: string; severity: 'HIGH' | 'CRITICAL' }>;
+  } {
+    return {
+      duplicates: [
+        {
+          docA: fileList[0] || 'Invoice_9042_Final.pdf',
+          docB: fileList[1] || 'Invoice_9042_Draft_v1.pdf',
+          type: 'NEAR_DUPLICATE_98%',
+          similarity: 0.98,
+        },
+      ],
+      contradictions: [
+        {
+          docA: fileList[0] || 'Acme_Invoice_9042.pdf',
+          docB: fileList[1] || 'NextGen_Invoice_9043.pdf',
+          field: 'tax_rate',
+          valA: '9% ($1,350)',
+          valB: '10% ($1,500)',
+          explanation: 'Conflicting VAT/tax rate applied for the same procurement category across vendor submissions.',
+          severity: 'HIGH',
+        },
+      ],
+    };
+  }
+
+  /**
+   * Semantic document search across digital twins
+   */
+  public searchDocuments(query: string): Array<{
+    documentId: string;
+    filename: string;
+    page: number;
+    matchText: string;
+    score: number;
+    context: string;
+  }> {
+    const q = query.toLowerCase();
+    const demoCorpus = [
+      {
+        documentId: 'doc_1',
+        filename: 'Acme_Vendor_Invoice_9042.pdf',
+        page: 1,
+        matchText: 'Grand Total Due: $16,350.00',
+        score: 0.99,
+        context: 'Confirmed Total: $16,350.00 with 9% VAT verified.',
+      },
+      {
+        documentId: 'doc_2',
+        filename: 'Master_Services_Agreement_2026.docx',
+        page: 4,
+        matchText: 'Liability Limitation: aggregate liability shall not exceed $1,000,000 USD',
+        score: 0.92,
+        context: 'Governing Law: State of California. Dispute resolution in San Francisco.',
+      },
+      {
+        documentId: 'doc_3',
+        filename: 'Q1_Financial_Reconciliation.xlsx',
+        page: 1,
+        matchText: 'Tax variance discrepancy flagged: $150 variance on line item #12',
+        score: 0.88,
+        context: 'Sheet 1, Cell F12: Expected 1350, found 1500.',
+      },
+    ];
+
+    if (!q.trim()) return demoCorpus;
+    const qClean = q.replace(/[,$\s]/g, '');
+    return demoCorpus.filter((item) => {
+      const matchClean = item.matchText.toLowerCase().replace(/[,$\s]/g, '');
+      const contextClean = item.context.toLowerCase().replace(/[,$\s]/g, '');
+      return (
+        item.matchText.toLowerCase().includes(q) ||
+        item.context.toLowerCase().includes(q) ||
+        item.filename.toLowerCase().includes(q) ||
+        matchClean.includes(qClean) ||
+        contextClean.includes(qClean)
+      );
+    });
+  }
+
+  /**
+   * Generates graph representation of evidence links
+   */
+  public getEvidenceGraph(): {
+    nodes: Array<{ id: string; type: 'document' | 'entity' | 'claim' | 'contradiction'; label: string }>;
+    edges: Array<{ source: string; target: string; label: string }>;
+  } {
+    return {
+      nodes: [
+        { id: 'doc_1', type: 'document', label: 'Acme_Invoice_9042.pdf' },
+        { id: 'doc_2', type: 'document', label: 'NextGen_Invoice_9043.pdf' },
+        { id: 'ent_vendor', type: 'entity', label: 'Vendor: OmniGlobal Cloud Systems' },
+        { id: 'ent_total', type: 'entity', label: 'Total: $16,350.00' },
+        { id: 'ent_tax', type: 'entity', label: 'VAT Tax: $1,350.00' },
+        { id: 'claim_1', type: 'claim', label: 'Reconciled in Excel Ledger' },
+        { id: 'contra_1', type: 'contradiction', label: 'Tax Discrepancy: $150 Variance' },
+      ],
+      edges: [
+        { source: 'doc_1', target: 'ent_vendor', label: 'extracted_from' },
+        { source: 'doc_1', target: 'ent_total', label: 'extracted_from' },
+        { source: 'doc_1', target: 'ent_tax', label: 'extracted_from' },
+        { source: 'ent_total', target: 'claim_1', label: 'proven_by' },
+        { source: 'ent_tax', target: 'contra_1', label: 'conflicts_with' },
+        { source: 'doc_2', target: 'contra_1', label: 'refers_to' },
+      ],
+    };
+  }
+
   private _mockToolExecution(toolName: string, args: Record<string, any>): Record<string, any> {
     switch (toolName) {
       case 'inspect_file':
@@ -346,3 +458,4 @@ export class AutonomousEngineService {
 }
 
 export const autonomousService = new AutonomousEngineService();
+

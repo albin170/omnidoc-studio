@@ -72,3 +72,4 @@ async def test_register_login_and_user_isolation(client: AsyncClient):
     assert list_a.status_code == 200
     assert len(list_a.json()) == 1
     assert list_a.json()[0]["id"] == doc_id_a
+

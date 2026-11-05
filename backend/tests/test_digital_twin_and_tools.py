@@ -98,3 +98,4 @@ async def test_invoice_intelligence_workflow_execution():
     # Step 1 should be completed
     assert updated_plan.nodes[0].status == "completed"
     assert updated_plan.nodes[0].result["status"] == "VALID"
+

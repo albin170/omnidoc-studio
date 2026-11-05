@@ -35,3 +35,4 @@ async def list_audit_events(
     stmt = select(AuditEvent).where(AuditEvent.org_id == current_user.org_id).order_by(AuditEvent.timestamp.desc()).limit(limit)
     res = await db.execute(stmt)
     return res.scalars().all()
+
