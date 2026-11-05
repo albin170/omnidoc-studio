@@ -1,20 +1,20 @@
 import React, { useRef, useState } from 'react';
-import { 
-  FileText, 
-  PenTool, 
-  Presentation, 
-  Table, 
-  Image as ImageIcon, 
-  ScanText, 
-  RefreshCw, 
-  ArrowRight, 
-  CheckCircle2, 
-  UploadCloud, 
-  ChevronRight, 
-  Search, 
-  Bell, 
-  Calendar, 
-  Layers, 
+import {
+  FileText,
+  PenTool,
+  Presentation,
+  Table,
+  Image as ImageIcon,
+  ScanText,
+  RefreshCw,
+  ArrowRight,
+  CheckCircle2,
+  UploadCloud,
+  ChevronRight,
+  Search,
+  Bell,
+  Calendar,
+  Layers,
   FileCheck,
   Sparkles,
   HardDrive,
@@ -159,11 +159,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {userRole === 'admin' && (
             <button
               onClick={() => setIsAdminView(!isAdminView)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all border shadow-sm cursor-pointer ${
-                isAdminView
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all border shadow-sm cursor-pointer ${isAdminView
                   ? 'bg-rose-500/30 text-rose-300 border-rose-500/50 shadow-rose-500/20 glow-rose'
                   : 'glass-card hover:border-white/20 text-[#9BA3BD] hover:text-[#F4F5FF]'
-              }`}
+                }`}
               title="Toggle Admin Telemetry Dashboard"
             >
               <Server className="w-3.5 h-3.5" />
@@ -234,7 +233,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* 2. User-Friendly Onboarding / Welcome Guide */}
       <OnboardingBanner
-        onOpenCommandPalette={onOpenCommandPalette || (() => {})}
+        onOpenCommandPalette={onOpenCommandPalette || (() => { })}
         onExploreTemplates={() => setActiveTab('templates')}
       />
 
@@ -278,7 +277,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 2. Top 4 Real KPI Cards with Undulating Wave Curves */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {/* Card 1: Completed Conversions */}
-        <div 
+        <div
           onClick={() => setActiveTab('converter')}
           className="glass-card glass-card-hover rounded-[22px] p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between cursor-pointer border-white/10 hover:border-amber-400/50"
         >
@@ -317,7 +316,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Card 2: Saved Projects */}
-        <div 
+        <div
           onClick={() => setActiveTab('projects')}
           className="glass-card glass-card-hover rounded-[22px] p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between cursor-pointer border-white/10 hover:border-emerald-400/50"
         >
@@ -356,7 +355,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Card 3: Active Queue */}
-        <div 
+        <div
           onClick={() => setActiveTab('converter')}
           className="glass-card glass-card-hover rounded-[22px] p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between cursor-pointer border-white/10 hover:border-[#42D6E8]/50"
         >
@@ -395,7 +394,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Card 4: Local Storage Footprint */}
-        <div 
+        <div
           onClick={() => setActiveTab('projects')}
           className="glass-card glass-card-hover rounded-[22px] p-4 sm:p-5 relative overflow-hidden flex flex-col justify-between cursor-pointer border-white/10 hover:border-[#8B7CFF]/50"
         >
@@ -810,9 +809,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   className="p-2.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 border-white/10 cursor-pointer transition-all flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <span 
-                      className="w-2.5 h-2.5 rounded-full shadow-sm" 
-                      style={{ backgroundColor: meta.color }} 
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shadow-sm"
+                      style={{ backgroundColor: meta.color }}
                     />
                     <span className="font-bold text-[#F4F5FF] uppercase text-[11px]">{meta.format}</span>
                   </div>
@@ -878,11 +877,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => !detectedFileInfo && fileInputRef.current?.click()}
-        className={`glass-panel rounded-[22px] p-6 text-center transition-all cursor-pointer border-2 border-dashed ${
-          isDragging
+        className={`glass-panel rounded-[22px] p-6 text-center transition-all cursor-pointer border-2 border-dashed ${isDragging
             ? 'border-[#42D6E8] bg-[#42D6E8]/10 scale-[1.01] glow-cyan'
             : 'border-white/20 hover:border-[#8B7CFF]/60 hover:bg-white/[0.04]'
-        }`}
+          }`}
       >
         <input
           ref={fileInputRef}

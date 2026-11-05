@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  X, 
-  Layers, 
-  Upload, 
-  Download, 
-  CheckCircle2, 
-  AlertCircle, 
-  RefreshCw, 
+import {
+  X,
+  Layers,
+  Upload,
+  Download,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
   Archive,
   FileText
 } from 'lucide-react';

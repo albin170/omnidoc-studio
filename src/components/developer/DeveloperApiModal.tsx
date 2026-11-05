@@ -179,11 +179,10 @@ export const DeveloperApiModal: React.FC<DeveloperApiModalProps> = ({ isOpen, on
                   <button
                     key={tab}
                     onClick={() => setActiveCodeTab(tab)}
-                    className={`px-2.5 py-1 rounded-md font-semibold capitalize transition-all cursor-pointer ${
-                      activeCodeTab === tab
+                    className={`px-2.5 py-1 rounded-md font-semibold capitalize transition-all cursor-pointer ${activeCodeTab === tab
                         ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                         : 'text-[#9BA3BD] hover:text-white'
-                    }`}
+                      }`}
                   >
                     {tab === 'ts' ? 'TypeScript' : tab === 'curl' ? 'cURL' : 'Python SDK'}
                   </button>

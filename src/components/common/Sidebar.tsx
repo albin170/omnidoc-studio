@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, 
-  RefreshCw, 
-  FileText, 
-  PenTool, 
-  Presentation, 
-  Table, 
-  Image as ImageIcon, 
-  ScanText, 
-  Layers, 
-  FolderArchive, 
-  Settings, 
+import {
+  LayoutDashboard,
+  RefreshCw,
+  FileText,
+  PenTool,
+  Presentation,
+  Table,
+  Image as ImageIcon,
+  ScanText,
+  Layers,
+  FolderArchive,
+  Settings,
   ChevronDown,
   ShieldAlert,
   X,
@@ -157,12 +157,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     ...(userRole === 'admin'
       ? [
-          {
-            tab: 'admin' as WorkspaceTab,
-            label: 'Admin Console',
-            icon: ShieldAlert,
-          },
-        ]
+        {
+          tab: 'admin' as WorkspaceTab,
+          label: 'Admin Console',
+          icon: ShieldAlert,
+        },
+      ]
       : []),
   ];
 
@@ -177,7 +177,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Mobile Backdrop */}
       {isMobileOpen && (
-        <div 
+        <div
           onClick={onCloseMobile}
           className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md md:hidden"
         />
@@ -185,19 +185,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Full-Height Aurora Glass Sidebar */}
       <aside
-        className={`glass-sidebar h-full flex flex-col justify-between shrink-0 p-3 select-none transition-all duration-300 z-50 ${
-          isCollapsed ? 'w-20' : 'w-64'
-        } ${
-          isMobileOpen
+        className={`glass-sidebar h-full flex flex-col justify-between shrink-0 p-3 select-none transition-all duration-300 z-50 ${isCollapsed ? 'w-20' : 'w-64'
+          } ${isMobileOpen
             ? 'fixed inset-y-0 left-0 shadow-2xl translate-x-0 w-72'
             : 'hidden md:flex'
-        }`}
+          }`}
       >
         {/* Brand Header & Toggle */}
         <div>
           <div className="pt-1 pb-4 px-1.5 flex items-center justify-between border-b border-white/10 mb-2">
-            <div 
-              className="flex items-center gap-2.5 cursor-pointer min-w-0" 
+            <div
+              className="flex items-center gap-2.5 cursor-pointer min-w-0"
               onClick={() => handleSelectTab('dashboard')}
               title="OmniDoc Studio Home"
             >
@@ -245,9 +243,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {onOpenCommandPalette && (
             <button
               onClick={onOpenCommandPalette}
-              className={`w-full flex items-center mb-2 rounded-xl glass-input text-[#9BA3BD] hover:text-[#F4F5FF] hover:border-[#8B7CFF]/40 text-xs transition-all cursor-pointer ${
-                isCollapsed ? 'justify-center p-2' : 'justify-between px-3 py-2'
-              }`}
+              className={`w-full flex items-center mb-2 rounded-xl glass-input text-[#9BA3BD] hover:text-[#F4F5FF] hover:border-[#8B7CFF]/40 text-xs transition-all cursor-pointer ${isCollapsed ? 'justify-center p-2' : 'justify-between px-3 py-2'
+                }`}
               title="Open Command Palette (Ctrl+K)"
             >
               <div className="flex items-center gap-2">
@@ -273,21 +270,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   key={`${item.label}-${idx}`}
                   onClick={() => handleSelectTab(item.tab)}
                   title={item.label}
-                  className={`w-full flex items-center rounded-xl text-xs font-medium transition-all cursor-pointer relative ${
-                    isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'
-                  } ${
-                    isActive
+                  className={`w-full flex items-center rounded-xl text-xs font-medium transition-all cursor-pointer relative ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'
+                    } ${isActive
                       ? 'bg-gradient-to-r from-[#8B7CFF]/25 to-[#42D6E8]/15 border border-[#8B7CFF]/40 text-[#F4F5FF] font-bold shadow-lg shadow-[#8B7CFF]/15 glow-purple'
                       : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05] border border-transparent hover:border-white/5'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     {isActive && (
                       <span className="absolute left-1 w-1 h-3.5 bg-gradient-to-b from-[#8B7CFF] to-[#42D6E8] rounded-full" />
                     )}
-                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${
-                      isActive ? 'text-[#8B7CFF]' : 'text-[#9BA3BD]'
-                    }`} />
+                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#8B7CFF]' : 'text-[#9BA3BD]'
+                      }`} />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
                   </div>
 
@@ -405,11 +399,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Bottom Profile & User Panel Trigger */}
         <div className="pt-2 space-y-2 border-t border-white/10 shrink-0">
-          <div 
+          <div
             onClick={onOpenUserPanel || (() => handleSelectTab('settings'))}
-            className={`p-2 rounded-2xl glass-card hover:border-[#8B7CFF]/40 flex items-center justify-between cursor-pointer transition-all ${
-              isCollapsed ? 'justify-center p-1.5' : ''
-            }`}
+            className={`p-2 rounded-2xl glass-card hover:border-[#8B7CFF]/40 flex items-center justify-between cursor-pointer transition-all ${isCollapsed ? 'justify-center p-1.5' : ''
+              }`}
             title="Open User & Billing Panel"
           >
             <div className="flex items-center gap-2 min-w-0">

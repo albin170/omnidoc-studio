@@ -100,22 +100,20 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
         <div className="px-6 border-b border-white/10 flex gap-4 bg-white/[0.02] text-xs">
           <button
             onClick={() => setActiveTab('members')}
-            className={`py-3 font-semibold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeTab === 'members'
+            className={`py-3 font-semibold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${activeTab === 'members'
                 ? 'border-[#8B7CFF] text-[#8B7CFF]'
                 : 'border-transparent text-[#9BA3BD] hover:text-white'
-            }`}
+              }`}
           >
             <Users className="w-4 h-4" />
             <span>Workspace Members ({members.length})</span>
           </button>
           <button
             onClick={() => setActiveTab('comments')}
-            className={`py-3 font-semibold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeTab === 'comments'
+            className={`py-3 font-semibold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${activeTab === 'comments'
                 ? 'border-[#8B7CFF] text-[#8B7CFF]'
                 : 'border-transparent text-[#9BA3BD] hover:text-white'
-            }`}
+              }`}
           >
             <MessageSquare className="w-4 h-4" />
             <span>Review Comments ({comments.length})</span>
@@ -243,11 +241,10 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
                 {comments.map((c) => (
                   <div
                     key={c.id}
-                    className={`p-3.5 rounded-xl border transition-all ${
-                      c.resolved
+                    className={`p-3.5 rounded-xl border transition-all ${c.resolved
                         ? 'bg-white/[0.01] border-white/5 opacity-70'
                         : 'bg-white/[0.03] border-white/10'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
@@ -257,11 +254,10 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
                       </div>
                       <button
                         onClick={() => handleToggleResolve(c.id)}
-                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all flex items-center gap-1 cursor-pointer ${
-                          c.resolved
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all flex items-center gap-1 cursor-pointer ${c.resolved
                             ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                             : 'bg-white/10 text-[#9BA3BD] border-white/15 hover:text-white'
-                        }`}
+                          }`}
                       >
                         <CheckCircle2 className="w-3 h-3" />
                         <span>{c.resolved ? 'Resolved' : 'Mark Resolved'}</span>
