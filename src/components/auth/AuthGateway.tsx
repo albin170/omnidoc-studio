@@ -318,6 +318,42 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
               </button>
             </div>
 
+            {/* Quick Auto-Fix when pointing to offline custom URL */}
+            {serverStatus === 'offline' && (
+              <div className="mt-1 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-[10px] space-y-1.5">
+                <div className="flex items-center gap-1.5 font-semibold text-amber-300">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  <span>Cannot reach {customApiUrl.includes('onrender.com') ? 'Render server' : 'custom endpoint'}</span>
+                </div>
+                <p className="text-amber-200/80 leading-tight">
+                  Your live full-stack FastAPI engine is active directly on Vercel.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const liveCloudUrl = typeof window !== 'undefined' && !window.location.origin.includes('localhost')
+                      ? `${window.location.origin}/api/v1`
+                      : 'http://localhost:8000/api/v1';
+                    setCustomApiUrl(liveCloudUrl);
+                    omniDocClient.setBaseUrl(liveCloudUrl);
+                    setServerStatus('checking');
+                    omniDocClient.getHealth(3000)
+                      .then(() => {
+                        setServerStatus('online');
+                        setServerUnreachable(false);
+                        addToast('success', 'Connected', 'Connected to live cloud FastAPI engine!');
+                      })
+                      .catch(() => {
+                        setServerStatus('offline');
+                      });
+                  }}
+                  className="w-full py-1 rounded bg-amber-500 hover:bg-amber-400 text-black font-bold text-[10px] transition-colors cursor-pointer"
+                >
+                  ⚡ Connect to Live Cloud Engine
+                </button>
+              </div>
+            )}
+
             {/* Inline Custom API URL Form */}
             {showUrlConfig && (
               <form onSubmit={handleSaveApiUrl} className="mt-2 space-y-2 p-2.5 rounded-xl bg-black/40 border border-white/10">
@@ -328,23 +364,40 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                   type="url"
                   value={customApiUrl}
                   onChange={(e) => setCustomApiUrl(e.target.value)}
-                  placeholder="http://localhost:8000/api/v1"
+                  placeholder="https://omnidoc-studio-jet.vercel.app/api/v1"
                   className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-[#8B7CFF]"
                 />
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCustomApiUrl('http://localhost:8000/api/v1');
-                      omniDocClient.setBaseUrl('http://localhost:8000/api/v1');
-                    }}
-                    className="px-2 py-1 text-[10px] rounded bg-white/10 text-white/70 hover:text-white"
-                  >
-                    Reset Default
-                  </button>
+                <div className="flex flex-wrap justify-between gap-1.5 pt-1">
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const liveCloudUrl = typeof window !== 'undefined' && !window.location.origin.includes('localhost')
+                          ? `${window.location.origin}/api/v1`
+                          : 'http://localhost:8000/api/v1';
+                        setCustomApiUrl(liveCloudUrl);
+                        omniDocClient.setBaseUrl(liveCloudUrl);
+                      }}
+                      className="px-2 py-0.5 text-[9px] rounded bg-white/10 hover:bg-white/20 text-cyan-300 font-medium"
+                      title="Use live Vercel Cloud Serverless API"
+                    >
+                      Live Cloud
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomApiUrl('http://localhost:8000/api/v1');
+                        omniDocClient.setBaseUrl('http://localhost:8000/api/v1');
+                      }}
+                      className="px-2 py-0.5 text-[9px] rounded bg-white/10 hover:bg-white/20 text-white/70 hover:text-white"
+                      title="Use local machine backend"
+                    >
+                      Localhost
+                    </button>
+                  </div>
                   <button
                     type="submit"
-                    className="px-2.5 py-1 text-[10px] rounded bg-[#8B7CFF] text-white font-bold"
+                    className="px-2.5 py-1 text-[10px] rounded bg-[#8B7CFF] hover:bg-[#7a6aee] text-white font-bold"
                   >
                     Save &amp; Reconnect
                   </button>

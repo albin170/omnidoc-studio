@@ -38,12 +38,21 @@ export class OmniDocApiClient {
   private token: string | null;
 
   constructor(config: OmniDocClientConfig = {}) {
-    const configuredStorageUrl = typeof localStorage !== 'undefined' ? localStorage.getItem('omnidoc_api_url') : null;
-    const defaultUrl = configuredStorageUrl || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || (
-      typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost')
-        ? `${window.location.origin}/api/v1`
-        : 'http://localhost:8000/api/v1'
-    );
+    let configuredStorageUrl = typeof localStorage !== 'undefined' ? localStorage.getItem('omnidoc_api_url') : null;
+    
+    // Auto-clear invalid placeholder example URLs from user storage so they connect directly to the active live cloud backend
+    if (configuredStorageUrl && (configuredStorageUrl.includes('omnidoc-api.onrender.com') || configuredStorageUrl.includes('your-fastapi-backend'))) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('omnidoc_api_url');
+      }
+      configuredStorageUrl = null;
+    }
+
+    const liveOriginUrl = typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost')
+      ? `${window.location.origin}/api/v1`
+      : 'http://localhost:8000/api/v1';
+
+    const defaultUrl = configuredStorageUrl || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || liveOriginUrl;
     this.baseUrl = (config.baseUrl || defaultUrl).replace(/\/$/, '');
     this.token = config.token || (typeof localStorage !== 'undefined' ? localStorage.getItem('omnidoc_backend_jwt') : null);
   }
@@ -84,15 +93,21 @@ export class OmniDocApiClient {
     return h;
   }
 
-  public async getHealth(timeoutMs = 2500): Promise<{ status: string; platform: string; version: string }> {
+  public async getHealth(timeoutMs = 3000): Promise<{ status: string; platform: string; version: string }> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const res = await fetch(`${this.baseUrl.replace('/api/v1', '')}/health`, {
+      let res = await fetch(`${this.baseUrl}/health`, {
         signal: controller.signal,
-      });
+      }).catch(() => null);
+
+      if (!res || !res.ok) {
+        res = await fetch(`${this.baseUrl.replace(/\/api\/v1\/?$/, '')}/health`, {
+          signal: controller.signal,
+        });
+      }
       clearTimeout(timer);
-      if (!res.ok) throw new Error(`Health check failed: ${res.statusText}`);
+      if (!res || !res.ok) throw new Error(`Health check failed: ${res ? res.statusText : 'Unreachable'}`);
       return res.json();
     } catch (e: any) {
       clearTimeout(timer);
