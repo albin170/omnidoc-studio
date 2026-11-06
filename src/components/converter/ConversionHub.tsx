@@ -85,7 +85,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
     setJobs((prev) =>
       prev.map((j) =>
         j.id === jobId
-          ? { ...j, status: 'queued', progress: 0, errorMessage: 'Conversion cancelled by user' }
+          ? { ...j, status: 'cancelled', progress: 0, errorMessage: 'Conversion cancelled by user' }
           : j
       )
     );
@@ -131,11 +131,16 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
           signal: controller.signal,
         },
         (pct, _step) => {
+          if (controller.signal.aborted) return;
           setJobs((prev) =>
             prev.map((j) => (j.id === jobId ? { ...j, progress: pct } : j))
           );
         }
       );
+
+      if (controller.signal.aborted) {
+        return;
+      }
 
       setJobs((prev) =>
         prev.map((j) =>
@@ -168,7 +173,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
         setJobs((prev) =>
           prev.map((j) =>
             j.id === jobId
-              ? { ...j, status: 'queued', progress: 0, errorMessage: 'Conversion cancelled' }
+              ? { ...j, status: 'cancelled', progress: 0, errorMessage: 'Conversion cancelled' }
               : j
           )
         );
@@ -204,7 +209,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
 
   const handleConvertAll = async () => {
     setIsProcessingAll(true);
-    const pendingJobs = jobs.filter((j) => j.status === 'queued' || j.status === 'error');
+    const pendingJobs = jobs.filter((j) => j.status === 'queued' || j.status === 'error' || j.status === 'cancelled');
 
     for (const job of pendingJobs) {
       await runConversion(job.id);
@@ -453,6 +458,10 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                         ? `Converting... ${job.progress}%`
                         : job.status === 'completed'
                         ? 'Completed'
+                        : job.status === 'cancelled'
+                        ? 'Cancelled'
+                        : job.status === 'error'
+                        ? 'Failed'
                         : 'Queued'}
                     </span>
                   </div>
@@ -605,13 +614,13 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                     </button>
                   )}
 
-                  {job.status === 'queued' && (
+                  {(job.status === 'queued' || job.status === 'cancelled' || job.status === 'error') && (
                     <button
                       onClick={() => runConversion(job.id)}
                       className="px-3 py-1.5 rounded-xl glass-btn-primary text-xs font-bold flex items-center gap-1"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Convert</span>
+                      <span>{job.status === 'cancelled' || job.status === 'error' ? 'Retry' : 'Convert'}</span>
                     </button>
                   )}
 

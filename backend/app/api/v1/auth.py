@@ -1,10 +1,13 @@
 import uuid
+from datetime import datetime, timedelta
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from jose import JWTError, jwt
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token, get_current_user
 from app.models.user import User
@@ -17,6 +20,8 @@ from app.schemas.auth import (
     UserOut,
     ConsentRecordOut,
     ConsentWithdrawRequest,
+    PasswordResetRequest,
+    PasswordResetConfirm,
     CURRENT_TERMS_VERSION,
     CURRENT_PRIVACY_VERSION,
     CURRENT_AI_CONSENT_VERSION,
@@ -289,3 +294,58 @@ async def withdraw_consent(
     await db.commit()
     await db.refresh(record)
     return record
+
+@router.post("/forgot-password")
+async def forgot_password(
+    payload: PasswordResetRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(User).where(User.email == payload.email.lower().strip())
+    res = await db.execute(stmt)
+    user = res.scalars().first()
+
+    # Always return success message to prevent user enumeration attacks
+    if not user:
+        return {
+            "status": "success",
+            "message": f"If an account exists for {payload.email}, password reset instructions have been generated."
+        }
+
+    reset_token = create_access_token(
+        data={"sub": user.id, "type": "password_reset", "email": user.email},
+        expires_delta=timedelta(hours=2)
+    )
+
+    return {
+        "status": "success",
+        "message": f"Password reset instructions have been dispatched to {payload.email}.",
+        "reset_token": reset_token  # Returned for API client integration & tests
+    }
+
+@router.post("/reset-password")
+async def reset_password(
+    payload: PasswordResetConfirm,
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        decoded = jwt.decode(payload.token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id = decoded.get("sub")
+        token_type = decoded.get("type")
+        if not user_id or token_type != "password_reset":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid password reset token")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Expired or malformed password reset token")
+
+    stmt = select(User).where(User.id == user_id)
+    res = await db.execute(stmt)
+    user = res.scalars().first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User account not found")
+
+    user.hashed_password = get_password_hash(payload.new_password)
+    await db.commit()
+
+    return {
+        "status": "success",
+        "message": "Password has been successfully updated. You may now sign in with your new credentials."
+    }

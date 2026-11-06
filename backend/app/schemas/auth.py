@@ -77,6 +77,13 @@ class UserLogin(BaseModel):
 class ConsentWithdrawRequest(BaseModel):
     consent_type: str = Field(..., description="Type of consent to withdraw (e.g., 'marketing_communication')")
 
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordResetConfirm(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=8)
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

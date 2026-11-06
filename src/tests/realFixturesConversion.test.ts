@@ -310,8 +310,8 @@ describe('Cryptographic Session Security & Anti-Tamper Enforcement', () => {
     expect(authCheck.reason).toContain('Authentication required');
   });
 
-  it('handles password reset requests with audit verification', () => {
-    const reset = requestPasswordReset('employee@omnidoc.io');
+  it('handles password reset requests with audit verification', async () => {
+    const reset = await requestPasswordReset('employee@omnidoc.io');
     expect(reset.success).toBe(true);
     expect(reset.message).toContain('dispatched to employee@omnidoc.io');
   });

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { OmniDocLogo } from '../common/OmniDocLogo';
 import { UserSession } from '../../services/storageService';
-import { loginWithBackend, registerWithBackend, createSecureSession } from '../../services/authService';
+import { loginWithBackend, registerWithBackend, createSecureSession, requestPasswordReset } from '../../services/authService';
 import { useToast } from '../../services/toastService';
 
 interface AuthGatewayProps {
@@ -82,6 +82,24 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
         onAuthenticate(localSession);
       } else {
         addToast('error', 'Authentication Failed', err?.message || 'Invalid credentials. Please verify your email and password.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim() || !email.includes('@')) {
+      addToast('warning', 'Email Required', 'Please enter your email address in the email field first.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await requestPasswordReset(email.trim());
+      if (res.success) {
+        addToast('success', 'Reset Request Sent', res.message);
+      } else {
+        addToast('error', 'Reset Failed', res.message);
       }
     } finally {
       setIsLoading(false);
@@ -304,9 +322,13 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="font-bold text-[#9BA3BD]">Password</label>
-                    <span className="text-[11px] text-[#8B7CFF] hover:underline cursor-pointer">
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      className="text-[11px] text-[#8B7CFF] hover:underline cursor-pointer bg-transparent border-none p-0 outline-none"
+                    >
                       Forgot?
-                    </span>
+                    </button>
                   </div>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-[#9BA3BD] absolute left-3.5 top-1/2 -translate-y-1/2" />

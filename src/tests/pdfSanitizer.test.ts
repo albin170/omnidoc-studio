@@ -38,6 +38,8 @@ describe('Verified PDF Content Sanitization & Redaction Engine', () => {
 
     expect(result.report.metadataCleared).toBe(true);
     expect(result.report.redactionsApplied).toBe(1);
+    expect(result.report.isSanitized).toBe(true);
+    expect(result.report.residualTextFound).toBe(false);
     expect(result.pdfBytes.length).toBeGreaterThan(500);
 
     // Verify metadata in sanitized PDF
@@ -46,5 +48,39 @@ describe('Verified PDF Content Sanitization & Redaction Engine', () => {
     expect(reloaded.getAuthor()).toBe('');
     expect(reloaded.getSubject()).toBe('');
     expect(reloaded.getCreator()).toContain('OmniDoc Studio Privacy Engine');
+
+    // Binary check: verify target SSN is not present anywhere in raw bytes
+    const textRepr = new TextDecoder('latin1').decode(result.pdfBytes);
+    expect(textRepr.includes('000-12-3456')).toBe(false);
+  });
+
+  it('accurately reports residual text detection when verification encounters unredacted targets', async () => {
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const page = doc.addPage([600, 400]);
+    page.drawText('Unredacted Secret: TOP_SECRET_KEY_99', {
+      x: 50,
+      y: 300,
+      size: 14,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    const bytes = await doc.save();
+
+    // Redaction target specifies a different page (page 2) that does not scrub page 1
+    const result = await sanitizeAndRedactPdf(bytes, [
+      {
+        pageNumber: 2, // invalid page, page 1 text will not be scrubbed
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+        textToRedact: 'TOP_SECRET_KEY_99',
+      },
+    ]);
+
+    expect(result.report.residualTextFound).toBe(true);
+    expect(result.report.isSanitized).toBe(false);
+    expect(result.report.residualMatches.length).toBeGreaterThan(0);
   });
 });

@@ -271,7 +271,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* 3D Floating Translucent Document Graphic (Matching Reference Image) */}
         <div className="relative shrink-0 w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center animate-float">
           <div className="absolute inset-0 bg-gradient-to-tr from-[#8B7CFF]/30 to-[#42D6E8]/30 rounded-3xl blur-2xl opacity-70" />
-          
+
           <div className="relative w-28 h-36 sm:w-32 sm:h-40 rounded-2xl glass-panel border border-white/20 shadow-2xl p-3 flex flex-col justify-between transform -rotate-3 transition-transform hover:rotate-0">
             {/* Document Lines */}
             <div className="space-y-2">
@@ -381,8 +381,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
               const iconBg = isPdf
                 ? 'bg-rose-500/20 text-rose-400 border-rose-500/30'
                 : isDocx
-                ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-                : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                  : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
 
               return (
                 <div

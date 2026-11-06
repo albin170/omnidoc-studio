@@ -147,6 +147,32 @@ export class OmniDocApiClient {
     return res.json();
   }
 
+  public async requestPasswordReset(email: string): Promise<{ status: string; message: string; reset_token?: string }> {
+    const res = await fetch(`${this.baseUrl}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Password reset request failed');
+    }
+    return res.json();
+  }
+
+  public async resetPassword(token: string, newPassword: string): Promise<{ status: string; message: string }> {
+    const res = await fetch(`${this.baseUrl}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, new_password: newPassword }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Password reset failed');
+    }
+    return res.json();
+  }
+
   // --- Document & Agent Methods ---
 
   public async listTools(): Promise<any[]> {
