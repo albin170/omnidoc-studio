@@ -71,7 +71,7 @@ async def register_user(
             id=str(uuid.uuid4()),
             name=data.organization_name,
             slug=org_slug,
-            plan_tier="pro"
+            plan_tier="free"
         )
         db.add(org)
         await db.flush()
@@ -174,7 +174,13 @@ async def login_json(
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Account is disabled")
 
-    token = create_access_token(data={"sub": user.id, "org_id": user.org_id, "role": user.role})
+    # Fetch actual plan tier from organization
+    org_stmt = select(Organization).where(Organization.id == user.org_id)
+    org_res = await db.execute(org_stmt)
+    org = org_res.scalars().first()
+    plan_tier = org.plan_tier if org else "free"
+
+    token = create_access_token(data={"sub": user.id, "org_id": user.org_id, "role": user.role, "plan_tier": plan_tier})
     return Token(
         access_token=token,
         token_type="bearer",
@@ -183,7 +189,7 @@ async def login_json(
         role=user.role,
         email=user.email,
         full_name=user.full_name,
-        plan_tier="pro"
+        plan_tier=plan_tier
     )
 
 @router.post("/token", response_model=Token)
@@ -204,7 +210,13 @@ async def login_for_access_token(
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Account is disabled")
 
-    token = create_access_token(data={"sub": user.id, "org_id": user.org_id, "role": user.role})
+    # Fetch actual plan tier from organization
+    org_stmt = select(Organization).where(Organization.id == user.org_id)
+    org_res = await db.execute(org_stmt)
+    org = org_res.scalars().first()
+    plan_tier = org.plan_tier if org else "free"
+
+    token = create_access_token(data={"sub": user.id, "org_id": user.org_id, "role": user.role, "plan_tier": plan_tier})
     return Token(
         access_token=token,
         token_type="bearer",
@@ -213,7 +225,7 @@ async def login_for_access_token(
         role=user.role,
         email=user.email,
         full_name=user.full_name,
-        plan_tier="pro"
+        plan_tier=plan_tier
     )
 
 @router.post("/logout")
@@ -304,11 +316,14 @@ async def forgot_password(
     res = await db.execute(stmt)
     user = res.scalars().first()
 
-    # Always return success message to prevent user enumeration attacks
+    email_configured = bool(getattr(settings, "SMTP_HOST", None))
+
+    # Always return safe message to prevent user enumeration attacks
     if not user:
         return {
             "status": "success",
-            "message": f"If an account exists for {payload.email}, password reset instructions have been generated."
+            "message": f"If an account exists for {payload.email}, password reset instructions have been generated.",
+            "email_dispatched": email_configured
         }
 
     reset_token = create_access_token(
@@ -316,10 +331,13 @@ async def forgot_password(
         expires_delta=timedelta(hours=2)
     )
 
+    msg = f"Password reset instructions have been dispatched to {payload.email}." if email_configured else f"Password reset token generated for {payload.email}. (Email delivery service not configured on server; reset token issued)."
+
     return {
         "status": "success",
-        "message": f"Password reset instructions have been dispatched to {payload.email}.",
-        "reset_token": reset_token  # Returned for API client integration & tests
+        "message": msg,
+        "email_dispatched": email_configured,
+        "reset_token": reset_token
     }
 
 @router.post("/reset-password")

@@ -247,13 +247,13 @@ class ToolRegistry:
                 "decompression_bomb_safe": len(content) < 75 * 1024 * 1024,
                 "signature_verified": sig_ok
             }
-        # Fallback inspection if document was referenced virtually
         return {
             "document_id": inp.document_id,
-            "status": "VALID",
-            "format": "pdf",
+            "status": "NOT_FOUND",
+            "format": "unknown",
+            "file_size": 0,
             "decompression_bomb_safe": True,
-            "signature_verified": True
+            "signature_verified": False
         }
 
     async def _handle_parse_document(self, args: Dict[str, Any], org_id: str, user_id: Optional[str]) -> Dict[str, Any]:
@@ -278,11 +278,13 @@ class ToolRegistry:
             }
         return {
             "document_id": inp.document_id,
-            "parsed_status": "SUCCESS",
-            "page_count": 1,
-            "tables_found": 1,
-            "headings_found": 2,
-            "evidence_count": 5
+            "parsed_status": "FAILED",
+            "error": "Document not found in storage vault",
+            "page_count": 0,
+            "tables_found": 0,
+            "headings_found": 0,
+            "paragraphs_found": 0,
+            "evidence_count": 0
         }
 
     async def _handle_extract_fields(self, args: Dict[str, Any], org_id: str, user_id: Optional[str]) -> Dict[str, Any]:
@@ -304,43 +306,41 @@ class ToolRegistry:
                         val = float(m.group(1).replace(",", ""))
                         extracted[target] = {"value": val, "status": "confirmed", "confidence": 0.99, "source": m.group(0)}
                     else:
-                        extracted[target] = {"value": 16500.0, "status": "confirmed", "confidence": 0.95}
+                        extracted[target] = {"value": None, "status": "missing", "confidence": None}
                 elif target in ("tax", "vat", "gst"):
                     m = re.search(r"(?:tax|vat|gst)[:\s]*\$?([0-9,]+\.?[0-9]*)", all_text, re.IGNORECASE)
                     if m:
                         val = float(m.group(1).replace(",", ""))
                         extracted[target] = {"value": val, "status": "confirmed", "confidence": 0.95, "source": m.group(0)}
                     else:
-                        extracted[target] = {"value": 1500.0, "status": "confirmed", "confidence": 0.90}
+                        extracted[target] = {"value": None, "status": "missing", "confidence": None}
                 elif target in ("invoice_number", "invoice_no", "inv_num"):
                     m = re.search(r"INV-[0-9]{4}-[0-9]{3,5}|#[0-9]{4,8}", all_text, re.IGNORECASE)
                     if m:
                         extracted[target] = {"value": m.group(0), "status": "confirmed", "confidence": 0.99}
                     else:
-                        extracted[target] = {"value": f"INV-2026-{inp.document_id[:4].upper()}", "status": "confirmed", "confidence": 0.92}
+                        extracted[target] = {"value": None, "status": "missing", "confidence": None}
                 elif target in ("invoice_date", "date"):
                     m = re.search(r"\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4}", all_text)
                     if m:
                         extracted[target] = {"value": m.group(0), "status": "confirmed", "confidence": 0.96}
                     else:
-                        extracted[target] = {"value": "2026-03-15", "status": "confirmed", "confidence": 0.90}
+                        extracted[target] = {"value": None, "status": "missing", "confidence": None}
                 elif target in ("vendor", "vendor_name", "company"):
                     lines = [p.text for p in twin.paragraphs if len(p.text) > 3]
-                    extracted[target] = {
-                        "value": lines[0] if lines else f"Tenant Vendor ({fname})",
-                        "status": "confirmed",
-                        "confidence": 0.98
-                    }
+                    if lines:
+                        extracted[target] = {
+                            "value": lines[0],
+                            "status": "confirmed",
+                            "confidence": 0.98
+                        }
+                    else:
+                        extracted[target] = {"value": None, "status": "missing", "confidence": None}
                 else:
-                    extracted[target] = {"value": f"Extracted {target}", "status": "inferred", "confidence": 0.85}
+                    extracted[target] = {"value": None, "status": "missing", "confidence": None}
         else:
-            extracted = {
-                "vendor": {"value": "Acme Global Solutions", "status": "confirmed", "confidence": 0.98},
-                "invoice_number": {"value": f"INV-2026-{inp.document_id[:4]}", "status": "confirmed", "confidence": 0.99},
-                "invoice_date": {"value": "2026-03-15", "status": "confirmed", "confidence": 0.95},
-                "tax": {"value": 1500.0, "status": "confirmed", "confidence": 0.92},
-                "total": {"value": 16500.0, "status": "confirmed", "confidence": 0.99}
-            }
+            for target in inp.target_fields:
+                extracted[target] = {"value": None, "status": "missing", "confidence": None}
 
         return {
             "document_id": inp.document_id,
@@ -361,13 +361,15 @@ class ToolRegistry:
                 "source_id": inp.source_document_id,
                 "target_id": inp.target_document_id,
                 "similarity_score": sim,
-                "changes_detected": 0 if h1 == h2 else 2
+                "changes_detected": 0 if h1 == h2 else 2,
+                "status": "COMPARED"
             }
         return {
             "source_id": inp.source_document_id,
             "target_id": inp.target_document_id,
-            "similarity_score": 0.94,
-            "changes_detected": 3
+            "similarity_score": 0.0,
+            "changes_detected": -1,
+            "status": "DOCUMENTS_NOT_FOUND"
         }
 
     async def _handle_find_duplicates(self, args: Dict[str, Any], org_id: str, user_id: Optional[str]) -> Dict[str, Any]:
@@ -472,10 +474,11 @@ class ToolRegistry:
             }
         return {
             "document_id": inp.document_id,
-            "verified": True,
-            "checksum_matched": True,
-            "page_count_matched": True,
-            "reopened_cleanly": True
+            "verified": False,
+            "checksum_matched": False,
+            "page_count_matched": False,
+            "reopened_cleanly": False,
+            "error": "Document not found in storage vault"
         }
 
     async def _handle_request_approval(self, args: Dict[str, Any], org_id: str, user_id: Optional[str]) -> Dict[str, Any]:

@@ -147,7 +147,7 @@ export class OmniDocApiClient {
     return res.json();
   }
 
-  public async requestPasswordReset(email: string): Promise<{ status: string; message: string; reset_token?: string }> {
+  public async requestPasswordReset(email: string): Promise<{ status: string; message: string; reset_token?: string; email_dispatched?: boolean }> {
     const res = await fetch(`${this.baseUrl}/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

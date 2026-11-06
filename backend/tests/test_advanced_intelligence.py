@@ -7,6 +7,7 @@ from app.services.intelligence import cross_doc_intelligence
 from app.services.search import semantic_search_service
 from app.services.versioning import version_intelligence
 from app.services.durable_engine import durable_engine
+from app.services.storage import storage_vault
 from app.schemas.job import PlanNode
 
 def build_test_digital_twin(doc_id: str, filename: str, total_val: str, invoice_num: str = "INV-100") -> DocumentDigitalTwin:
@@ -102,6 +103,14 @@ def test_version_change_intelligence():
 
 @pytest.mark.asyncio
 async def test_durable_workflow_engine_idempotency_and_retry(db_session: AsyncSession):
+    # Seed real document in storage vault
+    await storage_vault.save_file(
+        org_id="org_test",
+        document_id="doc_sample",
+        filename="sample.pdf",
+        content=b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    )
+
     node = PlanNode(
         id="step_inspect_1",
         tool_name="inspect_file",

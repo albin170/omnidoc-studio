@@ -40,10 +40,10 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Consent Management (Phase 2B)
-  const [termsAccepted, setTermsAccepted] = useState(true);
-  const [privacyAccepted, setPrivacyAccepted] = useState(true);
-  const [aiConsent, setAiConsent] = useState(true);
+  // Consent Management (Phase 2B) - Default to unchecked per compliance guidelines
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [aiConsent, setAiConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -71,15 +71,10 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
       onAuthenticate(session);
       addToast('success', 'Backend Authenticated', `Signed in as ${session.userName} with server-verified JWT.`);
     } catch (err: any) {
-      // If backend is offline or network fails, offer fallback to local authenticated session
       console.warn('Backend login error:', err);
       const isNetworkErr = err?.message?.includes('Failed to fetch') || err?.message?.includes('NetworkError');
       if (isNetworkErr) {
-        addToast('info', 'Local Privacy Sandbox Mode', 'Backend service unreachable; running in encrypted local sandbox mode.');
-        const calculatedName = email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-        const localSession = await createSecureSession(email.trim(), calculatedName, 'user', 'pro');
-        localSession.rememberMe = rememberMe;
-        onAuthenticate(localSession);
+        addToast('error', 'Authentication Server Unreachable', 'Could not connect to the authentication server. Please check your network connection.');
       } else {
         addToast('error', 'Authentication Failed', err?.message || 'Invalid credentials. Please verify your email and password.');
       }
@@ -158,10 +153,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
       console.warn('Backend registration error:', err);
       const isNetworkErr = err?.message?.includes('Failed to fetch') || err?.message?.includes('NetworkError');
       if (isNetworkErr) {
-        addToast('info', 'Local Sandbox Active', 'Backend is offline; created local encrypted profile.');
-        const localSession = await createSecureSession(email.trim(), name.trim(), 'user', 'pro');
-        localSession.rememberMe = rememberMe;
-        onAuthenticate(localSession);
+        addToast('error', 'Authentication Server Unreachable', 'Could not reach the server to register account. Network connection required.');
       } else {
         addToast('error', 'Registration Error', err?.message || 'Could not register user. Please check your details.');
       }
@@ -176,15 +168,15 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate }) => {
       userName: 'Guest Explorer',
       userEmail: '',
       storageUsedBytes: 0,
-      isAuthenticated: true,
+      isAuthenticated: false,
       rememberMe: false,
-      role: 'user',
+      role: 'guest',
       planTier: 'free',
       isLocalPrototype: true,
     };
 
     onAuthenticate(session);
-    addToast('info', 'Guest Session Started', '100% private in-memory workspace initialized.');
+    addToast('info', 'Guest Session Started', 'Browsing in local guest sandbox mode.');
   };
 
   return (

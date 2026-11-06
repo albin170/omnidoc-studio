@@ -26,3 +26,9 @@ async def test_storage_vault_security_and_hashing():
         storage_vault.read_file("wrong-org", path)
     assert exc_read.value.status_code == 404
 
+    # Test Sibling-Prefix Directory Traversal Attack Defense
+    sibling_attacker_org = f"{org_id}-attacker"
+    with pytest.raises(HTTPException) as exc_sibling:
+        storage_vault.read_file(sibling_attacker_org, path)
+    assert exc_sibling.value.status_code == 404
+

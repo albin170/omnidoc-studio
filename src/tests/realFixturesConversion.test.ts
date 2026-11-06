@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createDocxBlob, DocxContentItem } from '../services/docxService';
 import { exportDataToXlsxBlob, exportDataToCsvBlob, evaluateCellFormula } from '../services/sheetService';
 import { createPresentationBlob } from '../services/pptxService';
@@ -311,9 +311,24 @@ describe('Cryptographic Session Security & Anti-Tamper Enforcement', () => {
   });
 
   it('handles password reset requests with audit verification', async () => {
-    const reset = await requestPasswordReset('employee@omnidoc.io');
-    expect(reset.success).toBe(true);
-    expect(reset.message).toContain('dispatched to employee@omnidoc.io');
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        status: 'success',
+        message: 'Password reset instructions have been dispatched to employee@omnidoc.io.',
+        reset_token: 'mock_jwt_reset_token',
+        email_dispatched: false,
+      }),
+    });
+    try {
+      const reset = await requestPasswordReset('employee@omnidoc.io');
+      expect(reset.success).toBe(true);
+      expect(reset.message).toContain('dispatched to employee@omnidoc.io');
+      expect(reset.resetToken).toBe('mock_jwt_reset_token');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });
 

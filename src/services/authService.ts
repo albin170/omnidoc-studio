@@ -192,7 +192,7 @@ export async function loginWithBackend(
       userEmail: profile.email,
       userName: profile.full_name || tokenData.full_name || email.split('@')[0],
       role: (profile.role as UserRole) || (tokenData.role as UserRole) || 'user',
-      planTier: (tokenData.plan_tier as PlanTier) || 'pro',
+      planTier: (tokenData.plan_tier as PlanTier) || 'free',
       storageUsedBytes: 0,
       isAuthenticated: true,
       issuedAt: now,
@@ -358,7 +358,7 @@ export async function authorizeUserAction(
 /**
  * Handle password reset via real backend API with audit logging
  */
-export async function requestPasswordReset(email: string): Promise<{ success: boolean; message: string; resetToken?: string }> {
+export async function requestPasswordReset(email: string): Promise<{ success: boolean; message: string; resetToken?: string; emailDispatched?: boolean }> {
   if (!email || !email.includes('@')) {
     return { success: false, message: 'Please provide a valid email address.' };
   }
@@ -367,15 +367,16 @@ export async function requestPasswordReset(email: string): Promise<{ success: bo
     recordAuditLog('PASSWORD_RESET_REQUESTED', email, 'Server-issued password reset token generated.');
     return {
       success: true,
-      message: res.message || `Password reset instructions have been dispatched to ${email}. Check your inbox.`,
+      message: res.message || `Password reset instructions generated for ${email}.`,
       resetToken: res.reset_token,
+      emailDispatched: res.email_dispatched ?? false,
     };
   } catch (err: any) {
-    // If backend offline, log and inform user
-    recordAuditLog('PASSWORD_RESET_LOCAL', email, 'Backend unreachable; password reset requested in local sandbox mode.', 'warn');
+    // Return honest failure state if backend is unreachable
+    recordAuditLog('PASSWORD_RESET_UNAVAILABLE', email, 'Password reset server service is currently unavailable.', 'warn');
     return {
-      success: true,
-      message: `Password reset instructions have been dispatched to ${email}. (Server offline: running in local sandbox).`,
+      success: false,
+      message: 'Password reset service is currently unreachable. Please check server connectivity or contact administrator.',
     };
   }
 }

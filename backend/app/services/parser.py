@@ -111,7 +111,7 @@ class DocumentParserService:
                                 height=round(max_h, 2),
                                 is_estimated=False
                             )
-                            confidence = 0.99
+                            confidence = 1.0
                             method = "pypdf_stream_visitor"
                         else:
                             estimated_y = 50.0 + (line_idx * 18.0)
@@ -122,7 +122,7 @@ class DocumentParserService:
                                 height=14.0,
                                 is_estimated=True
                             )
-                            confidence = 0.85
+                            confidence = None
                             method = "heuristic_reading_order"
                     else:
                         estimated_y = 50.0 + (line_idx * 18.0)
@@ -133,7 +133,7 @@ class DocumentParserService:
                             height=14.0,
                             is_estimated=True
                         )
-                        confidence = 0.85
+                        confidence = None
                         method = "heuristic_reading_order"
                     
                     is_heading = len(line) < 60 and (line.isupper() or line.endswith(":") or line_idx == 0)

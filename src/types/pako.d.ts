@@ -7,3 +7,4 @@ declare module 'pako' {
   };
   export default pako;
 }
+

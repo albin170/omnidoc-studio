@@ -17,10 +17,16 @@ class StorageVaultService:
                 detail="Security violation: Path traversal detected"
             )
         tenant_path = os.path.abspath(os.path.join(self.base_dir, org_id))
-        if not tenant_path.startswith(self.base_dir):
+        try:
+            if os.path.commonpath([self.base_dir, tenant_path]) != self.base_dir:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Security violation: Path traversal detected"
+                )
+        except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Security violation: Path traversal detected"
+                detail="Security violation: Cross-drive traversal detected"
             )
         os.makedirs(tenant_path, exist_ok=True)
         return tenant_path
@@ -43,10 +49,16 @@ class StorageVaultService:
         os.makedirs(file_dir, exist_ok=True)
         
         target_path = os.path.abspath(os.path.join(file_dir, clean_filename))
-        if not target_path.startswith(tenant_dir):
+        try:
+            if os.path.commonpath([tenant_dir, target_path]) != tenant_dir:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Security violation: Invalid storage target"
+                )
+        except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Security violation: Invalid storage target"
+                detail="Security violation: Cross-drive storage target"
             )
         return target_path
 
@@ -88,7 +100,13 @@ class StorageVaultService:
         """
         tenant_dir = self._resolve_tenant_dir(org_id)
         abs_target = os.path.abspath(storage_path)
-        if not abs_target.startswith(tenant_dir) or not os.path.exists(abs_target):
+        try:
+            if os.path.commonpath([tenant_dir, abs_target]) != tenant_dir or not os.path.exists(abs_target):
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Document file not found in tenant storage"
+                )
+        except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Document file not found in tenant storage"
@@ -114,9 +132,12 @@ class StorageVaultService:
     def delete_file(self, org_id: str, storage_path: str) -> bool:
         tenant_dir = self._resolve_tenant_dir(org_id)
         abs_target = os.path.abspath(storage_path)
-        if abs_target.startswith(tenant_dir) and os.path.exists(abs_target):
-            os.remove(abs_target)
-            return True
+        try:
+            if os.path.commonpath([tenant_dir, abs_target]) == tenant_dir and os.path.exists(abs_target):
+                os.remove(abs_target)
+                return True
+        except ValueError:
+            return False
         return False
 
 storage_vault = StorageVaultService()

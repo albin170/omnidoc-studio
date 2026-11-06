@@ -1,5 +1,6 @@
 import os
-from typing import List, Dict, Any
+import uuid
+from typing import List, Dict, Any, Literal
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +15,8 @@ from app.models.job import Job
 from app.models.audit import AuditEvent
 
 router = APIRouter(prefix="/admin", tags=["Administrator Console"])
+
+ALLOWED_ROLES = {"admin", "staff", "user"}
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != "admin":
@@ -40,7 +43,7 @@ class UserAdminOut(BaseModel):
     is_active: bool
 
 class RoleUpdateRequest(BaseModel):
-    role: str
+    role: Literal["admin", "staff", "user"]
     is_active: bool
 
 @router.get("/telemetry", response_model=SystemTelemetryOut)
@@ -93,14 +96,32 @@ async def update_user_status_and_role(
     if user_id == admin.id and req.role != "admin":
         raise HTTPException(status_code=400, detail="Administrators cannot demote their own account")
     
+    if req.role not in ALLOWED_ROLES:
+        raise HTTPException(status_code=400, detail=f"Invalid role '{req.role}'. Allowed roles: {list(ALLOWED_ROLES)}")
+
     stmt = select(User).where(User.id == user_id, User.org_id == admin.org_id)
     res = await db.execute(stmt)
     user = res.scalars().first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found in tenant organization")
     
+    prev_role = user.role
+    prev_active = user.is_active
+
     user.role = req.role
     user.is_active = req.is_active
+
+    # Record administrative change in audit trail
+    audit_evt = AuditEvent(
+        id=str(uuid.uuid4()),
+        org_id=admin.org_id,
+        user_id=admin.id,
+        event_type="ADMIN_ROLE_UPDATED",
+        action=f"Changed user {user.email} role from '{prev_role}' to '{req.role}', active state from {prev_active} to {req.is_active}",
+        ip_address=None
+    )
+    db.add(audit_evt)
+
     await db.commit()
     await db.refresh(user)
 

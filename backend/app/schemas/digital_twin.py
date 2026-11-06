@@ -15,7 +15,7 @@ class SourceEvidenceRef(BaseModel):
     page_number: int
     bbox: BoundingBox
     extracted_text: str
-    confidence: float = Field(..., ge=0.0, le=1.0)
+    confidence: Optional[float] = Field(None, ge=0.0, le=1.0)
     extraction_method: str = "native_text" # native_text, docling_ocr, rule_extractor
     is_estimated: bool = False
 

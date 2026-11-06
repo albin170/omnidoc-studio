@@ -10,7 +10,7 @@ class Organization(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(128), nullable=False)
     slug = Column(String(64), unique=True, index=True, nullable=False)
-    plan_tier = Column(String(32), default="pro", nullable=False) # free, starter, pro, enterprise
+    plan_tier = Column(String(32), default="free", nullable=False) # free, starter, pro, enterprise
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     users = relationship("User", back_populates="organization", cascade="all, delete-orphan")

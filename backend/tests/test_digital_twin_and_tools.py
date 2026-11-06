@@ -4,6 +4,7 @@ import openpyxl
 from app.services.parser import document_parser
 from app.services.tool_registry import tool_registry
 from app.services.agent import agent_service
+from app.services.storage import storage_vault
 from app.schemas.job import PlanNode
 
 def test_document_digital_twin_excel_parsing():
@@ -52,6 +53,14 @@ async def test_tool_registry_registration_and_execution():
         assert t is not None
         assert t.name == name
 
+    # Seed real document in storage vault
+    await storage_vault.save_file(
+        org_id="test_org",
+        document_id="doc_sample_1",
+        filename="invoice_sample.pdf",
+        content=b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    )
+
     # Execute inspect_file
     res = await tool_registry.execute_tool(
         name="inspect_file",
@@ -94,6 +103,14 @@ async def test_agent_plan_generation_and_cycle_detection():
 
 @pytest.mark.asyncio
 async def test_invoice_intelligence_workflow_execution():
+    # Seed real document in storage vault
+    await storage_vault.save_file(
+        org_id="org_alpha",
+        document_id="doc_inv_101",
+        filename="invoice_101.pdf",
+        content=b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"
+    )
+
     plan = agent_service.generate_plan_for_objective(
         objective="Analyze incoming vendor invoices and verify reconciled amounts",
         document_ids=["doc_inv_101"]

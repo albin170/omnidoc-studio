@@ -17,6 +17,44 @@ from app.services.parser import document_parser
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
+import zipfile
+import io
+
+def validate_magic_bytes(content: bytes, ext: str):
+    if ext == "pdf":
+        if not content.startswith(b"%PDF-"):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Corrupted file or invalid PDF signature")
+    elif ext == "png":
+        if not content.startswith(b"\x89PNG\r\n\x1a\n"):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid PNG image signature")
+    elif ext in ("jpg", "jpeg"):
+        if not content.startswith(b"\xff\xd8\xff"):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JPEG image signature")
+    elif ext == "webp":
+        if not (len(content) >= 12 and content[:4] == b"RIFF" and content[8:12] == b"WEBP"):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid WebP image signature")
+    elif ext in ("docx", "xlsx", "pptx"):
+        if not content.startswith(b"PK\x03\x04"):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid OpenXML container signature for {ext.upper()}")
+        try:
+            with zipfile.ZipFile(io.BytesIO(content)) as z:
+                total_uncompressed = sum(info.file_size for info in z.infolist())
+                if total_uncompressed > settings.MAX_ARCHIVE_EXPANSION_BYTES:
+                    raise HTTPException(
+                        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                        detail=f"Decompressed archive exceeds maximum safe expansion limit ({settings.MAX_ARCHIVE_EXPANSION_BYTES // (1024 * 1024)}MB)"
+                    )
+        except zipfile.BadZipFile:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Malformed or corrupted archive")
+    elif ext in ("csv", "txt", "md", "html"):
+        try:
+            content.decode("utf-8")
+        except UnicodeDecodeError:
+            try:
+                content.decode("latin1")
+            except Exception:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Non-text binary detected for text file")
+
 @router.post("/upload", response_model=DocumentOut, status_code=status.HTTP_201_CREATED)
 async def upload_document(
     file: UploadFile = File(...),
@@ -48,6 +86,9 @@ async def upload_document(
         chunks.append(chunk)
 
     content = b"".join(chunks)
+
+    # Validate file signatures and archive bounds before saving
+    validate_magic_bytes(content, ext)
 
     doc_id = str(uuid.uuid4())
     storage_path, content_hash, file_size = await storage_vault.save_file(
