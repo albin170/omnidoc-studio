@@ -25,10 +25,16 @@ from app.api.v1 import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Auto-create tables in non-production environments; production uses Alembic migrations
-    if settings.ENVIRONMENT != "production":
+    # Ensure tables are created and default data seeded
+    try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+        from app.services.seed_data import seed_default_saas_data
+        from app.db.session import async_session_factory
+        await seed_default_saas_data(async_session_factory)
+    except Exception as e:
+        import logging
+        logging.getLogger("omnidoc.startup").warning(f"Startup initialization notice: {e}")
     yield
     await engine.dispose()
 
@@ -68,6 +74,7 @@ app.include_router(plans.router, prefix=settings.API_V1_STR)
 app.include_router(user_portal.router, prefix=settings.API_V1_STR)
 
 @app.get("/health", tags=["Health"])
+@app.get(f"{settings.API_V1_STR}/health", tags=["Health"])
 async def health_check():
     return {
         "status": "healthy",

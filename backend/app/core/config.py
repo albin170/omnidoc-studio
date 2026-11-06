@@ -19,10 +19,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 24 hours
     
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./omnidoc_studio.db")
+    is_vercel: bool = bool(os.getenv("VERCEL"))
+    default_db: str = "sqlite+aiosqlite:////tmp/omnidoc_studio.db" if is_vercel else "sqlite+aiosqlite:///./omnidoc_studio.db"
+    DATABASE_URL: str = os.getenv("DATABASE_URL", default_db)
     
     # Storage Vault
-    STORAGE_DIR: str = os.getenv("STORAGE_DIR", "./storage_vault")
+    default_storage: str = "/tmp/storage_vault" if is_vercel else "./storage_vault"
+    STORAGE_DIR: str = os.getenv("STORAGE_DIR", default_storage)
     MAX_UPLOAD_SIZE_BYTES: int = 50 * 1024 * 1024 # 50 MB
     MAX_ARCHIVE_EXPANSION_BYTES: int = 75 * 1024 * 1024 # 75 MB (Decompression bomb guard)
     

@@ -164,5 +164,44 @@ async def seed_initial_plans_and_features(db: AsyncSession):
         )
         db.add(default_ui)
 
+    # Seed Default Master Organization if absent
+    default_org = await db.scalar(select(Organization).where(Organization.slug == "omnidoc-master"))
+    if not default_org:
+        default_org = Organization(name="OmniDoc Master Org", slug="omnidoc-master", plan_tier="enterprise")
+        db.add(default_org)
+        await db.flush()
+
+    # Seed Default Lead Administrator (admin@omnidoc.io / AdminPass2026!)
+    admin_user = await db.scalar(select(User).where(User.email == "admin@omnidoc.io"))
+    if not admin_user:
+        admin_user = User(
+            email="admin@omnidoc.io",
+            hashed_password=get_password_hash("AdminPass2026!"),
+            full_name="Lead Platform Administrator",
+            role="admin",
+            org_id=default_org.id,
+            is_active=True,
+            terms_accepted=True,
+            privacy_accepted=True,
+            ai_consent=True
+        )
+        db.add(admin_user)
+
+    # Seed Default Studio User (albinbinu170@gmail.com)
+    demo_user = await db.scalar(select(User).where(User.email == "albinbinu170@gmail.com"))
+    if not demo_user:
+        demo_user = User(
+            email="albinbinu170@gmail.com",
+            hashed_password=get_password_hash("password123"),
+            full_name="Albin Binu",
+            role="admin",
+            org_id=default_org.id,
+            is_active=True,
+            terms_accepted=True,
+            privacy_accepted=True,
+            ai_consent=True
+        )
+        db.add(demo_user)
+
     await db.commit()
 
