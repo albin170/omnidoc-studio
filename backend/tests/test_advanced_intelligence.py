@@ -101,7 +101,7 @@ def test_version_change_intelligence():
     assert mod_fields[0].updated_value == "$12,500.00"
 
 @pytest.mark.asyncio
-async def test_durable_workflow_engine_idempotency_and_retry():
+async def test_durable_workflow_engine_idempotency_and_retry(db_session: AsyncSession):
     node = PlanNode(
         id="step_inspect_1",
         tool_name="inspect_file",
@@ -109,12 +109,13 @@ async def test_durable_workflow_engine_idempotency_and_retry():
         arguments={"document_id": "doc_sample", "deep_forensics": True}
     )
 
-    # First execution
+    # First execution with DB session persistence
     res1 = await durable_engine.execute_node_with_retry(
         job_id="job_dur_1",
         plan_id="plan_dur_1",
         node=node,
-        org_id="org_test"
+        org_id="org_test",
+        session=db_session
     )
     assert res1["status"] == "VALID"
 
@@ -123,10 +124,24 @@ async def test_durable_workflow_engine_idempotency_and_retry():
         job_id="job_dur_1",
         plan_id="plan_dur_1",
         node=node,
-        org_id="org_test"
+        org_id="org_test",
+        session=db_session
     )
     assert res2 == res1
 
     # Checkpoints must be recorded
     checkpoints = durable_engine.get_checkpoints("job_dur_1")
     assert len(checkpoints) >= 1
+
+    # Clear in-memory caches to simulate server restart / crash recovery
+    durable_engine._idempotency_store.clear()
+    durable_engine._checkpoints.clear()
+
+    # Must recover checkpoints from database
+    recovered_checkpoints = await durable_engine.get_checkpoints_async("job_dur_1", session=db_session)
+    assert len(recovered_checkpoints) >= 1
+    assert recovered_checkpoints[-1].status == "completed"
+
+    # Must recover idempotent result from database
+    recovered_res = await durable_engine.get_idempotent_result_async("plan_dur_1_step_inspect_1", session=db_session)
+    assert recovered_res == res1

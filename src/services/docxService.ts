@@ -21,6 +21,45 @@ export interface DocxContentItem {
 }
 
 /**
+ * Sanitize rich-text HTML against DOM XSS vectors while preserving semantic document structure
+ */
+export function sanitizeHtml(html: string): string {
+  if (!html) return '';
+
+  if (typeof DOMParser !== 'undefined') {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Remove executable or unsafe elements
+    const disallowed = doc.querySelectorAll('script, iframe, object, embed, link, meta, applet, base');
+    disallowed.forEach((node) => node.remove());
+
+    // Clean all element attributes
+    const allElements = doc.querySelectorAll('*');
+    allElements.forEach((el) => {
+      const attrs = Array.from(el.attributes);
+      for (const attr of attrs) {
+        const name = attr.name.toLowerCase();
+        const val = attr.value.trim().toLowerCase();
+        // Remove event handlers or javascript: hrefs
+        if (name.startsWith('on') || val.startsWith('javascript:') || val.startsWith('vbscript:')) {
+          el.removeAttribute(attr.name);
+        }
+      }
+    });
+
+    return doc.body.innerHTML;
+  }
+
+  // Regex fallback for non-browser / node environments
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/\son\w+\s*=\s*(?:'[^']*'|"[^"]*"|[^\s>]+)/gi, '')
+    .replace(/href\s*=\s*['"]?javascript:[^'">\s]+/gi, 'href="#"');
+}
+
+/**
  * Generate a real DOCX file blob from document structure
  */
 export async function createDocxBlob(title: string, items: DocxContentItem[]): Promise<Blob> {
@@ -292,7 +331,7 @@ export function htmlToDocxItems(html: string): DocxContentItem[] {
 }
 
 /**
- * Extract raw text from a DOCX file using JSZip to parse word/document.xml
+ * Extract raw text and table structures from a DOCX file using JSZip to parse word/document.xml
  */
 export async function extractTextFromDocxFile(file: File): Promise<string> {
   try {
@@ -310,28 +349,102 @@ export async function extractTextFromDocxFile(file: File): Promise<string> {
     if (typeof DOMParser !== 'undefined') {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-      
-      // Extract paragraphs <w:p>
-      const paragraphs = xmlDoc.getElementsByTagName('w:p');
-      for (let i = 0; i < paragraphs.length; i++) {
-        const p = paragraphs[i];
-        const textNodes = p.getElementsByTagName('w:t');
-        let pText = '';
-        for (let j = 0; j < textNodes.length; j++) {
-          pText += textNodes[j].textContent || '';
-        }
-        if (pText.trim()) {
-          extractedLines.push(pText);
+      const body = xmlDoc.getElementsByTagName('w:body')[0] || xmlDoc.documentElement;
+
+      // Iterate child elements of body in document order
+      const childNodes = Array.from(body.childNodes);
+      for (const node of childNodes) {
+        if (node.nodeType !== 1) continue; // Element nodes only
+        const el = node as Element;
+        const tagName = el.tagName.toLowerCase();
+
+        if (tagName.endsWith('tbl') || tagName === 'w:tbl') {
+          // Table structure
+          const rows = Array.from(el.getElementsByTagName('w:tr'));
+          const tableGrid: string[][] = [];
+
+          for (const tr of rows) {
+            const cells = Array.from(tr.getElementsByTagName('w:tc'));
+            const rowValues = cells.map((tc) => {
+              const textNodes = Array.from(tc.getElementsByTagName('w:t'));
+              return textNodes.map((tn) => tn.textContent || '').join(' ').trim();
+            });
+            if (rowValues.some((v) => v.length > 0)) {
+              tableGrid.push(rowValues);
+            }
+          }
+
+          if (tableGrid.length > 0) {
+            // Render as markdown table
+            const colCount = Math.max(...tableGrid.map((r) => r.length));
+            tableGrid.forEach((row, idx) => {
+              while (row.length < colCount) row.push('');
+              extractedLines.push(`| ${row.join(' | ')} |`);
+              if (idx === 0) {
+                extractedLines.push(`| ${row.map(() => '---').join(' | ')} |`);
+              }
+            });
+            extractedLines.push('');
+          }
+        } else if (tagName.endsWith('p') || tagName === 'w:p') {
+          // Paragraph structure
+          let prefix = '';
+          const pStyle = el.getElementsByTagName('w:pStyle')[0];
+          if (pStyle) {
+            const val = (pStyle.getAttribute('w:val') || '').toLowerCase();
+            if (val.includes('heading1') || val === 'title') prefix = '# ';
+            else if (val.includes('heading2')) prefix = '## ';
+            else if (val.includes('heading3')) prefix = '### ';
+          }
+
+          const textNodes = Array.from(el.getElementsByTagName('w:t'));
+          const pText = textNodes.map((tn) => tn.textContent || '').join('');
+          if (pText.trim()) {
+            extractedLines.push(`${prefix}${pText}`);
+          }
         }
       }
     } else {
-      // Regex extraction fallback for Node/headless environments
-      const pMatches = xmlText.match(/<w:p[\s>].*?<\/w:p>/gs) || [];
-      for (const pXml of pMatches) {
-        const tMatches = Array.from(pXml.matchAll(/<w:t[^>]*>(.*?)<\/w:t>/gs)).map((m) => m[1]);
-        const pText = tMatches.join('');
-        if (pText.trim()) {
-          extractedLines.push(pText);
+      // Robust Regex extraction fallback for Node/headless environments
+      // Match tables and paragraphs sequentially
+      const elementRegex = /<w:(p|tbl)[\s>].*?<\/w:\1>/gs;
+      const elements = xmlText.match(elementRegex) || [];
+
+      for (const elXml of elements) {
+        if (elXml.startsWith('<w:tbl')) {
+          const rowMatches = elXml.match(/<w:tr[\s>].*?<\/w:tr>/gs) || [];
+          const tableGrid: string[][] = [];
+          for (const trXml of rowMatches) {
+            const cellMatches = trXml.match(/<w:tc[\s>].*?<\/w:tc>/gs) || [];
+            const rowVals = cellMatches.map((tcXml) => {
+              const tMatches = Array.from(tcXml.matchAll(/<w:t[^>]*>(.*?)<\/w:t>/gs)).map((m) => m[1]);
+              return tMatches.join(' ').trim();
+            });
+            if (rowVals.some((v) => v.length > 0)) {
+              tableGrid.push(rowVals);
+            }
+          }
+          if (tableGrid.length > 0) {
+            const colCount = Math.max(...tableGrid.map((r) => r.length));
+            tableGrid.forEach((row, idx) => {
+              while (row.length < colCount) row.push('');
+              extractedLines.push(`| ${row.join(' | ')} |`);
+              if (idx === 0) {
+                extractedLines.push(`| ${row.map(() => '---').join(' | ')} |`);
+              }
+            });
+            extractedLines.push('');
+          }
+        } else {
+          // Paragraph
+          const isH1 = /w:val="(?:Heading1|Title)"/i.test(elXml);
+          const isH2 = /w:val="Heading2"/i.test(elXml);
+          const prefix = isH1 ? '# ' : isH2 ? '## ' : '';
+          const tMatches = Array.from(elXml.matchAll(/<w:t[^>]*>(.*?)<\/w:t>/gs)).map((m) => m[1]);
+          const pText = tMatches.join('');
+          if (pText.trim()) {
+            extractedLines.push(`${prefix}${pText}`);
+          }
         }
       }
     }

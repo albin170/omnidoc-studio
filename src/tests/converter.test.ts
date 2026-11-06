@@ -80,3 +80,17 @@ describe('Spreadsheet Formula Evaluation', () => {
     expect(indexToColumnLetter(25)).toBe('Z');
   });
 });
+
+describe('Conversion Cancellation with AbortController', () => {
+  it('aborts active conversion job immediately when AbortSignal triggers', async () => {
+    const { executeFileConversion } = await import('../services/converter');
+    const controller = new AbortController();
+    controller.abort(); // already aborted signal
+
+    const sampleFile = new File(['Hello World testing cancellation'], 'doc.txt', { type: 'text/plain' });
+
+    await expect(
+      executeFileConversion(sampleFile, 'txt', 'html', { signal: controller.signal })
+    ).rejects.toThrow(/Conversion cancelled by user/);
+  });
+});

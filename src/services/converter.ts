@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { ConversionJob, ConversionOptions, FileFormat } from '../types';
-import { FORMAT_REGISTRY } from './formatDetector';
+import { FORMAT_REGISTRY, validateFileFormat } from './formatDetector';
 import { extractTextFromPdf, renderPdfPagesToImages } from './pdfService';
 import { convertTextOrDocxToPdf, createDocxBlob, extractTextFromDocxFile, DocxContentItem } from './docxService';
 import { convertSpreadsheetToPdf, exportDataToCsvBlob, exportDataToXlsxBlob, parseSpreadsheetFile } from './sheetService';
@@ -44,6 +44,12 @@ export async function executeFileConversion(
     if (onProgress) onProgress(pct, msg);
   };
 
+  const checkAborted = () => {
+    if (options?.signal?.aborted) {
+      throw new DOMException('Conversion cancelled by user', 'AbortError');
+    }
+  };
+
   // Upfront error checks
   if (!file || file.size === 0) {
     throw new Error(`File "${file?.name || 'unknown'}" is empty (0 bytes). Please upload a valid document.`);
@@ -54,7 +60,26 @@ export async function executeFileConversion(
     throw new Error(`File "${file.name}" (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 100MB browser memory limit.`);
   }
 
+  checkAborted();
+
+  // Validate conversion route capability upfront
+  const allowed = FORMAT_REGISTRY[sourceFormat]?.allowedConversions || [];
+  const isOcrFallback = targetFormat === 'txt' && ['png', 'jpg', 'webp'].includes(sourceFormat);
+  if (sourceFormat !== targetFormat && !allowed.includes(targetFormat) && !isOcrFallback) {
+    throw new Error(`Unsupported conversion route: from ${sourceFormat.toUpperCase()} to ${targetFormat.toUpperCase()}`);
+  }
+
   updateProgress(10, 'Validating file integrity and headers...');
+
+  // Format header integrity validation
+  if (file.size >= 16) {
+    const validation = await validateFileFormat(file);
+    if (!validation.valid && validation.format !== sourceFormat && !['txt', 'html', 'md', 'csv'].includes(sourceFormat)) {
+      throw new Error(validation.error || `File "${file.name}" failed format validation.`);
+    }
+  }
+
+  checkAborted();
 
   // 1. Same format passthrough
   if (sourceFormat === targetFormat) {
@@ -68,13 +93,17 @@ export async function executeFileConversion(
 
   // 2. PDF Conversions
   if (sourceFormat === 'pdf') {
+    checkAborted();
     const arrayBuffer = await file.arrayBuffer();
+    checkAborted();
 
     if (targetFormat === 'pdf') {
       updateProgress(40, 'Re-compressing and optimizing PDF streams...');
       const { PDFDocument } = await import('pdf-lib');
+      checkAborted();
       const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
       const optimizedBytes = await pdfDoc.save({ useObjectStreams: true });
+      checkAborted();
       updateProgress(100, 'PDF optimization completed');
       return {
         blob: new Blob([optimizedBytes as any], { type: 'application/pdf' }),
@@ -85,7 +114,9 @@ export async function executeFileConversion(
 
     if (targetFormat === 'txt') {
       updateProgress(40, 'Extracting selectable text from PDF pages...');
+      checkAborted();
       const text = await extractTextFromPdf(arrayBuffer);
+      checkAborted();
       updateProgress(90, 'Formatting text output...');
       return {
         blob: new Blob([text], { type: 'text/plain;charset=utf-8' }),
@@ -96,13 +127,17 @@ export async function executeFileConversion(
 
     if (targetFormat === 'docx') {
       updateProgress(35, 'Extracting document text stream...');
+      checkAborted();
       const text = await extractTextFromPdf(arrayBuffer);
+      checkAborted();
       updateProgress(65, 'Reconstructing Word paragraph hierarchies...');
       const paragraphs: DocxContentItem[] = text.split('\n\n').filter(Boolean).map((p) => ({
         type: 'paragraph' as const,
         text: p,
       }));
+      checkAborted();
       const docxBlob = await createDocxBlob(baseName, paragraphs);
+      checkAborted();
       updateProgress(100, 'DOCX package verified');
       return {
         blob: docxBlob,
@@ -113,7 +148,9 @@ export async function executeFileConversion(
 
     if (targetFormat === 'pptx') {
       updateProgress(35, 'Extracting PDF text for slide generation...');
+      checkAborted();
       const text = await extractTextFromPdf(arrayBuffer);
+      checkAborted();
       updateProgress(65, 'Generating presentation slide deck...');
       const pages = text.split(/--- Page \d+ ---/).filter((p) => p.trim());
       const slides = (pages.length > 0 ? pages : [text]).map((pageText, idx) => {
@@ -151,7 +188,9 @@ export async function executeFileConversion(
           ],
         };
       });
+      checkAborted();
       const pptxBlob = await createPresentationBlob(baseName, slides);
+      checkAborted();
       updateProgress(100, 'PowerPoint presentation created');
       return {
         blob: pptxBlob,
@@ -162,10 +201,12 @@ export async function executeFileConversion(
 
     if (targetFormat === 'png' || targetFormat === 'jpg') {
       updateProgress(30, 'Rendering high-resolution PDF pages...');
+      checkAborted();
       const imageBlobs = await renderPdfPagesToImages(
         arrayBuffer,
         targetFormat === 'png' ? 'png' : 'jpeg'
       );
+      checkAborted();
 
       if (imageBlobs.length === 1) {
         updateProgress(100, 'Page image rendered');
@@ -182,7 +223,9 @@ export async function executeFileConversion(
       imageBlobs.forEach((imgBlob, idx) => {
         zip.file(`${baseName}_page_${idx + 1}.${targetFormat}`, imgBlob);
       });
+      checkAborted();
       const zipBlob = await zip.generateAsync({ type: 'blob' });
+      checkAborted();
       return {
         blob: zipBlob,
         fileName: `${baseName}_pages.zip`,
@@ -193,12 +236,16 @@ export async function executeFileConversion(
 
   // 3. Word (DOCX) Conversions
   if (sourceFormat === 'docx') {
+    checkAborted();
     updateProgress(30, 'Parsing DOCX document XML...');
     const rawText = await extractTextFromDocxFile(file);
+    checkAborted();
 
     if (targetFormat === 'pdf') {
       updateProgress(65, 'Formatting PDF layout and page breaks...');
+      checkAborted();
       const pdfBytes = await convertTextOrDocxToPdf(baseName, rawText);
+      checkAborted();
       updateProgress(100, 'PDF generated');
       return {
         blob: new Blob([pdfBytes as any], { type: 'application/pdf' }),
@@ -240,12 +287,15 @@ export async function executeFileConversion(
 
   // 4. PowerPoint (PPTX) Conversions
   if (sourceFormat === 'pptx') {
+    checkAborted();
     updateProgress(30, 'Parsing PowerPoint presentation slides XML...');
     const slideTexts = await extractTextFromPptxFile(file);
+    checkAborted();
 
     if (targetFormat === 'txt') {
       updateProgress(90, 'Formatting slide text notes...');
       const combined = slideTexts.map((st, i) => `--- Slide ${i + 1} ---\n${st}`).join('\n\n');
+      checkAborted();
       return {
         blob: new Blob([combined], { type: 'text/plain;charset=utf-8' }),
         fileName: `${baseName}.txt`,
@@ -255,6 +305,7 @@ export async function executeFileConversion(
 
     if (targetFormat === 'docx') {
       updateProgress(65, 'Structuring Word document hierarchy...');
+      checkAborted();
       const paragraphs: DocxContentItem[] = [];
       slideTexts.forEach((st, idx) => {
         paragraphs.push({ type: 'h2', text: `Slide ${idx + 1}` });
@@ -264,6 +315,7 @@ export async function executeFileConversion(
         });
       });
       const docxBlob = await createDocxBlob(baseName, paragraphs);
+      checkAborted();
       return {
         blob: docxBlob,
         fileName: `${baseName}.docx`,
@@ -273,6 +325,7 @@ export async function executeFileConversion(
 
     if (targetFormat === 'pdf') {
       updateProgress(60, 'Rendering 16:9 presentation PDF...');
+      checkAborted();
       const slides = slideTexts.map((st, idx) => {
         const lines = st.split('\n').filter(Boolean);
         const title = lines[0] || `Slide ${idx + 1}`;
@@ -355,12 +408,16 @@ export async function executeFileConversion(
 
   // 5. Spreadsheet (XLSX & CSV) Conversions
   if (sourceFormat === 'xlsx' || sourceFormat === 'csv') {
+    checkAborted();
     updateProgress(35, 'Reading workbook cells and formulas...');
     const parsed = await parseSpreadsheetFile(file);
+    checkAborted();
 
     if (targetFormat === 'csv') {
       updateProgress(75, 'Serializing CSV delimiter streams...');
+      checkAborted();
       const csvBlob = exportDataToCsvBlob(parsed.data);
+      checkAborted();
       return {
         blob: csvBlob,
         fileName: `${baseName}.csv`,
@@ -370,7 +427,9 @@ export async function executeFileConversion(
 
     if (targetFormat === 'xlsx') {
       updateProgress(75, 'Building openXML spreadsheet package...');
+      checkAborted();
       const xlsxBlob = exportDataToXlsxBlob(parsed.data, parsed.activeSheet);
+      checkAborted();
       return {
         blob: xlsxBlob,
         fileName: `${baseName}.xlsx`,
@@ -380,7 +439,9 @@ export async function executeFileConversion(
 
     if (targetFormat === 'pdf') {
       updateProgress(65, 'Formatting tabular data into PDF grid...');
+      checkAborted();
       const pdfBytes = await convertSpreadsheetToPdf(parsed.data, baseName);
+      checkAborted();
       return {
         blob: new Blob([pdfBytes as any], { type: 'application/pdf' }),
         fileName: `${baseName}.pdf`,
@@ -438,12 +499,15 @@ export async function executeFileConversion(
 
   // 6. Image Conversions (PNG, JPG, WebP)
   if (['png', 'jpg', 'webp'].includes(sourceFormat)) {
+    checkAborted();
     if (targetFormat === 'pdf') {
       updateProgress(50, 'Embedding high-res raster into PDF canvas...');
+      checkAborted();
       const pdfBytes = await convertImageToPdf(file, {
         pageSize: options?.pageOrientation ? 'A4' : 'fit',
         orientation: options?.pageOrientation,
       });
+      checkAborted();
       return {
         blob: new Blob([pdfBytes as any], { type: 'application/pdf' }),
         fileName: `${baseName}.pdf`,
@@ -453,11 +517,13 @@ export async function executeFileConversion(
 
     if (['png', 'jpg', 'webp'].includes(targetFormat)) {
       updateProgress(45, `Recoding pixel stream to ${targetFormat.toUpperCase()}...`);
+      checkAborted();
       const targetBlob = await convertImageFormat(
         file,
         targetFormat as 'png' | 'jpg' | 'webp',
         options?.quality ?? 0.92
       );
+      checkAborted();
       return {
         blob: targetBlob,
         fileName: `${baseName}.${targetFormat}`,
@@ -468,11 +534,15 @@ export async function executeFileConversion(
 
   // 7. Text / Markdown / HTML Conversions
   if (['txt', 'md', 'html'].includes(sourceFormat)) {
+    checkAborted();
     const rawText = await file.text();
+    checkAborted();
 
     if (targetFormat === 'pdf') {
       updateProgress(60, 'Rendering text lines to PDF document...');
+      checkAborted();
       const pdfBytes = await convertTextOrDocxToPdf(baseName, rawText);
+      checkAborted();
       return {
         blob: new Blob([pdfBytes as any], { type: 'application/pdf' }),
         fileName: `${baseName}.pdf`,
@@ -577,10 +647,13 @@ export async function executeFileConversion(
 
   // 8. Fallback: If OCR requested or scanned document conversion
   if (targetFormat === 'txt' && ['png', 'jpg', 'webp'].includes(sourceFormat)) {
+    checkAborted();
     updateProgress(30, 'Performing Optical Character Recognition (OCR)...');
     const ocrResult = await performOcr(file, options?.ocrLanguage || 'eng', (status, pct) => {
+      checkAborted();
       updateProgress(30 + Math.floor(pct * 0.6), `OCR: ${status}`);
     });
+    checkAborted();
     return {
       blob: new Blob([ocrResult.text], { type: 'text/plain;charset=utf-8' }),
       fileName: `${baseName}_ocr.txt`,

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { 
-  Settings, 
-  ShieldCheck, 
-  HardDrive, 
-  Database, 
-  Download, 
-  Upload, 
-  Trash2, 
-  Cpu, 
-  Sparkles, 
+import {
+  Settings,
+  ShieldCheck,
+  HardDrive,
+  Database,
+  Download,
+  Upload,
+  Trash2,
+  Cpu,
+  Sparkles,
   Lock
 } from 'lucide-react';
 import { formatFileSize } from '../../services/formatDetector';
@@ -130,11 +130,10 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  active 
-                    ? 'glass-btn-primary shadow-md shadow-[#8B7CFF]/20 glow-purple' 
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${active
+                    ? 'glass-btn-primary shadow-md shadow-[#8B7CFF]/20 glow-purple'
                     : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
-                }`}
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>

@@ -46,7 +46,7 @@ export const AutonomousWorkspace: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedFieldKey, setSelectedFieldKey] = useState<string | null>('total');
   const [rejectionReason, setRejectionReason] = useState('');
-  
+
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(() => autonomousService.searchDocuments(''));
@@ -183,33 +183,30 @@ export const AutonomousWorkspace: React.FC = () => {
           <div className="glass-card p-1.5 rounded-2xl border-white/10 flex items-center gap-1">
             <button
               onClick={() => setMode('local')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                mode === 'local'
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${mode === 'local'
                   ? 'bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 shadow-lg shadow-emerald-500/20'
                   : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
-              }`}
+                }`}
             >
               <Cpu className="w-3.5 h-3.5" />
               <span>Private Local</span>
             </button>
             <button
               onClick={() => setMode('hybrid')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                mode === 'hybrid'
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${mode === 'hybrid'
                   ? 'bg-[#8B7CFF]/25 border border-[#8B7CFF]/40 text-[#F4F5FF] shadow-lg shadow-[#8B7CFF]/20 glow-purple'
                   : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
-              }`}
+                }`}
             >
               <Layers className="w-3.5 h-3.5" />
               <span>Hybrid Mode</span>
             </button>
             <button
               onClick={() => setMode('cloud')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                mode === 'cloud'
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${mode === 'cloud'
                   ? 'bg-[#42D6E8]/25 border border-[#42D6E8]/40 text-[#42D6E8] shadow-lg shadow-[#42D6E8]/20'
                   : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
-              }`}
+                }`}
             >
               <Building2 className="w-3.5 h-3.5" />
               <span>Org Cloud</span>
@@ -221,11 +218,10 @@ export const AutonomousWorkspace: React.FC = () => {
         <div className="max-w-7xl mx-auto flex items-center gap-2 mt-6 pt-4 border-t border-white/10 overflow-x-auto">
           <button
             onClick={() => setSubTab('agent')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              subTab === 'agent'
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'agent'
                 ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
                 : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
-            }`}
+              }`}
           >
             <Play className="w-3.5 h-3.5" />
             <span>Autonomous Execution &amp; Plan DAG</span>
@@ -233,11 +229,10 @@ export const AutonomousWorkspace: React.FC = () => {
 
           <button
             onClick={() => setSubTab('radar')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              subTab === 'radar'
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'radar'
                 ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
                 : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
-            }`}
+              }`}
           >
             <Scale className="w-3.5 h-3.5" />
             <span>Cross-Document &amp; Contradiction Radar</span>
@@ -245,11 +240,10 @@ export const AutonomousWorkspace: React.FC = () => {
 
           <button
             onClick={() => setSubTab('graph')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              subTab === 'graph'
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'graph'
                 ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
                 : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
-            }`}
+              }`}
           >
             <Share2 className="w-3.5 h-3.5" />
             <span>Evidence Graph &amp; Provenance</span>
@@ -257,11 +251,10 @@ export const AutonomousWorkspace: React.FC = () => {
 
           <button
             onClick={() => setSubTab('search')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              subTab === 'search'
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'search'
                 ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
                 : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
-            }`}
+              }`}
           >
             <Search className="w-3.5 h-3.5" />
             <span>Semantic Document Search</span>
@@ -291,11 +284,10 @@ export const AutonomousWorkspace: React.FC = () => {
                     <button
                       key={p.id}
                       onClick={() => handleSelectPreset(p.id)}
-                      className={`px-3 py-1 rounded-xl text-xs font-medium border transition-all ${
-                        selectedPreset === p.id
+                      className={`px-3 py-1 rounded-xl text-xs font-medium border transition-all ${selectedPreset === p.id
                           ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border-[#8B7CFF]/40 shadow-sm'
                           : 'glass-card text-[#9BA3BD] border-white/10 hover:text-[#F4F5FF]'
-                      }`}
+                        }`}
                     >
                       {p.name.split(' ')[0]} Intelligence
                     </button>
@@ -342,11 +334,10 @@ export const AutonomousWorkspace: React.FC = () => {
                   <button
                     onClick={handleStartPlan}
                     disabled={isRunning}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-bold text-white shadow-lg transition-all ${
-                      isRunning
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-bold text-white shadow-lg transition-all ${isRunning
                         ? 'bg-slate-800 cursor-not-allowed text-slate-500'
                         : 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 shadow-indigo-900/30'
-                    }`}
+                      }`}
                   >
                     {isRunning ? (
                       <>
@@ -371,15 +362,14 @@ export const AutonomousWorkspace: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                          activeJob.status === 'completed'
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${activeJob.status === 'completed'
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                             : activeJob.status === 'awaiting_approval'
-                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                            : activeJob.status === 'running'
-                            ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
-                            : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                        }`}
+                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                              : activeJob.status === 'running'
+                                ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                                : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                          }`}
                       >
                         {activeJob.status.toUpperCase()}
                       </span>
@@ -405,17 +395,16 @@ export const AutonomousWorkspace: React.FC = () => {
                   {activeJob.plan.nodes.map((node, idx) => (
                     <div
                       key={node.id}
-                      className={`p-4 rounded-2xl border transition-all ${
-                        node.status === 'completed'
+                      className={`p-4 rounded-2xl border transition-all ${node.status === 'completed'
                           ? 'bg-emerald-950/20 border-emerald-500/30'
                           : node.status === 'waiting_approval'
-                          ? 'bg-amber-950/30 border-amber-500/50 shadow-lg shadow-amber-950/20'
-                          : node.status === 'running'
-                          ? 'bg-indigo-950/30 border-indigo-500/50'
-                          : node.status === 'failed'
-                          ? 'bg-rose-950/20 border-rose-500/40'
-                          : 'bg-slate-950/50 border-slate-800'
-                      }`}
+                            ? 'bg-amber-950/30 border-amber-500/50 shadow-lg shadow-amber-950/20'
+                            : node.status === 'running'
+                              ? 'bg-indigo-950/30 border-indigo-500/50'
+                              : node.status === 'failed'
+                                ? 'bg-rose-950/20 border-rose-500/40'
+                                : 'bg-slate-950/50 border-slate-800'
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5">
@@ -519,19 +508,17 @@ export const AutonomousWorkspace: React.FC = () => {
                               <tr
                                 key={key}
                                 onClick={() => setSelectedFieldKey(key)}
-                                className={`cursor-pointer transition-colors ${
-                                  selectedFieldKey === key ? 'bg-indigo-950/40' : 'hover:bg-slate-900/40'
-                                }`}
+                                className={`cursor-pointer transition-colors ${selectedFieldKey === key ? 'bg-indigo-950/40' : 'hover:bg-slate-900/40'
+                                  }`}
                               >
                                 <td className="p-3 font-semibold text-slate-300">{field.fieldName}</td>
                                 <td className="p-3 font-mono text-emerald-300">{String(field.value)}</td>
                                 <td className="p-3">
                                   <span
-                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                      field.status === 'confirmed'
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${field.status === 'confirmed'
                                         ? 'bg-emerald-500/20 text-emerald-400'
                                         : 'bg-amber-500/20 text-amber-400'
-                                    }`}
+                                      }`}
                                   >
                                     {field.status.toUpperCase()}
                                   </span>
@@ -754,15 +741,14 @@ export const AutonomousWorkspace: React.FC = () => {
                 {graphData.nodes.map((node) => (
                   <div
                     key={node.id}
-                    className={`p-3.5 rounded-2xl border transition-all ${
-                      node.type === 'document'
+                    className={`p-3.5 rounded-2xl border transition-all ${node.type === 'document'
                         ? 'bg-blue-950/20 border-blue-500/40 text-blue-300'
                         : node.type === 'entity'
-                        ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300'
-                        : node.type === 'contradiction'
-                        ? 'bg-rose-950/20 border-rose-500/40 text-rose-300'
-                        : 'bg-purple-950/20 border-purple-500/40 text-purple-300'
-                    }`}
+                          ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300'
+                          : node.type === 'contradiction'
+                            ? 'bg-rose-950/20 border-rose-500/40 text-rose-300'
+                            : 'bg-purple-950/20 border-purple-500/40 text-purple-300'
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[10px] font-bold uppercase tracking-wider opacity-75">

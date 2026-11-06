@@ -111,5 +111,32 @@ describe('Spreadsheet Formula Engine', () => {
     expect(evaluateCellFormula('=10/0', testGrid)).toBe('#DIV/0!');
     expect(evaluateCellFormula('=UNKNOWN_FUNC(A1)', testGrid)).toBe('#NAME?');
   });
+
+  it('preserves formulas and number formatting across parse and export round trips', async () => {
+    const { parseSpreadsheetFile } = await import('../services/sheetService');
+    const inputGrid: (string | number)[][] = [
+      ['Product', 'Price', 'Tax Rate', 'Total'],
+      ['Widget', 100, 0.2, '=B2*(1+C2)'],
+    ];
+
+    const blob = exportMultiSheetWorkbookToBlob(
+      { Sheet1: inputGrid },
+      ['Sheet1'],
+      {
+        merges: { Sheet1: [{ s: { r: 0, c: 0 }, e: { r: 0, c: 0 } }] },
+        cellFormats: { Sheet1: { C2: '0.0%' } },
+      }
+    );
+
+    const file = new File([blob], 'test_formulas.xlsx', {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    const parsed = await parseSpreadsheetFile(file);
+    expect(parsed.sheetNames).toContain('Sheet1');
+    expect(parsed.data[1][3]).toBe('=B2*(1+C2)');
+    expect(parsed.formulas?.Sheet1?.D2).toBe('=B2*(1+C2)');
+    expect(parsed.cellFormats?.Sheet1?.C2).toBe('0.0%');
+  });
 });
 

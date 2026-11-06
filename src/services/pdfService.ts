@@ -385,6 +385,29 @@ export async function applyPdfModifications(
   const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+  const timesFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+  const timesBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+  const timesItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+  const courierFont = await pdfDoc.embedFont(StandardFonts.Courier);
+  const courierBold = await pdfDoc.embedFont(StandardFonts.CourierBold);
+  const courierOblique = await pdfDoc.embedFont(StandardFonts.CourierOblique);
+
+  // Helper to pick font
+  const selectFont = (family?: string, weight?: string, style?: string) => {
+    if (family === 'TimesRoman') {
+      if (weight === 'bold') return timesBold;
+      if (style === 'italic') return timesItalic;
+      return timesFont;
+    }
+    if (family === 'Courier') {
+      if (weight === 'bold') return courierBold;
+      if (style === 'italic') return courierOblique;
+      return courierFont;
+    }
+    if (weight === 'bold') return boldFont;
+    if (style === 'italic') return italicFont;
+    return helveticaFont;
+  };
 
   // 1. Apply direct existing text edits (Module 4A: Genuine in-place text editing)
   if (options?.textEdits && options.textEdits.length > 0) {
@@ -392,23 +415,37 @@ export async function applyPdfModifications(
       if (edit.pageIndex < 0 || edit.pageIndex >= pages.length) continue;
       const page = pages[edit.pageIndex];
 
-      // Opaque background rectangle completely wiping original text
+      const isRedact = edit.isRedaction || false;
+
+      // Opaque background rectangle wiping original text (white for edit/delete, black for redact)
       page.drawRectangle({
         x: Math.max(0, edit.pdfX - 2),
         y: Math.max(0, edit.pdfY - 2),
         width: Math.max(10, edit.width + 4),
         height: Math.max(10, edit.height + 4),
-        color: rgb(1, 1, 1),
+        color: isRedact ? rgb(0, 0, 0) : rgb(1, 1, 1),
         opacity: 1.0,
       });
 
       // Render replacement text
-      if (!edit.isDeleted && edit.newText && edit.newText.trim().length > 0) {
-        const chosenFont = edit.fontWeight === 'bold' ? boldFont : (edit.fontStyle === 'italic' ? italicFont : helveticaFont);
+      if (!edit.isDeleted && !isRedact && edit.newText && edit.newText.trim().length > 0) {
+        const chosenFont = selectFont(edit.fontFamily, edit.fontWeight, edit.fontStyle);
+        const fontSize = edit.fontSize || 12;
+        let drawX = edit.pdfX;
+        
+        if (edit.textAlign === 'center' || edit.textAlign === 'right') {
+          const textWidth = chosenFont.widthOfTextAtSize(edit.newText, fontSize);
+          if (edit.textAlign === 'center') {
+            drawX = edit.pdfX + Math.max(0, (edit.width - textWidth) / 2);
+          } else if (edit.textAlign === 'right') {
+            drawX = edit.pdfX + Math.max(0, edit.width - textWidth);
+          }
+        }
+
         page.drawText(edit.newText, {
-          x: edit.pdfX,
+          x: drawX,
           y: edit.pdfY,
-          size: edit.fontSize || 12,
+          size: fontSize,
           font: chosenFont,
           color: hexToRgb(edit.fontColor || '#000000'),
           opacity: 1.0,

@@ -8,6 +8,9 @@ export interface ParsedSpreadsheet {
   data: (string | number)[][];
   rowCount: number;
   colCount: number;
+  formulas?: Record<string, Record<string, string>>;
+  cellFormats?: Record<string, Record<string, string>>;
+  merges?: Record<string, XLSX.Range[]>;
 }
 
 const MAX_SPREADSHEET_FILE_SIZE = 25 * 1024 * 1024; // 25 MB safety limit
@@ -46,10 +49,12 @@ export async function parseSpreadsheetFile(file: File): Promise<ParsedSpreadshee
 
   const arrayBuffer = await file.arrayBuffer();
   
-  // Parse with safe options preventing prototype pollution & arbitrary code execution
+  // Parse with options preserving formulas, number formats, and styles
   const workbook = XLSX.read(arrayBuffer, { 
     type: 'array',
-    cellFormula: false, // Do not evaluate untrusted macros/formulas from file
+    cellFormula: true,
+    cellNF: true,
+    cellStyles: true,
     cellHTML: false,
     dense: false
   });
@@ -60,10 +65,17 @@ export async function parseSpreadsheetFile(file: File): Promise<ParsedSpreadshee
   }
 
   const sheets: Record<string, (string | number)[][]> = {};
+  const allFormulas: Record<string, Record<string, string>> = {};
+  const allFormats: Record<string, Record<string, string>> = {};
+  const allMerges: Record<string, XLSX.Range[]> = {};
 
   for (const sName of sheetNames) {
     const worksheet = workbook.Sheets[sName];
     if (!worksheet) continue;
+
+    if (worksheet['!merges']) {
+      allMerges[sName] = worksheet['!merges'];
+    }
 
     // Convert to 2D array of values
     const rawData: (string | number)[][] = XLSX.utils.sheet_to_json(worksheet, {
@@ -93,7 +105,34 @@ export async function parseSpreadsheetFile(file: File): Promise<ParsedSpreadshee
       }
       normalizedData.push(normalizedRow);
     }
+
+    // Preserve live cell formulas and cell formatting strings
+    const sheetFormulas: Record<string, string> = {};
+    const sheetFormats: Record<string, string> = {};
+
+    for (const cellAddress of Object.keys(worksheet)) {
+      if (cellAddress.startsWith('!')) continue;
+      const cell = worksheet[cellAddress];
+      if (!cell || typeof cell !== 'object') continue;
+
+      if (cell.f) {
+        const formulaStr = cell.f.startsWith('=') ? cell.f : `=${cell.f}`;
+        sheetFormulas[cellAddress] = formulaStr;
+        try {
+          const decoded = XLSX.utils.decode_cell(cellAddress);
+          if (decoded.r < minRows && decoded.c < maxCols && normalizedData[decoded.r]) {
+            normalizedData[decoded.r][decoded.c] = formulaStr;
+          }
+        } catch {}
+      }
+      if (cell.z) {
+        sheetFormats[cellAddress] = cell.z;
+      }
+    }
+
     sheets[sName] = normalizedData;
+    allFormulas[sName] = sheetFormulas;
+    allFormats[sName] = sheetFormats;
   }
 
   const firstSheetName = sheetNames[0] || 'Sheet1';
@@ -106,6 +145,9 @@ export async function parseSpreadsheetFile(file: File): Promise<ParsedSpreadshee
     data: firstData,
     rowCount: firstData.length,
     colCount: firstData[0]?.length || 8,
+    formulas: allFormulas,
+    cellFormats: allFormats,
+    merges: allMerges,
   };
 }
 
@@ -114,7 +156,11 @@ export async function parseSpreadsheetFile(file: File): Promise<ParsedSpreadshee
  */
 export function exportMultiSheetWorkbookToBlob(
   sheets: Record<string, (string | number)[][]>,
-  sheetOrder?: string[]
+  sheetOrder?: string[],
+  options?: {
+    merges?: Record<string, XLSX.Range[]>;
+    cellFormats?: Record<string, Record<string, string>>;
+  }
 ): Blob {
   const wb = XLSX.utils.book_new();
   const names = sheetOrder && sheetOrder.length > 0 ? sheetOrder : Object.keys(sheets);
@@ -123,6 +169,52 @@ export function exportMultiSheetWorkbookToBlob(
     if (!sheetData) continue;
     const cleanData = sanitizeWorkbookData(sheetData);
     const ws = XLSX.utils.aoa_to_sheet(cleanData);
+
+    if (options?.merges?.[name]) {
+      ws['!merges'] = options.merges[name];
+    }
+
+    // Compute automatic column widths so columns are never cramped
+    const colWidths: { wch: number }[] = [];
+    const maxCols = Math.max(0, ...cleanData.map((r) => Array.isArray(r) ? r.length : 0));
+    for (let c = 0; c < maxCols; c++) {
+      let maxLen = 10;
+      for (let r = 0; r < Math.min(cleanData.length, 100); r++) {
+        const val = cleanData[r]?.[c];
+        if (val !== undefined && val !== null) {
+          const s = String(val);
+          if (s.length > maxLen) maxLen = Math.min(s.length + 3, 50);
+        }
+      }
+      colWidths.push({ wch: maxLen });
+    }
+    ws['!cols'] = colWidths;
+
+    // Enrich cells with real Excel formulas and pre-calculated cached values
+    for (let r = 0; r < cleanData.length; r++) {
+      if (!Array.isArray(cleanData[r])) continue;
+      for (let c = 0; c < cleanData[r].length; c++) {
+        const val = cleanData[r][c];
+        if (typeof val === 'string' && val.startsWith('=')) {
+          const cellRef = XLSX.utils.encode_cell({ r, c });
+          if (ws[cellRef]) {
+            const computed = evaluateCellFormula(val, cleanData);
+            ws[cellRef].f = val.substring(1);
+            ws[cellRef].v = typeof computed === 'number' ? computed : String(computed);
+            ws[cellRef].t = typeof computed === 'number' ? 'n' : 's';
+          }
+        }
+      }
+    }
+
+    if (options?.cellFormats?.[name]) {
+      for (const [cellRef, fmt] of Object.entries(options.cellFormats[name])) {
+        if (ws[cellRef]) {
+          ws[cellRef].z = fmt;
+        }
+      }
+    }
+
     // Excel sheet name limit is 31 characters
     XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31));
   }
@@ -135,13 +227,7 @@ export function exportMultiSheetWorkbookToBlob(
  * Convert 2D array back to an XLSX workbook blob
  */
 export function exportDataToXlsxBlob(data: (string | number)[][], sheetName = 'Sheet1'): Blob {
-  const cleanData = sanitizeWorkbookData(data);
-  const ws = XLSX.utils.aoa_to_sheet(cleanData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
-  
-  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  return new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  return exportMultiSheetWorkbookToBlob({ [sheetName]: data });
 }
 
 /**

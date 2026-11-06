@@ -20,7 +20,11 @@ import {
   Copy,
   Trash2,
   Edit2,
-  X
+  X,
+  User,
+  Table as TableIcon,
+  Sliders,
+  ChevronDown
 } from 'lucide-react';
 import { 
   convertSpreadsheetToPdf, 
@@ -51,13 +55,13 @@ interface SheetStudioProps {
 
 const DEFAULT_SHEET_NAME = 'Sheet1';
 const INITIAL_DEMO_DATA: (string | number)[][] = [
-  ['Category', 'Q1 Target', 'Q2 Target', 'Q3 Target', 'Q4 Target', 'Annual Total'],
-  ['SaaS Subscriptions', 14500, 18200, 22400, 28000, '=SUM(B2:E2)'],
-  ['Enterprise Licenses', 32000, 36000, 42000, 51000, '=SUM(B3:E3)'],
-  ['Professional Services', 8500, 9200, 11000, 13500, '=SUM(B4:E4)'],
-  ['Cloud Infrastructure', -4200, -4800, -5600, -6800, '=SUM(B5:E5)'],
-  ['Net Operating Income', '=B2+B3+B4+B5', '=C2+C3+C4+C5', '=D2+D3+D4+D5', '=E2+E3+E4+E5', '=SUM(F2:F5)'],
-  ['Average Quarterly Revenue', '=AVERAGE(B2:B4)', '=AVERAGE(C2:C4)', '=AVERAGE(D2:D4)', '=AVERAGE(E2:E4)', ''],
+  ['Product', 'Sales', 'Growth', 'Status'],
+  ['Analytics', 12500, '12.5%', 'Active'],
+  ['Automation', 9800, '8.7%', 'Active'],
+  ['Design Tools', 7600, '15.2%', 'Active'],
+  ['Marketing', 11200, '10.1%', 'Pending'],
+  ['Enterprise Licenses', 32000, '18.4%', 'Active'],
+  ['Cloud Storage', 14500, '9.2%', 'Active'],
 ];
 
 export const SheetStudio: React.FC<SheetStudioProps> = ({
@@ -65,22 +69,33 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
   initialData,
   onSaveToProjects,
 }) => {
-  const [sheetTitle, setSheetTitle] = useState(initialTitle || 'Financial Analysis');
+  const [sheetTitle, setSheetTitle] = useState(initialTitle || 'Excel Sheets');
 
-  // Multi-sheet State
-  const [sheetOrder, setSheetOrder] = useState<string[]>([DEFAULT_SHEET_NAME]);
-  const [activeSheetName, setActiveSheetName] = useState<string>(DEFAULT_SHEET_NAME);
+  // Multi-sheet State with Sheet1, Sheet2, Sheet3
+  const [sheetOrder, setSheetOrder] = useState<string[]>(['Sheet1', 'Sheet2', 'Sheet3']);
+  const [activeSheetName, setActiveSheetName] = useState<string>('Sheet1');
   const [sheets, setSheets] = useState<Record<string, (string | number)[][]>>({
-    [DEFAULT_SHEET_NAME]: initialData || INITIAL_DEMO_DATA,
+    Sheet1: initialData || INITIAL_DEMO_DATA,
+    Sheet2: [
+      ['Metric', 'Target', 'Actual', 'Status'],
+      ['Revenue', 100000, 105000, 'Active'],
+      ['Signups', 5000, 4850, 'Pending'],
+    ],
+    Sheet3: [
+      ['Region', 'Manager', 'Quota', 'Status'],
+      ['North America', 'Sarah C.', 150000, 'Active'],
+      ['EMEA', 'Marcus K.', 120000, 'Active'],
+    ],
   });
 
   // Cell Formatting Dictionary: sheetName -> 'r_c' -> CellStyle
   const [cellStyles, setCellStyles] = useState<Record<string, Record<string, CellStyle>>>({});
 
   // Active cell & formula input
-  const [selectedCell, setSelectedCell] = useState<{ r: number; c: number }>({ r: 0, c: 0 });
-  const [formulaInput, setFormulaInput] = useState<string>('Category');
+  const [selectedCell, setSelectedCell] = useState<{ r: number; c: number }>({ r: 1, c: 0 });
+  const [formulaInput, setFormulaInput] = useState<string>('Analytics');
   const [isExporting, setIsExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   // History for Undo/Redo
   const [history, setHistory] = useState<(string | number)[][][]>([]);
@@ -101,8 +116,8 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
 
   const gridData = sheets[activeSheetName] || [];
   const currentStyles = cellStyles[activeSheetName] || {};
-  const rowCount = gridData.length;
-  const colCount = Math.max(8, ...gridData.map((r) => r.length));
+  const rowCount = Math.max(gridData.length, 1000);
+  const colCount = Math.max(26, ...gridData.map((r) => r.length));
 
   useEffect(() => {
     if (initialTitle) setSheetTitle(initialTitle);
@@ -450,72 +465,103 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
-      {/* Top Header */}
-      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      {/* Top Header matching reference */}
+      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-5 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-3">
-          <input
-            type="text"
-            value={sheetTitle}
-            onChange={(e) => setSheetTitle(e.target.value)}
-            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-[#42D6E8] px-1 py-0.5 outline-none w-48 md:w-60 transition-colors"
-            placeholder="Spreadsheet Title"
-          />
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
-            MULTI-SHEET XLSX
-          </span>
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8B7CFF] to-[#42D6E8] flex items-center justify-center p-0.5 shadow-md shadow-[#8B7CFF]/20">
+            <div className="w-full h-full bg-[#080B18] rounded-[10px] flex items-center justify-center">
+              <TableIcon className="w-4 h-4 text-[#42D6E8]" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-bold text-[#F4F5FF] tracking-tight">Excel Sheets</h1>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                MULTI-SHEET XLSX
+              </span>
+            </div>
+            <p className="text-[11px] text-[#9BA3BD]">View, edit and analyze your spreadsheets</p>
+          </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-emerald-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
-            <Upload className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Import Workbook</span>
+        {/* Right side controls */}
+        <div className="flex items-center gap-2.5">
+          <label className="p-2 rounded-xl glass-card hover:border-emerald-400/50 text-[#9BA3BD] hover:text-[#F4F5FF] cursor-pointer transition-all" title="Import Workbook">
+            <Upload className="w-4 h-4 text-emerald-400" />
             <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportFile} />
           </label>
+
+          <button
+            onClick={() => setShowChartModal(true)}
+            className="p-2 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#9BA3BD] hover:text-[#42D6E8] cursor-pointer transition-all"
+            title="Create Interactive Chart"
+          >
+            <BarChart2 className="w-4 h-4 text-[#42D6E8]" />
+          </button>
 
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(sheetTitle, { sheets, sheetOrder, cellStyles })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
+              className="p-2 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#9BA3BD] hover:text-[#8B7CFF] cursor-pointer transition-all"
+              title="Save to Projects"
             >
-              <Save className="w-3.5 h-3.5 text-[#8B7CFF]" />
-              <span>Save</span>
+              <Save className="w-4 h-4" />
             </button>
           )}
 
-          <button
-            onClick={() => setShowChartModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
-            title="Create Interactive Chart"
-          >
-            <BarChart2 className="w-3.5 h-3.5 text-[#42D6E8]" />
-            <span>Chart</span>
-          </button>
+          {/* Export Gradient Pill Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] hover:brightness-110 text-white text-xs font-semibold shadow-lg shadow-[#8B7CFF]/30 cursor-pointer transition-all"
+            >
+              <DownloadCloud className="w-3.5 h-3.5" />
+              <span>Export</span>
+              <ChevronDown className="w-3 h-3 ml-0.5 opacity-80" />
+            </button>
 
-          <button
-            onClick={handleExportPdf}
-            disabled={isExporting}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-rose-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
-          >
-            <DownloadCloud className="w-3.5 h-3.5 text-rose-400" />
-            <span>PDF Report</span>
-          </button>
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-44 rounded-2xl glass-panel border border-white/15 p-1.5 shadow-2xl z-50 flex flex-col gap-1 text-xs">
+                <button
+                  onClick={() => {
+                    setShowExportMenu(false);
+                    handleExportXlsx();
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/10 text-left text-[#F4F5FF] transition-colors"
+                >
+                  <DownloadCloud className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Excel (.XLSX)</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setShowExportMenu(false);
+                    handleExportCsv();
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/10 text-left text-[#F4F5FF] transition-colors"
+                >
+                  <DownloadCloud className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>CSV File (.CSV)</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setShowExportMenu(false);
+                    handleExportPdf();
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/10 text-left text-[#F4F5FF] transition-colors"
+                >
+                  <DownloadCloud className="w-3.5 h-3.5 text-rose-400" />
+                  <span>PDF Document (.PDF)</span>
+                </button>
+              </div>
+            )}
+          </div>
 
-          <button
-            onClick={handleExportCsv}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-emerald-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
-          >
-            <DownloadCloud className="w-3.5 h-3.5 text-emerald-400" />
-            <span>CSV</span>
-          </button>
-
-          <button
-            onClick={handleExportXlsx}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#8B7CFF]/25 cursor-pointer"
-          >
-            <DownloadCloud className="w-3.5 h-3.5" />
-            <span>Export .XLSX</span>
-          </button>
+          {/* User Profile Avatar */}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 p-0.5 ml-1">
+            <div className="w-full h-full rounded-full bg-[#11152A] flex items-center justify-center text-xs font-bold text-white">
+              <User className="w-4 h-4 text-[#8B7CFF]" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -711,116 +757,211 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
         </div>
       )}
 
-      {/* Formula Bar */}
-      <div className="h-10 border-b border-white/10 bg-[#11152A]/50 backdrop-blur-xl px-4 flex items-center gap-3 shrink-0">
-        <div className="px-2.5 py-1 rounded-xl glass-card border-white/10 text-[#42D6E8] font-mono text-xs font-bold w-14 text-center">
-          {activeCoord}
-        </div>
+      {/* 2-Column Split Body: Left Spreadsheet Grid, Right Sheet Properties */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Column: Formula Bar & Grid */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden border-r border-white/10">
+          {/* Formula Bar */}
+          <div className="h-10 border-b border-white/10 bg-[#11152A]/50 backdrop-blur-xl px-4 flex items-center gap-3 shrink-0">
+            <div className="px-2.5 py-1 rounded-xl glass-card border-white/10 text-[#42D6E8] font-mono text-xs font-bold w-14 text-center">
+              {activeCoord}
+            </div>
 
-        <div className="flex-1 flex items-center glass-input rounded-xl px-3 py-1 gap-2">
-          <Calculator className="w-3.5 h-3.5 text-[#42D6E8] shrink-0" />
-          <input
-            type="text"
-            value={formulaInput}
-            onChange={(e) => {
-              setFormulaInput(e.target.value);
-              handleFormulaCommit(e.target.value);
-            }}
-            placeholder="Enter value or formula e.g. =SUM(B2:E2), =AVERAGE(B2:B5), =IF(B2>50, 'High', 'Low'), =VLOOKUP(...)"
-            className="w-full bg-transparent text-xs text-[#F4F5FF] outline-none font-mono placeholder:text-[#9BA3BD]/50"
-          />
-        </div>
-      </div>
+            <div className="flex-1 flex items-center glass-input rounded-xl px-3 py-1 gap-2">
+              <Calculator className="w-3.5 h-3.5 text-[#42D6E8] shrink-0" />
+              <input
+                type="text"
+                value={formulaInput}
+                onChange={(e) => {
+                  setFormulaInput(e.target.value);
+                  handleFormulaCommit(e.target.value);
+                }}
+                placeholder="Enter value or formula e.g. =SUM(B2:E2), =AVERAGE(B2:B5), =IF(B2>50, 'High', 'Low')"
+                className="w-full bg-transparent text-xs text-[#F4F5FF] outline-none font-mono placeholder:text-[#9BA3BD]/50"
+              />
+            </div>
+          </div>
 
-      {/* Spreadsheet Grid View */}
-      <div className="flex-1 overflow-auto bg-[#080B18]/50 p-2 custom-scrollbar">
-        <div className="inline-block min-w-full align-middle">
-          <table className="border-collapse table-fixed select-none text-xs">
-            <thead>
-              <tr>
-                {/* Top-left corner */}
-                <th className="w-12 h-7 bg-[#11152A]/90 border border-white/10 text-[#9BA3BD] font-mono text-[10px] text-center" />
-                {Array.from({ length: colCount }, (_, cIdx) => (
-                  <th
-                    key={cIdx}
-                    className="w-32 h-7 bg-[#11152A]/90 border border-white/10 text-[#9BA3BD] font-mono text-[11px] font-semibold text-center"
-                  >
-                    {indexToColumnLetter(cIdx)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: Math.max(rowCount, 20) }, (_, rIdx) => (
-                <tr key={rIdx}>
-                  {/* Row number */}
-                  <td className="w-12 h-7 bg-[#11152A]/70 border border-white/10 text-[#9BA3BD] font-mono text-[10px] text-center font-bold">
-                    {rIdx + 1}
-                  </td>
-
-                  {/* Row Cells */}
-                  {Array.from({ length: colCount }, (_, cIdx) => {
-                    const rawVal = gridData[rIdx]?.[cIdx];
-                    const isSelected = selectedCell.r === rIdx && selectedCell.c === cIdx;
-                    const isHeader = rIdx === 0;
-
-                    // Evaluate formula if rawVal starts with '='
-                    let displayVal = rawVal !== undefined ? rawVal : '';
-                    if (typeof rawVal === 'string' && rawVal.startsWith('=')) {
-                      displayVal = evaluateCellFormula(rawVal, gridData);
-                    }
-
-                    const cellKey = `${rIdx}_${cIdx}`;
-                    const style = currentStyles[cellKey] || {};
-                    const formatted = formatCellValue(displayVal, style.format);
-
-                    return (
-                      <td
+          {/* Spreadsheet Grid View */}
+          <div className="flex-1 overflow-auto bg-[#080B18]/50 p-2 custom-scrollbar">
+            <div className="inline-block min-w-full align-middle">
+              <table className="border-collapse table-fixed select-none text-xs">
+                <thead>
+                  <tr>
+                    {/* Top-left corner */}
+                    <th className="w-12 h-7 bg-[#11152A]/90 border border-white/10 text-[#9BA3BD] font-mono text-[10px] text-center" />
+                    {Array.from({ length: colCount }, (_, cIdx) => (
+                      <th
                         key={cIdx}
-                        onClick={() => handleSelectCell(rIdx, cIdx)}
-                        style={{
-                          fontWeight: style.bold || isHeader ? 'bold' : 'normal',
-                          fontStyle: style.italic ? 'italic' : 'normal',
-                          textDecoration: style.underline ? 'underline' : 'none',
-                          textAlign: style.align || (isHeader ? 'center' : typeof displayVal === 'number' ? 'right' : 'left'),
-                          color: style.color || undefined,
-                          backgroundColor: style.bgColor || undefined,
-                        }}
-                        className={`h-7 px-2 border border-white/10 truncate transition-colors cursor-cell ${
-                          isSelected
-                            ? 'bg-[#8B7CFF]/25 outline-2 outline-[#8B7CFF] z-10 text-[#F4F5FF]'
-                            : isHeader
-                            ? 'bg-white/[0.06] text-[#F4F5FF] font-semibold'
-                            : 'bg-transparent hover:bg-white/[0.04] text-[#F4F5FF]'
-                        }`}
+                        className="w-32 h-7 bg-[#11152A]/90 border border-white/10 text-[#9BA3BD] font-mono text-[11px] font-semibold text-center"
                       >
-                        {isSelected ? (
-                          <input
-                            type="text"
-                            value={formulaInput}
-                            onChange={(e) => {
-                              setFormulaInput(e.target.value);
-                              handleCellChange(rIdx, cIdx, e.target.value);
+                        {indexToColumnLetter(cIdx)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: Math.max(rowCount, 20) }, (_, rIdx) => (
+                    <tr key={rIdx}>
+                      {/* Row number */}
+                      <td className="w-12 h-7 bg-[#11152A]/70 border border-white/10 text-[#9BA3BD] font-mono text-[10px] text-center font-bold">
+                        {rIdx + 1}
+                      </td>
+
+                      {/* Row Cells */}
+                      {Array.from({ length: colCount }, (_, cIdx) => {
+                        const rawVal = gridData[rIdx]?.[cIdx];
+                        const isSelected = selectedCell.r === rIdx && selectedCell.c === cIdx;
+                        const isHeader = rIdx === 0;
+
+                        // Evaluate formula if rawVal starts with '='
+                        let displayVal = rawVal !== undefined ? rawVal : '';
+                        if (typeof rawVal === 'string' && rawVal.startsWith('=')) {
+                          displayVal = evaluateCellFormula(rawVal, gridData);
+                        }
+
+                        const cellKey = `${rIdx}_${cIdx}`;
+                        const style = currentStyles[cellKey] || {};
+                        const formatted = formatCellValue(displayVal, style.format);
+                        const cellStr = String(displayVal).trim();
+
+                        return (
+                          <td
+                            key={cIdx}
+                            onClick={() => handleSelectCell(rIdx, cIdx)}
+                            style={{
+                              fontWeight: style.bold || isHeader ? 'bold' : 'normal',
+                              fontStyle: style.italic ? 'italic' : 'normal',
+                              textDecoration: style.underline ? 'underline' : 'none',
+                              textAlign: style.align || (isHeader ? 'center' : typeof displayVal === 'number' ? 'right' : 'left'),
+                              color: style.color || undefined,
+                              backgroundColor: style.bgColor || undefined,
                             }}
-                            className="w-full bg-transparent outline-none text-[#F4F5FF] font-mono text-xs"
-                            autoFocus
-                          />
-                        ) : (
-                          <span
-                            className={`font-mono text-xs ${
-                              typeof displayVal === 'number' && displayVal < 0 ? 'text-rose-400' : ''
+                            className={`h-7 px-2 border border-white/10 truncate transition-colors cursor-cell ${
+                              isSelected
+                                ? 'bg-[#8B7CFF]/25 outline-2 outline-[#8B7CFF] z-10 text-[#F4F5FF]'
+                                : isHeader
+                                ? 'bg-white/[0.06] text-[#F4F5FF] font-semibold'
+                                : 'bg-transparent hover:bg-white/[0.04] text-[#F4F5FF]'
                             }`}
                           >
-                            {formatted !== '' ? String(formatted) : ''}
-                          </span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                            {isSelected ? (
+                              <input
+                                type="text"
+                                value={formulaInput}
+                                onChange={(e) => {
+                                  setFormulaInput(e.target.value);
+                                  handleCellChange(rIdx, cIdx, e.target.value);
+                                }}
+                                className="w-full bg-transparent outline-none text-[#F4F5FF] font-mono text-xs"
+                                autoFocus
+                              />
+                            ) : cellStr === 'Active' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold text-[10px] border border-emerald-500/30">
+                                Active
+                              </span>
+                            ) : cellStr === 'Pending' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-semibold text-[10px] border border-amber-500/30">
+                                Pending
+                              </span>
+                            ) : (
+                              <span
+                                className={`font-mono text-xs ${
+                                  typeof displayVal === 'number' && displayVal < 0 ? 'text-rose-400' : ''
+                                }`}
+                              >
+                                {formatted !== '' ? String(formatted) : ''}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Sheet Properties Inspector Panel */}
+        <div className="w-72 bg-[#11152A]/50 backdrop-blur-2xl p-4 flex flex-col gap-4 overflow-y-auto shrink-0 select-none custom-scrollbar">
+          <div className="flex items-center justify-between pb-2 border-b border-white/10">
+            <h3 className="text-xs font-bold text-[#F4F5FF] uppercase tracking-wider flex items-center gap-2">
+              <Sliders className="w-3.5 h-3.5 text-[#8B7CFF]" />
+              <span>Sheet Properties</span>
+            </h3>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] text-[#9BA3BD] font-medium">Name</label>
+            <input
+              type="text"
+              value={activeSheetName}
+              onChange={(e) => {
+                const newName = e.target.value;
+                if (!newName) return;
+                setSheets((prev) => {
+                  const updated = { ...prev };
+                  updated[newName] = updated[activeSheetName] || [];
+                  delete updated[activeSheetName];
+                  return updated;
+                });
+                setSheetOrder((prev) => prev.map((s) => (s === activeSheetName ? newName : s)));
+                setActiveSheetName(newName);
+              }}
+              className="w-full glass-input rounded-xl px-3 py-1.5 text-xs text-[#F4F5FF] outline-none"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] text-[#9BA3BD] font-medium">Total Rows</label>
+            <div className="w-full glass-card rounded-xl px-3 py-2 text-xs font-mono font-semibold text-[#F4F5FF] flex items-center justify-between">
+              <span>{rowCount}</span>
+              <span className="text-[10px] text-[#9BA3BD]">Virtual rows</span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] text-[#9BA3BD] font-medium">Total Columns</label>
+            <div className="w-full glass-card rounded-xl px-3 py-2 text-xs font-mono font-semibold text-[#F4F5FF] flex items-center justify-between">
+              <span>{colCount}</span>
+              <span className="text-[10px] text-[#9BA3BD]">A – Z</span>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-white/10 space-y-2">
+            <label className="text-[11px] text-[#9BA3BD] font-medium">Selected Cell Info</label>
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[#9BA3BD]">Coordinate:</span>
+                <span className="font-mono text-[#42D6E8] font-bold">{activeCoord}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#9BA3BD]">Raw Value:</span>
+                <span className="font-mono text-[#F4F5FF] truncate max-w-[120px]">
+                  {gridData[selectedCell.r]?.[selectedCell.c] !== undefined ? String(gridData[selectedCell.r][selectedCell.c]) : 'Empty'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-white/10 space-y-2 mt-auto">
+            <button
+              onClick={addRow}
+              className="w-full py-2 px-3 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5 text-[#8B7CFF]" />
+              <span>Add New Row</span>
+            </button>
+            <button
+              onClick={addColumn}
+              className="w-full py-2 px-3 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#F4F5FF] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5 text-[#42D6E8]" />
+              <span>Add New Column</span>
+            </button>
+          </div>
         </div>
       </div>
 

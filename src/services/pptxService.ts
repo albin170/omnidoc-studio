@@ -30,12 +30,70 @@ export async function extractTextFromPptxFile(file: File): Promise<string[]> {
       if (typeof DOMParser !== 'undefined') {
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xml, 'text/xml');
+
+        // Check for tables <a:tbl>
+        const tables = Array.from(xmlDoc.getElementsByTagName('a:tbl'));
+        for (const tbl of tables) {
+          const rows = Array.from(tbl.getElementsByTagName('a:tr'));
+          const tableGrid: string[][] = [];
+          for (const tr of rows) {
+            const cells = Array.from(tr.getElementsByTagName('a:tc'));
+            const rowValues = cells.map((tc) => {
+              const textNodes = Array.from(tc.getElementsByTagName('a:t'));
+              return textNodes.map((tn) => tn.textContent || '').join(' ').trim();
+            });
+            if (rowValues.some((v) => v.length > 0)) {
+              tableGrid.push(rowValues);
+            }
+          }
+          if (tableGrid.length > 0) {
+            const colCount = Math.max(...tableGrid.map((r) => r.length));
+            tableGrid.forEach((row, idx) => {
+              while (row.length < colCount) row.push('');
+              lines.push(`| ${row.join(' | ')} |`);
+              if (idx === 0) {
+                lines.push(`| ${row.map(() => '---').join(' | ')} |`);
+              }
+            });
+            lines.push('');
+          }
+        }
+
+        // Standard text runs
         const textNodes = xmlDoc.getElementsByTagName('a:t');
         for (let i = 0; i < textNodes.length; i++) {
           const text = textNodes[i].textContent?.trim();
           if (text) lines.push(text);
         }
       } else {
+        // Table regex matching for Node environments
+        const tblMatches = xml.match(/<a:tbl[\s>].*?<\/a:tbl>/gs) || [];
+        for (const tblXml of tblMatches) {
+          const rowMatches = tblXml.match(/<a:tr[\s>].*?<\/a:tr>/gs) || [];
+          const tableGrid: string[][] = [];
+          for (const trXml of rowMatches) {
+            const cellMatches = trXml.match(/<a:tc[\s>].*?<\/a:tc>/gs) || [];
+            const rowVals = cellMatches.map((tcXml) => {
+              const tMatches = Array.from(tcXml.matchAll(/<a:t[^>]*>(.*?)<\/a:t>/gs)).map((m) => m[1]);
+              return tMatches.join(' ').trim();
+            });
+            if (rowVals.some((v) => v.length > 0)) {
+              tableGrid.push(rowVals);
+            }
+          }
+          if (tableGrid.length > 0) {
+            const colCount = Math.max(...tableGrid.map((r) => r.length));
+            tableGrid.forEach((row, idx) => {
+              while (row.length < colCount) row.push('');
+              lines.push(`| ${row.join(' | ')} |`);
+              if (idx === 0) {
+                lines.push(`| ${row.map(() => '---').join(' | ')} |`);
+              }
+            });
+            lines.push('');
+          }
+        }
+
         const tMatches = Array.from(xml.matchAll(/<a:t[^>]*>(.*?)<\/a:t>/gs))
           .map((m) => m[1]?.trim())
           .filter(Boolean);
