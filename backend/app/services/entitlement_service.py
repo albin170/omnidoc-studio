@@ -218,3 +218,4 @@ async def calculate_user_entitlements(user: User, db: AsyncSession) -> Effective
         support_level=support_level,
         overrides_applied=overrides_applied
     )
+

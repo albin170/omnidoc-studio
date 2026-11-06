@@ -154,3 +154,4 @@ async def get_user_ui_configuration(
         "maintenance_mode": maintenance,
         "disabled_modules": disabled_modules
     }
+

@@ -336,3 +336,4 @@ export const PricingPage: React.FC<PricingPageProps> = ({
     </div>
   );
 };
+

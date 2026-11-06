@@ -123,3 +123,4 @@ class AdminViewSessionModel(Base):
     started_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     expires_at = Column(DateTime, nullable=False)
     ended_at = Column(DateTime, nullable=True)
+

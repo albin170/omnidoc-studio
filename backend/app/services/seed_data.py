@@ -165,3 +165,4 @@ async def seed_initial_plans_and_features(db: AsyncSession):
         db.add(default_ui)
 
     await db.commit()
+

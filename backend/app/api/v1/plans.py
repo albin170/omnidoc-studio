@@ -74,3 +74,4 @@ async def list_published_plans(db: AsyncSession = Depends(get_db)):
             features=feats
         ))
     return out
+
