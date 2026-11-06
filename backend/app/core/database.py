@@ -21,7 +21,29 @@ AsyncSessionLocal = async_sessionmaker(
 
 Base = declarative_base()
 
+_db_initialized = False
+
+async def ensure_db_ready():
+    global _db_initialized
+    if _db_initialized:
+        return
+    try:
+        import app.models # ensure models are registered with Base metadata
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        async with AsyncSessionLocal() as session:
+            try:
+                from app.services.seed_data import seed_initial_plans_and_features
+                await seed_initial_plans_and_features(session)
+            except Exception:
+                await session.rollback()
+        _db_initialized = True
+    except Exception as e:
+        import logging
+        logging.getLogger("omnidoc.db").warning(f"Database bootstrap notice: {e}")
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    await ensure_db_ready()
     async with AsyncSessionLocal() as session:
         try:
             yield session

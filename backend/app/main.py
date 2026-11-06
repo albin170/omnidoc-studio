@@ -27,11 +27,8 @@ from app.api.v1 import (
 async def lifespan(app: FastAPI):
     # Ensure tables are created and default data seeded
     try:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        from app.services.seed_data import seed_default_saas_data
-        from app.db.session import async_session_factory
-        await seed_default_saas_data(async_session_factory)
+        from app.core.database import ensure_db_ready
+        await ensure_db_ready()
     except Exception as e:
         import logging
         logging.getLogger("omnidoc.startup").warning(f"Startup initialization notice: {e}")

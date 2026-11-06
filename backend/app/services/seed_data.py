@@ -205,3 +205,6 @@ async def seed_initial_plans_and_features(db: AsyncSession):
 
     await db.commit()
 
+# Alias for backwards compatibility
+seed_default_saas_data = seed_initial_plans_and_features
+
