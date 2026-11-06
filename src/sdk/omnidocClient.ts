@@ -38,9 +38,25 @@ export class OmniDocApiClient {
   private token: string | null;
 
   constructor(config: OmniDocClientConfig = {}) {
-    const defaultUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || 'http://localhost:8000/api/v1';
+    const configuredStorageUrl = typeof localStorage !== 'undefined' ? localStorage.getItem('omnidoc_api_url') : null;
+    const defaultUrl = configuredStorageUrl || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || (
+      typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost')
+        ? `${window.location.origin}/api/v1`
+        : 'http://localhost:8000/api/v1'
+    );
     this.baseUrl = (config.baseUrl || defaultUrl).replace(/\/$/, '');
     this.token = config.token || (typeof localStorage !== 'undefined' ? localStorage.getItem('omnidoc_backend_jwt') : null);
+  }
+
+  public getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
+  public setBaseUrl(url: string) {
+    this.baseUrl = url.replace(/\/$/, '');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('omnidoc_api_url', this.baseUrl);
+    }
   }
 
   public setToken(token: string | null) {
@@ -68,10 +84,20 @@ export class OmniDocApiClient {
     return h;
   }
 
-  public async getHealth(): Promise<{ status: string; platform: string; version: string }> {
-    const res = await fetch(`${this.baseUrl.replace('/api/v1', '')}/health`);
-    if (!res.ok) throw new Error(`Health check failed: ${res.statusText}`);
-    return res.json();
+  public async getHealth(timeoutMs = 2500): Promise<{ status: string; platform: string; version: string }> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(`${this.baseUrl.replace('/api/v1', '')}/health`, {
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error(`Health check failed: ${res.statusText}`);
+      return res.json();
+    } catch (e: any) {
+      clearTimeout(timer);
+      throw e;
+    }
   }
 
   // --- Real Backend Authentication & Consent ---
@@ -104,6 +130,21 @@ export class OmniDocApiClient {
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }));
       throw new Error(err.detail || 'Authentication failed');
+    }
+    const tokenData: BackendTokenResponse = await res.json();
+    this.setToken(tokenData.access_token);
+    return tokenData;
+  }
+
+  public async adminLogin(email: string, password: string): Promise<BackendTokenResponse> {
+    const res = await fetch(`${this.baseUrl}/admin/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Administrative authentication failed');
     }
     const tokenData: BackendTokenResponse = await res.json();
     this.setToken(tokenData.access_token);
@@ -170,6 +211,202 @@ export class OmniDocApiClient {
       const err = await res.json().catch(() => ({ detail: res.statusText }));
       throw new Error(err.detail || 'Password reset failed');
     }
+    return res.json();
+  }
+
+  // --- User Portal APIs ---
+
+  public async getPublishedPlans(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/plans`);
+    if (!res.ok) throw new Error(`Failed to load plans: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getMyEntitlements(): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/users/me/entitlements`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load entitlements: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getMyUsage(): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/users/me/usage`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load usage: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getMySubscription(): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/users/me/subscription`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load subscription: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getUserUiConfig(): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/users/me/ui-config`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load UI config: ${res.statusText}`);
+    return res.json();
+  }
+
+  // --- Admin Portal APIs ---
+
+  public async getAdminTelemetry(): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/telemetry`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load telemetry: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getAdminUsers(params: { search?: string; plan?: string; status_filter?: string; skip?: number; limit?: number } = {}): Promise<any[]> {
+    const query = new URLSearchParams();
+    if (params.search) query.set('search', params.search);
+    if (params.plan) query.set('plan', params.plan);
+    if (params.status_filter) query.set('status_filter', params.status_filter);
+    if (params.skip) query.set('skip', params.skip.toString());
+    if (params.limit) query.set('limit', params.limit.toString());
+    const res = await fetch(`${this.baseUrl}/admin/users?${query.toString()}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load users: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async createAdminUser(data: any): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/users`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'User creation failed');
+    }
+    return res.json();
+  }
+
+  public async getAdminUserDetail(userId: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/users/${userId}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load user details: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async updateAdminUser(userId: string, data: any): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/users/${userId}`, {
+      method: 'PATCH',
+      headers: this.headers,
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`User update failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async suspendUser(userId: string, reason: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/users/${userId}/suspend`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) throw new Error(`User suspension failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async reactivateUser(userId: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/users/${userId}/reactivate`, {
+      method: 'POST',
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`User reactivation failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getAdminPlans(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/admin/plans`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load plans: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async createAdminPlan(data: any): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/plans`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`Plan creation failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async updateAdminPlan(planId: string, data: any): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/plans/${planId}`, {
+      method: 'PATCH',
+      headers: this.headers,
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`Plan update failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async archiveAdminPlan(planId: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/plans/${planId}/archive`, {
+      method: 'POST',
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Plan archive failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getAdminFeatures(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/admin/features`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load features: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async setUserEntitlements(userId: string, data: any): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/users/${userId}/entitlements`, {
+      method: 'PUT',
+      headers: this.headers,
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`Failed to set user entitlements: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getAdminUiConfig(): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/ui-config`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load UI config: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async updateAdminUiConfig(data: any): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/ui-config`, {
+      method: 'PATCH',
+      headers: this.headers,
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`Failed to update UI config: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async createAdminViewSession(userId: string, durationMinutes = 30): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/view-sessions`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({ target_user_id: userId, duration_minutes: durationMinutes }),
+    });
+    if (!res.ok) throw new Error(`Failed to create view session: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async exitAdminViewSession(sessionId: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/view-sessions/${sessionId}`, {
+      method: 'DELETE',
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to exit view session: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getAdminAuditLogs(params: { limit?: number; skip?: number; action?: string } = {}): Promise<any[]> {
+    const query = new URLSearchParams();
+    if (params.limit) query.set('limit', params.limit.toString());
+    if (params.skip) query.set('skip', params.skip.toString());
+    if (params.action) query.set('action', params.action);
+    const res = await fetch(`${this.baseUrl}/admin/audit-logs?${query.toString()}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load audit logs: ${res.statusText}`);
     return res.json();
   }
 

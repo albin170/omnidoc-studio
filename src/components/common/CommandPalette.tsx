@@ -16,7 +16,8 @@ import {
   X,
   FileCheck,
   Sparkles,
-  ShieldAlert
+  ShieldAlert,
+  DollarSign
 } from 'lucide-react';
 import { WorkspaceTab } from '../../types';
 
@@ -152,6 +153,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       category: 'Tools',
       icon: Settings,
       tab: 'settings',
+    },
+    {
+      id: 'tool-pricing',
+      title: 'Pricing & Subscription Plans',
+      subtitle: 'Browse tiers, features, quotas and upgrade entitlements',
+      category: 'Tools',
+      icon: DollarSign,
+      tab: 'pricing',
     },
     {
       id: 'tool-admin',

@@ -226,7 +226,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           {/* Upgrade Gradient Button (Matching Reference) */}
           <button
-            onClick={onOpenUserPanel}
+            onClick={() => setActiveTab('pricing')}
             className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] hover:from-[#9C8FFF] hover:to-[#7579F3] text-white text-xs font-bold shadow-lg shadow-[#8B7CFF]/30 transition-all cursor-pointer hover:scale-105 active:scale-95"
             title="Upgrade to Pro Plan"
           >

@@ -217,6 +217,46 @@ export async function loginWithBackend(
 }
 
 /**
+ * Dedicated Administrator Backend Login
+ * Calls /api/v1/admin/auth/login and ensures role is server-verified 'admin'
+ */
+export async function adminLoginWithBackend(
+  email: string,
+  password: string
+): Promise<SecureAuthSession> {
+  try {
+    const tokenData = await omniDocClient.adminLogin(email, password);
+    const now = Date.now();
+    const session: SecureAuthSession = {
+      isGuest: false,
+      userEmail: tokenData.email,
+      userName: tokenData.full_name || email.split('@')[0],
+      role: 'admin',
+      planTier: 'enterprise',
+      storageUsedBytes: 0,
+      isAuthenticated: true,
+      issuedAt: now,
+      expiresAt: now + 12 * 60 * 60 * 1000, // 12 hours admin token
+      jwtToken: tokenData.access_token,
+      authSource: 'backend',
+      consent: {
+        termsAccepted: true,
+        privacyAccepted: true,
+        aiConsent: true,
+        marketingConsent: false,
+      },
+    };
+
+    session.signature = await computeSessionSignature(session);
+    recordAuditLog('ADMIN_BACKEND_LOGIN_SUCCESS', session.userEmail || email, 'Administrative console login verified');
+    return session;
+  } catch (err: any) {
+    recordAuditLog('ADMIN_BACKEND_LOGIN_FAILED', email, err?.message || 'Admin authentication failed', 'warn');
+    throw err;
+  }
+}
+
+/**
  * Log out user from both backend and local session
  */
 export async function logoutUser(userEmail?: string): Promise<void> {

@@ -18,7 +18,9 @@ from app.api.v1 import (
     admin,
     developer,
     workflows,
-    simulation
+    simulation,
+    plans,
+    user_portal
 )
 
 @asynccontextmanager
@@ -62,6 +64,8 @@ app.include_router(admin.router, prefix=settings.API_V1_STR)
 app.include_router(developer.router, prefix=settings.API_V1_STR)
 app.include_router(workflows.router, prefix=settings.API_V1_STR)
 app.include_router(simulation.router, prefix=settings.API_V1_STR)
+app.include_router(plans.router, prefix=settings.API_V1_STR)
+app.include_router(user_portal.router, prefix=settings.API_V1_STR)
 
 @app.get("/health", tags=["Health"])
 async def health_check():

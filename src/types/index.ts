@@ -25,7 +25,8 @@ export type WorkspaceTab =
   | 'projects' 
   | 'settings'
   | 'admin'
-  | 'workflow';
+  | 'workflow'
+  | 'pricing';
 
 export type ProcessingMode = 'local' | 'hybrid' | 'cloud';
 

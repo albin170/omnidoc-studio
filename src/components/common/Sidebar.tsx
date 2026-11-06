@@ -27,7 +27,8 @@ import {
   Users,
   Code2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  DollarSign
 } from 'lucide-react';
 import { WorkspaceTab } from '../../types';
 import { OmniDocLogo } from './OmniDocLogo';
@@ -149,6 +150,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Projects & History',
       icon: FolderArchive,
       badge: projectCount > 0 ? `${projectCount}` : null,
+    },
+    {
+      tab: 'pricing' as WorkspaceTab,
+      label: 'Plans & Pricing',
+      icon: DollarSign,
     },
     {
       tab: 'settings' as WorkspaceTab,

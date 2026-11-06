@@ -31,6 +31,8 @@ import { TemplatesHub } from './components/templates/TemplatesHub';
 import { ProjectsManager } from './components/projects/ProjectsManager';
 import { SettingsHub } from './components/settings/SettingsHub';
 import { AdminConsole } from './components/admin/AdminConsole';
+import { PricingPage } from './components/pricing/PricingPage';
+import { omniDocClient } from './sdk/omnidocClient';
 import { Modals } from './components/common/Modals';
 import { UserPanel } from './components/user/UserPanel';
 import { AuthGateway } from './components/auth/AuthGateway';
@@ -74,6 +76,12 @@ export const App: React.FC = () => {
   const [projects, setProjects] = useState<StoredProject[]>(() => getStoredProjects());
   const [history, setHistory] = useState<ConversionHistoryItem[]>(() => getConversionHistory());
   const [jobs, setJobs] = useState<ConversionJob[]>([]);
+  const [viewAsUserSession, setViewAsUserSession] = useState<{
+    active: boolean;
+    targetUser: any;
+    sessionId: string;
+    originalAdminSession?: UserSession;
+  } | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserPanelOpen, setIsUserPanelOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -107,6 +115,33 @@ export const App: React.FC = () => {
   const [isWhatIfOpen, setIsWhatIfOpen] = useState(false);
   const [isCollabOpen, setIsCollabOpen] = useState(false);
   const [isDeveloperOpen, setIsDeveloperOpen] = useState(false);
+
+  // URL Path & Hash Route Synchronization (User Portal vs Admin Portal vs Pricing)
+  const initialAuthMode = useMemo<'signin' | 'signup' | 'admin'>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (path.includes('/admin') || hash.includes('admin')) {
+        return 'admin';
+      }
+      if (path.includes('/register') || hash.includes('register')) {
+        return 'signup';
+      }
+    }
+    return 'signin';
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      const path = window.location.pathname.toLowerCase();
+      if (hash.includes('pricing') || path.includes('/pricing')) {
+        setActiveTab('pricing');
+      } else if ((hash.includes('admin') || path.includes('/admin')) && userSession.role === 'admin') {
+        setActiveTab('admin');
+      }
+    }
+  }, [userSession.role]);
 
   // Extract current document content for AI Assistant & Revision Diff
   const currentDocumentContent = useMemo(() => {
@@ -522,6 +557,7 @@ export const App: React.FC = () => {
     projects: 'Projects & Conversion History',
     settings: 'Settings & Security',
     admin: 'Admin & Telemetry Console',
+    pricing: 'Plans & Subscription Pricing',
   };
 
   // If user is unauthenticated (first-time visitor or logged out), render the Auth Gateway!
@@ -529,6 +565,7 @@ export const App: React.FC = () => {
   if (!userSession.isAuthenticated) {
     return (
       <AuthGateway
+        initialMode={initialAuthMode}
         onAuthenticate={(session) => {
           handleUpdateSession(session);
         }}
@@ -610,6 +647,44 @@ export const App: React.FC = () => {
 
       {/* Full-Size Dynamic Workspace Content Area */}
       <main className="flex-1 h-full flex flex-col overflow-hidden relative z-10 bg-transparent">
+        {/* Admin View-As-User Persistent Banner */}
+        {viewAsUserSession?.active && (
+          <div className="w-full bg-amber-500/20 border-b border-amber-500/40 px-4 py-2.5 flex items-center justify-between text-xs text-amber-200 z-50 backdrop-blur-md shrink-0 shadow-lg">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold uppercase tracking-wider bg-amber-500 text-black px-2 py-0.5 rounded text-[10px]">
+                Admin View Mode
+              </span>
+              <span>
+                Viewing as <strong>{viewAsUserSession.targetUser?.full_name || viewAsUserSession.targetUser?.email}</strong> ({viewAsUserSession.targetUser?.email})
+              </span>
+              <span className="text-amber-300/80 border border-amber-500/30 px-1.5 py-0.5 rounded text-[10px]">
+                Plan: {(viewAsUserSession.targetUser?.plan_tier || viewAsUserSession.targetUser?.plan || 'free').toUpperCase()}
+              </span>
+              <span className="text-amber-400 font-semibold italic text-[11px]">
+                (Read-Only Simulation)
+              </span>
+            </div>
+            <button
+              onClick={async () => {
+                try {
+                  await omniDocClient.exitAdminViewSession(viewAsUserSession.sessionId);
+                } catch (e) {
+                  console.error(e);
+                }
+                if (viewAsUserSession.originalAdminSession) {
+                  handleUpdateSession(viewAsUserSession.originalAdminSession);
+                }
+                setViewAsUserSession(null);
+                setActiveTab('admin');
+                addToast('info', 'Exited View Mode', 'Returned to primary Administrator console.');
+              }}
+              className="px-3 py-1 rounded bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors cursor-pointer"
+            >
+              Exit View Mode
+            </button>
+          </div>
+        )}
+
         {/* User-Friendly Studio Navigation & Quick Switcher Breadcrumb (shown in active studios) */}
         {activeTab !== 'dashboard' && (
           <div className="h-12 border-b border-white/10 bg-[#11152A]/75 backdrop-blur-2xl px-4 sm:px-6 flex items-center justify-between shrink-0 select-none z-10">
@@ -656,6 +731,7 @@ export const App: React.FC = () => {
                 <option value="ocr" className="bg-[#11152A] text-white">OCR Scanner</option>
                 <option value="templates" className="bg-[#11152A] text-white">Templates</option>
                 <option value="projects" className="bg-[#11152A] text-white">Projects</option>
+                <option value="pricing" className="bg-[#11152A] text-white">Pricing &amp; Plans</option>
                 <option value="settings" className="bg-[#11152A] text-white">Settings &amp; Environment</option>
                 {userSession.role === 'admin' && (
                   <option value="admin" className="bg-[#11152A] text-white">Admin Console</option>
@@ -812,6 +888,20 @@ export const App: React.FC = () => {
           />
         )}
 
+        {activeTab === 'pricing' && (
+          <PricingPage
+            userSession={userSession}
+            onBackToDashboard={() => setActiveTab('dashboard')}
+            onSelectPlan={(tier) => {
+              handleUpdateSession({
+                ...userSession,
+                planTier: tier
+              });
+              addToast('success', 'Plan Selected', `Switched to ${tier.toUpperCase()} tier!`);
+            }}
+          />
+        )}
+
         {activeTab === 'settings' && (
           <SettingsHub
             totalStorageBytes={totalStorageBytes}
@@ -825,6 +915,16 @@ export const App: React.FC = () => {
             userSession={userSession}
             onUpdateSession={handleUpdateSession}
             totalStorageBytes={totalStorageBytes}
+            onStartViewAsUser={(targetUser, sessionId) => {
+              setViewAsUserSession({
+                active: true,
+                targetUser,
+                sessionId,
+                originalAdminSession: userSession
+              });
+              setActiveTab('dashboard');
+              addToast('info', 'Viewing As User', `Now simulating workspace as ${targetUser.email}.`);
+            }}
           />
         )}
       </main>
