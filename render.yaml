@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: omnidoc-fastapi-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: "pip install -r requirements.txt && alembic upgrade head"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "https://omnidoc-studio-jet.vercel.app,http://localhost:5173"
+      - key: DATABASE_URL
+        value: "sqlite+aiosqlite:///./omnidoc_studio.db"

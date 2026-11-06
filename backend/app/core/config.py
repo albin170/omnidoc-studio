@@ -38,6 +38,17 @@ class Settings(BaseSettings):
         "https://omnidoc-studio-jet.vercel.app"
     ]
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        raw_cors = os.getenv("CORS_ORIGINS")
+        if raw_cors:
+            parsed = [o.strip() for o in raw_cors.split(",") if o.strip()]
+            if parsed:
+                # Merge custom origins with default origins, avoiding duplicates
+                for o in parsed:
+                    if o not in self.CORS_ORIGINS:
+                        self.CORS_ORIGINS.append(o)
+
     class Config:
         env_file = ".env"
         extra = "allow"
