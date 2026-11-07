@@ -191,31 +191,15 @@ async def record_admin_audit(
 async def admin_login(req: AdminLoginRequest, db: AsyncSession = Depends(get_db)):
     """
     Dedicated Administrator Login. Verifies role == 'admin' before issuing token.
+    Enforces strict bcrypt password verification with no plaintext backdoors.
     """
     email_clean = req.email.lower().strip()
     user = await db.scalar(select(User).where(User.email == email_clean))
 
-    # If user not found, trigger seed in case this is a fresh serverless instance
-    if not user:
-        from app.services.seed_data import seed_initial_plans_and_features
-        await seed_initial_plans_and_features(db)
-        user = await db.scalar(select(User).where(User.email == email_clean))
-
-    valid_pass = False
-    if user:
-        if verify_password(req.password, user.hashed_password):
-            valid_pass = True
-        elif user.email in ("admin@omnidoc.io", "albinbinu170@gmail.com") and req.password in (
-            "AdminPass2026!", "password123", "admin123", "admin", "Admin123!", "AdminPass2026"
-        ):
-            valid_pass = True
-            user.hashed_password = get_password_hash(req.password)
-            await db.commit()
-
-    if not user or not valid_pass:
+    if not user or not verify_password(req.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid administrative credentials. Use admin@omnidoc.io / AdminPass2026!"
+            detail="Invalid administrative credentials"
         )
     
     if user.role != "admin":
@@ -395,6 +379,14 @@ async def create_user(
     if existing:
         raise HTTPException(status_code=400, detail="User with this email already exists")
 
+    # Enforce role creation restrictions: only superadmins can provision admin accounts
+    if req.role == "admin" and admin.role != "superadmin":
+        if admin.email != os.getenv("INITIAL_ADMIN_EMAIL", "admin@omnidoc.io"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Privilege escalation denied: Provisioning administrator accounts requires superadmin privileges"
+            )
+
     org = Organization(
         name=req.org_name or f"{req.full_name}'s Workspace",
         slug=f"org-{uuid.uuid4().hex[:8]}",
@@ -403,15 +395,17 @@ async def create_user(
     db.add(org)
     await db.flush()
 
+    # Admin-created users start with pending first-login consent to preserve audit integrity
     new_user = User(
         email=req.email.lower().strip(),
         hashed_password=get_password_hash(req.password),
         full_name=req.full_name,
         role=req.role,
         is_active=True,
-        terms_accepted=True,
-        privacy_accepted=True,
-        ai_consent=True,
+        terms_accepted=False,
+        privacy_accepted=False,
+        ai_consent=False,
+        marketing_consent=False,
         org_id=org.id
     )
     db.add(new_user)
@@ -484,6 +478,14 @@ async def update_user(
 
     if user.id == admin.id and req.role and req.role != "admin":
         raise HTTPException(status_code=400, detail="Administrators cannot demote their own account")
+
+    # Enforce role promotion restriction: only superadmins can elevate users to admin
+    if req.role == "admin" and user.role != "admin" and admin.role != "superadmin":
+        if admin.email != os.getenv("INITIAL_ADMIN_EMAIL", "admin@omnidoc.io"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Privilege escalation denied: Only superadministrators can promote users to admin"
+            )
 
     prev = {"full_name": user.full_name, "role": user.role, "is_active": user.is_active}
 

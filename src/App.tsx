@@ -672,11 +672,14 @@ export const App: React.FC = () => {
                   console.error(e);
                 }
                 if (viewAsUserSession.originalAdminSession) {
+                  if (viewAsUserSession.originalAdminSession.jwtToken) {
+                    omniDocClient.setToken(viewAsUserSession.originalAdminSession.jwtToken);
+                  }
                   handleUpdateSession(viewAsUserSession.originalAdminSession);
                 }
                 setViewAsUserSession(null);
                 setActiveTab('admin');
-                addToast('info', 'Exited View Mode', 'Returned to primary Administrator console.');
+                addToast('info', 'Exited View Mode', 'Returned to primary Administrator console with full administrative rights.');
               }}
               className="px-3 py-1 rounded bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors cursor-pointer"
             >
@@ -892,13 +895,6 @@ export const App: React.FC = () => {
           <PricingPage
             userSession={userSession}
             onBackToDashboard={() => setActiveTab('dashboard')}
-            onSelectPlan={(tier) => {
-              handleUpdateSession({
-                ...userSession,
-                planTier: tier
-              });
-              addToast('success', 'Plan Selected', `Switched to ${tier.toUpperCase()} tier!`);
-            }}
           />
         )}
 
@@ -915,7 +911,23 @@ export const App: React.FC = () => {
             userSession={userSession}
             onUpdateSession={handleUpdateSession}
             totalStorageBytes={totalStorageBytes}
-            onStartViewAsUser={(targetUser, sessionId) => {
+            onStartViewAsUser={(targetUser, sessionId, scopedToken) => {
+              if (scopedToken) {
+                omniDocClient.setToken(scopedToken);
+              }
+              const viewSession: UserSession = {
+                isGuest: false,
+                userEmail: targetUser.email,
+                userName: targetUser.full_name || targetUser.email.split('@')[0],
+                role: targetUser.role || 'user',
+                planTier: targetUser.plan_tier || targetUser.plan || 'free',
+                isAuthenticated: true,
+                storageUsedBytes: targetUser.storage_used_bytes || 0,
+                jwtToken: scopedToken || userSession.jwtToken,
+                authSource: 'backend'
+              };
+              handleUpdateSession(viewSession);
+
               setViewAsUserSession({
                 active: true,
                 targetUser,
@@ -923,7 +935,7 @@ export const App: React.FC = () => {
                 originalAdminSession: userSession
               });
               setActiveTab('dashboard');
-              addToast('info', 'Viewing As User', `Now simulating workspace as ${targetUser.email}.`);
+              addToast('info', 'Viewing As User', `Workspace active context switched to ${targetUser.email} (Scoped JWT active).`);
             }}
           />
         )}

@@ -1,3 +1,4 @@
+import os
 import json
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -171,12 +172,14 @@ async def seed_initial_plans_and_features(db: AsyncSession):
         db.add(default_org)
         await db.flush()
 
-    # Seed Default Lead Administrator (admin@omnidoc.io / AdminPass2026!)
-    admin_user = await db.scalar(select(User).where(User.email == "admin@omnidoc.io"))
+    # Provision Initial Administrator (configured via environment or high-entropy secure default)
+    admin_email = os.getenv("INITIAL_ADMIN_EMAIL", "admin@omnidoc.io").lower().strip()
+    admin_password = os.getenv("INITIAL_ADMIN_PASSWORD", "OmniDoc#Admin9812!xK")
+    admin_user = await db.scalar(select(User).where(User.email == admin_email))
     if not admin_user:
         admin_user = User(
-            email="admin@omnidoc.io",
-            hashed_password=get_password_hash("AdminPass2026!"),
+            email=admin_email,
+            hashed_password=get_password_hash(admin_password),
             full_name="Lead Platform Administrator",
             role="admin",
             org_id=default_org.id,
@@ -186,22 +189,38 @@ async def seed_initial_plans_and_features(db: AsyncSession):
             ai_consent=True
         )
         db.add(admin_user)
+    else:
+        # Enforce credential rotation for exposed accounts
+        admin_user.hashed_password = get_password_hash(admin_password)
 
-    # Seed Default Studio User (albinbinu170@gmail.com)
-    demo_user = await db.scalar(select(User).where(User.email == "albinbinu170@gmail.com"))
-    if not demo_user:
-        demo_user = User(
-            email="albinbinu170@gmail.com",
-            hashed_password=get_password_hash("password123"),
-            full_name="Albin Binu",
-            role="admin",
-            org_id=default_org.id,
+    # Provision Standard Customer User for sandbox verification
+    user_email = os.getenv("INITIAL_USER_EMAIL", "user@omnidoc.io").lower().strip()
+    user_password = os.getenv("INITIAL_USER_PASSWORD", "OmniDoc#User2026$vP")
+    
+    # Customer organization
+    user_org = await db.scalar(select(Organization).where(Organization.slug == "user-default-workspace"))
+    if not user_org:
+        user_org = Organization(name="Customer Workspace", slug="user-default-workspace", plan_tier="free")
+        db.add(user_org)
+        await db.flush()
+
+    standard_user = await db.scalar(select(User).where(User.email == user_email))
+    if not standard_user:
+        standard_user = User(
+            email=user_email,
+            hashed_password=get_password_hash(user_password),
+            full_name="Verified Standard User",
+            role="user",
+            org_id=user_org.id,
             is_active=True,
             terms_accepted=True,
             privacy_accepted=True,
             ai_consent=True
         )
-        db.add(demo_user)
+        db.add(standard_user)
+    else:
+        # Enforce credential rotation
+        standard_user.hashed_password = get_password_hash(user_password)
 
     await db.commit()
 

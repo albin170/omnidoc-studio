@@ -25,13 +25,9 @@ from app.api.v1 import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure tables are created and default data seeded
-    try:
-        from app.core.database import ensure_db_ready
-        await ensure_db_ready()
-    except Exception as e:
-        import logging
-        logging.getLogger("omnidoc.startup").warning(f"Startup initialization notice: {e}")
+    # Ensure database readiness without suppressing initialization errors
+    from app.core.database import ensure_db_ready
+    await ensure_db_ready()
     yield
     await engine.dispose()
 

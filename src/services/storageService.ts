@@ -21,6 +21,8 @@ export interface UserSession {
   subscriptionExpiresAt?: number;
   isLocalPrototype?: boolean;
   isDeveloperMode?: boolean;
+  jwtToken?: string;
+  authSource?: 'backend' | 'local_sandbox' | 'offline';
 }
 
 /**

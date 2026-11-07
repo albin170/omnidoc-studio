@@ -35,7 +35,7 @@ interface AdminConsoleProps {
   userSession: UserSession;
   onUpdateSession: (newSession: UserSession) => void;
   totalStorageBytes: number;
-  onStartViewAsUser?: (targetUser: any, sessionToken: string) => void;
+  onStartViewAsUser?: (targetUser: any, sessionToken: string, scopedToken?: string) => void;
 }
 
 export const AdminConsole: React.FC<AdminConsoleProps> = ({
@@ -265,9 +265,9 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
   const handleStartViewAsUser = async (user: any) => {
     try {
       const res = await omniDocClient.createAdminViewSession(user.id, 30);
-      addToast('info', 'Admin View Session', `Entering portal as ${user.email} (Read-Only 30m)...`);
+      addToast('info', 'Admin View Session', `Entering portal as ${user.email} (Scoped JWT, Read-Only 30m)...`);
       if (onStartViewAsUser) {
-        onStartViewAsUser(res.target_user, res.view_session_id);
+        onStartViewAsUser(res.target_user, res.view_session_id, res.scoped_token);
       }
     } catch (err: any) {
       addToast('error', 'View As User Failed', err.message);
@@ -477,7 +477,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                   <tr className="border-b border-white/10 text-[10px] uppercase font-bold text-[#9BA3BD]">
                     <th className="pb-3">User &amp; Organization</th>
                     <th className="pb-3">Role</th>
-                    <th className="pb-3">Plan</th>
+                    <th className="pb-3" title="Organization-level base subscription plan">Org Plan</th>
                     <th className="pb-3">Status</th>
                     <th className="pb-3 text-right">Actions</th>
                   </tr>
@@ -563,6 +563,9 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                     </h3>
                     <p className="text-[11px] text-[#9BA3BD]">
                       Configuring overrides for <span className="text-amber-300 font-bold">{selectedUser.email}</span>
+                    </p>
+                    <p className="text-[10px] text-amber-300/80 mt-1 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
+                      Overrides apply strictly to this individual account without affecting other organization members or changing the workspace base subscription.
                     </p>
                   </div>
                   <button

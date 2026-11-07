@@ -19,115 +19,54 @@ import { useToast } from '../../services/toastService';
 
 interface PricingPageProps {
   userSession: UserSession;
-  onSelectPlan?: (tier: PlanTier) => void;
   onBackToDashboard?: () => void;
 }
 
 export const PricingPage: React.FC<PricingPageProps> = ({
   userSession,
-  onSelectPlan,
   onBackToDashboard
 }) => {
   const { addToast } = useToast();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [plans, setPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
+  const fetchPlans = () => {
+    setIsLoading(true);
+    setLoadError(null);
     omniDocClient.getPublishedPlans()
       .then((data) => {
-        if (isMounted && Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data) && data.length > 0) {
           setPlans(data);
+        } else {
+          setLoadError('No published subscription plans available on server.');
         }
       })
       .catch((err) => {
         console.warn('Failed to load plans from backend:', err);
-        // Fallback default plans
-        setPlans([
-          {
-            slug: 'free',
-            name: 'Free Community',
-            description: 'Essential document viewing and basic conversions for individuals.',
-            monthly_price_cents: 0,
-            annual_price_cents: 0,
-            storage_quota_bytes: 100 * 1024 * 1024,
-            monthly_processing_quota: 50,
-            ocr_quota: 15,
-            ai_processing_quota: 10,
-            workflow_quota: 3,
-            has_api_access: false,
-            support_level: 'Community',
-            features: ['pdf_tools', 'docx_studio', 'sheet_studio', 'image_studio', 'conversion_hub']
-          },
-          {
-            slug: 'starter',
-            name: 'Starter Pro',
-            description: 'Extended document workflows, OCR scanning, and visual presentations.',
-            monthly_price_cents: 1900,
-            annual_price_cents: 19000,
-            storage_quota_bytes: 1024 * 1024 * 1024,
-            monthly_processing_quota: 250,
-            ocr_quota: 100,
-            ai_processing_quota: 50,
-            workflow_quota: 25,
-            has_api_access: false,
-            support_level: 'Standard Email',
-            features: ['pdf_tools', 'pdf_sanitizer', 'docx_studio', 'sheet_studio', 'slide_studio', 'image_studio', 'ocr_engine', 'conversion_hub', 'workflows']
-          },
-          {
-            slug: 'pro',
-            name: 'Professional Suite',
-            description: 'Autonomous Document Engineering with full AI intelligence and API access.',
-            monthly_price_cents: 4900,
-            annual_price_cents: 49000,
-            storage_quota_bytes: 10 * 1024 * 1024 * 1024,
-            monthly_processing_quota: 1500,
-            ocr_quota: 500,
-            ai_processing_quota: 300,
-            workflow_quota: 100,
-            has_api_access: true,
-            support_level: 'Priority 24/7',
-            features: ['pdf_tools', 'pdf_sanitizer', 'docx_studio', 'sheet_studio', 'slide_studio', 'image_studio', 'ocr_engine', 'conversion_hub', 'workflows', 'autonomous_agent', 'document_forensics', 'api_access']
-          },
-          {
-            slug: 'enterprise',
-            name: 'Enterprise Cloud',
-            description: 'Unlimited capacity, custom integrations, maximum SLA, and dedicated engineering.',
-            monthly_price_cents: 19900,
-            annual_price_cents: 199000,
-            storage_quota_bytes: 100 * 1024 * 1024 * 1024,
-            monthly_processing_quota: 10000,
-            ocr_quota: 5000,
-            ai_processing_quota: 2500,
-            workflow_quota: 1000,
-            has_api_access: true,
-            support_level: 'Dedicated TAM',
-            features: ['pdf_tools', 'pdf_sanitizer', 'docx_studio', 'sheet_studio', 'slide_studio', 'image_studio', 'ocr_engine', 'conversion_hub', 'workflows', 'autonomous_agent', 'document_forensics', 'api_access']
-          }
-        ]);
+        setLoadError(err?.message || 'Could not connect to backend pricing service.');
       })
       .finally(() => {
-        if (isMounted) setIsLoading(false);
+        setIsLoading(false);
       });
+  };
 
-    return () => { isMounted = false; };
+  useEffect(() => {
+    fetchPlans();
   }, []);
 
   const handleUpgradeClick = (plan: any) => {
     if (plan.slug === userSession.planTier) {
-      addToast('info', 'Current Plan', `You are currently on the ${plan.name} tier.`);
+      addToast('info', 'Current Active Plan', `Your organization is currently subscribed to the ${plan.name} tier.`);
       return;
     }
-    // Honest Payment Processor Notice
+    // Gated Payment Processor Notice — no client-side local plan mutation
     addToast(
       'info',
-      'Stripe Integration Gated',
-      `Live payment webhook verification is required for production upgrades to ${plan.name}. Please contact your workspace administrator or sales.`
+      'Upgrade Request Initiated',
+      `Direct card checkout for ${plan.name} is in private preview. To activate this tier for your workspace, contact your administrator or enterprise sales at sales@omnidoc.io.`
     );
-    if (onSelectPlan) {
-      onSelectPlan(plan.slug as PlanTier);
-    }
   };
 
   const formatStorage = (bytes: number) => {
@@ -188,8 +127,31 @@ export const PricingPage: React.FC<PricingPageProps> = ({
         </div>
       </div>
 
+      {/* Loading & Error States */}
+      {isLoading && (
+        <div className="max-w-md mx-auto py-16 text-center space-y-3">
+          <div className="w-8 h-8 border-2 border-[#8B7CFF] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs text-[#9BA3BD]">Fetching official subscription plans from backend...</p>
+        </div>
+      )}
+
+      {loadError && !isLoading && (
+        <div className="max-w-md mx-auto p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-3 my-12">
+          <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
+          <h3 className="text-sm font-bold text-white">Live Pricing Unavailable</h3>
+          <p className="text-xs text-[#9BA3BD]">{loadError}</p>
+          <button
+            onClick={fetchPlans}
+            className="px-4 py-2 rounded-xl bg-[#8B7CFF] hover:bg-[#7869ec] text-white font-bold text-xs transition-colors"
+          >
+            Retry Loading Plans
+          </button>
+        </div>
+      )}
+
       {/* Plans Grid */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+      {!isLoading && !loadError && (
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
         {plans.map((plan) => {
           const isCurrent = userSession.planTier === plan.slug;
           const isPopular = plan.slug === 'pro';
@@ -325,6 +287,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
           );
         })}
       </div>
+      )}
 
       {/* Compliance Notice */}
       <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-xs text-[#9BA3BD] flex items-center gap-3">
