@@ -166,9 +166,11 @@ async def test_jwt_revocation_and_logout(client: AsyncClient):
     assert "revoked" in revoked_res.json()["detail"]
 
 @pytest.mark.asyncio
-async def test_seeding_is_idempotent_and_does_not_overwrite_passwords(db_session: AsyncSession):
+async def test_seeding_is_idempotent_and_does_not_overwrite_passwords(db_session: AsyncSession, monkeypatch):
     from app.services.seed_data import seed_initial_plans_and_features
     from app.core.security import verify_password, get_password_hash
+
+    monkeypatch.setenv("INITIAL_ADMIN_PASSWORD", "SuperSecureInitialAdminPass123!")
 
     # Run seed
     await seed_initial_plans_and_features(db_session)

@@ -29,18 +29,20 @@ async def provision_admin(email: str, password: str, full_name: str, org_name: s
         # 1. Seed plans & features
         await seed_initial_plans_and_features(session)
 
-        # 2. Check if user already exists
+        # 2. Check if an administrator already exists to prevent repeat provisioning (P0-002)
+        existing_admin = await session.scalar(select(User).where(User.role.in_(("admin", "superadmin"))))
+        if existing_admin:
+            print(f"[!] Security Violation: An administrator account already exists ({existing_admin.email}).")
+            print("    Repeat initial administrator provisioning is strictly forbidden.")
+            sys.exit(1)
+
+        # 3. Reject if target email is already an existing user (prevent account takeover)
         existing_user = await session.scalar(select(User).where(User.email == email.lower().strip()))
         if existing_user:
-            print(f"[!] User with email {email} already exists. Elevating to 'admin' role...")
-            existing_user.role = "admin"
-            existing_user.is_active = True
-            existing_user.hashed_password = get_password_hash(password)
-            await session.commit()
-            print(f"[+] Admin account updated successfully! User ID: {existing_user.id}")
-            return
+            print(f"[!] Security Violation: User with email {email} already exists. Credential overwrite rejected.")
+            sys.exit(1)
 
-        # 3. Create Primary Admin Organization
+        # 4. Create Primary Admin Organization
         org = Organization(
             name=org_name,
             slug=f"admin-org-{uuid.uuid4().hex[:6]}",
@@ -49,12 +51,12 @@ async def provision_admin(email: str, password: str, full_name: str, org_name: s
         session.add(org)
         await session.flush()
 
-        # 4. Create Admin User
+        # 5. Create Superadmin User
         admin_user = User(
             email=email.lower().strip(),
             hashed_password=get_password_hash(password),
             full_name=full_name,
-            role="admin",
+            role="superadmin",
             is_active=True,
             terms_accepted=True,
             privacy_accepted=True,
@@ -71,16 +73,19 @@ async def provision_admin(email: str, password: str, full_name: str, org_name: s
         print(f"    Role:     {admin_user.role}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Provision an initial administrator account for OmniDoc Studio.")
-    parser.add_argument("--email", default=os.getenv("INITIAL_ADMIN_EMAIL", "admin@omnidoc.io"), help="Administrator email address")
-    parser.add_argument("--password", default=os.getenv("INITIAL_ADMIN_PASSWORD", "AdminPass2026!"), help="Administrator password")
+    parser = argparse.ArgumentParser(description="One-time secure provisioning of the initial administrator account.")
+    default_email = os.getenv("INITIAL_ADMIN_EMAIL")
+    default_pwd = os.getenv("INITIAL_ADMIN_PASSWORD")
+    
+    parser.add_argument("--email", default=default_email, required=not default_email, help="Administrator email address")
+    parser.add_argument("--password", default=default_pwd, required=not default_pwd, help="Administrator password (min 12 chars)")
     parser.add_argument("--name", default=os.getenv("INITIAL_ADMIN_NAME", "System Administrator"), help="Administrator full name")
     parser.add_argument("--org", default="OmniDoc Global Enterprise", help="Organization name")
 
     args = parser.parse_args()
 
-    if len(args.password) < 8:
-        print("[!] Error: Administrator password must be at least 8 characters long.")
+    if not args.password or len(args.password) < 12:
+        print("[!] Error: Administrator password must be explicitly provided and at least 12 characters long.")
         sys.exit(1)
 
     asyncio.run(provision_admin(args.email, args.password, args.name, args.org))

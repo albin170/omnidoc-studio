@@ -158,9 +158,10 @@ async def register_user(
         )
     except Exception as e:
         await db.rollback()
+        logger.error("Registration failed with unexpected error: %s", str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {str(e)}"
+            detail="Registration failed due to an internal server error. Please try again."
         )
 
 @router.post("/login", response_model=Token, dependencies=[Depends(rate_limiter(max_requests=20, window_seconds=60))])
@@ -173,23 +174,7 @@ async def login_json(
     res = await db.execute(stmt)
     user = res.scalars().first()
 
-    is_valid = False
-    if user:
-        if verify_password(credentials.password, user.hashed_password):
-            is_valid = True
-        elif email_clean in ("admin@omnidoc.io", "albinbinu170@gmail.com", "user@omnidoc.io") and credentials.password in (
-            "AdminPass2026!",
-            "OmniDoc#Admin9812!xK",
-            "OmniDoc#User2026$vP",
-            "password123",
-            "user123",
-            "AdminPass123!"
-        ):
-            user.hashed_password = get_password_hash(credentials.password)
-            is_valid = True
-            await db.commit()
-
-    if not user or not is_valid:
+    if not user or not verify_password(credentials.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -226,23 +211,7 @@ async def login_for_access_token(
     res = await db.execute(stmt)
     user = res.scalars().first()
 
-    is_valid = False
-    if user:
-        if verify_password(form_data.password, user.hashed_password):
-            is_valid = True
-        elif email_clean in ("admin@omnidoc.io", "albinbinu170@gmail.com", "user@omnidoc.io") and form_data.password in (
-            "AdminPass2026!",
-            "OmniDoc#Admin9812!xK",
-            "OmniDoc#User2026$vP",
-            "password123",
-            "user123",
-            "AdminPass123!"
-        ):
-            user.hashed_password = get_password_hash(form_data.password)
-            is_valid = True
-            await db.commit()
-
-    if not user or not is_valid:
+    if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",

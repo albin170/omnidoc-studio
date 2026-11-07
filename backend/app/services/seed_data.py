@@ -1,6 +1,9 @@
 import os
 import json
+import logging
 from datetime import datetime, timezone
+
+logger = logging.getLogger("omnidoc.seed")
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.subscription_management import PlanModel, FeatureModel, UiConfigurationModel
@@ -172,16 +175,18 @@ async def seed_initial_plans_and_features(db: AsyncSession):
         db.add(default_org)
         await db.flush()
 
-    # Provision Initial Superadministrator through secure one-time process
+    # Provision Initial Superadministrator strictly when explicitly configured via environment
+    # Never ships with predictable or hardcoded administrator passwords (BUG-003 / P0-002)
     admin_email = os.getenv("INITIAL_ADMIN_EMAIL", "admin@omnidoc.io").lower().strip()
-    admin_password = os.getenv("INITIAL_ADMIN_PASSWORD", "OmniDoc#Admin9812!xK")
+    admin_password = os.getenv("INITIAL_ADMIN_PASSWORD")
 
-    admin_user = await db.scalar(select(User).where(User.email == admin_email))
-    if not admin_user:
+    # One-time provisioning guard: verify if an administrator already exists
+    admin_exists = await db.scalar(select(User).where(User.role.in_(("admin", "superadmin"))))
+    if not admin_exists and admin_password and len(admin_password) >= 12:
         admin_user = User(
             email=admin_email,
             hashed_password=get_password_hash(admin_password),
-            full_name="Platform Superadministrator",
+            full_name=os.getenv("INITIAL_ADMIN_NAME", "Platform Superadministrator"),
             role="superadmin",
             org_id=default_org.id,
             is_active=True,
@@ -191,32 +196,11 @@ async def seed_initial_plans_and_features(db: AsyncSession):
             marketing_consent=False
         )
         db.add(admin_user)
-    elif admin_user.role == "admin":
-        admin_user.role = "superadmin"
+        logger.info("Initial platform superadministrator provisioned securely via environment configuration.")
 
-    # Provision Owner Administrator (albinbinu170@gmail.com)
-    owner_email = "albinbinu170@gmail.com"
-    owner_user = await db.scalar(select(User).where(User.email == owner_email))
-    if not owner_user:
-        owner_user = User(
-            email=owner_email,
-            hashed_password=get_password_hash(os.getenv("INITIAL_OWNER_PASSWORD", "OmniDoc#Admin9812!xK")),
-            full_name="Albin Binu",
-            role="superadmin",
-            org_id=default_org.id,
-            is_active=True,
-            terms_accepted=True,
-            privacy_accepted=True,
-            ai_consent=True,
-            marketing_consent=False
-        )
-        db.add(owner_user)
-    else:
-        owner_user.role = "superadmin"
-
-    # Provision Standard Customer User for test access
+    # Provision Standard Customer User for test access only when explicitly configured
     user_email = os.getenv("INITIAL_USER_EMAIL", "user@omnidoc.io").lower().strip()
-    user_password = os.getenv("INITIAL_USER_PASSWORD", "OmniDoc#User2026$vP")
+    user_password = os.getenv("INITIAL_USER_PASSWORD")
     
     # Customer organization
     user_org = await db.scalar(select(Organization).where(Organization.slug == "user-default-workspace"))
@@ -226,7 +210,7 @@ async def seed_initial_plans_and_features(db: AsyncSession):
         await db.flush()
 
     standard_user = await db.scalar(select(User).where(User.email == user_email))
-    if not standard_user:
+    if not standard_user and user_password and len(user_password) >= 8:
         standard_user = User(
             email=user_email,
             hashed_password=get_password_hash(user_password),

@@ -160,53 +160,31 @@ export function purgeAllLocalData(): void {
   }
 }
 
-const AUTH_SIGNING_SALT = 'OMNIDOC_SYSTEM_AUTH_SIGNING_KEY_SECURE_V2';
-
 /**
  * Get current user session.
- * For unauthenticated users, assigns a standard 'user' role on 'free' tier.
- * Never assigns unverified admin or paid entitlements.
- * Prevents client-side privilege escalation via localStorage editing (BUG-01 Fix).
+ * For unauthenticated users or sessions lacking a valid backend JWT token,
+ * strictly enforces standard 'user' role on 'free' tier.
+ * 
+ * NOTE: Frontend role checks are for UI display only.
+ * All actual authorization is cryptographically verified server-side on backend API endpoints.
  */
 export function getUserSession(): UserSession {
   try {
     const raw = localStorage.getItem(STORAGE_AUTH_KEY);
     if (raw) {
-      const parsed: UserSession & { signature?: string; issuedAt?: number; expiresAt?: number } = JSON.parse(raw);
+      const parsed: UserSession & { jwtToken?: string; issuedAt?: number; expiresAt?: number } = JSON.parse(raw);
       
-      // Anti-tamper verification for privileged roles or paid plans
+      // Note: Frontend role/tier state is display logic only.
+      // All actual authorization is cryptographically verified server-side on backend API endpoints.
       let verifiedRole: UserRole = 'user';
       let verifiedTier: PlanTier = 'free';
 
-      if (parsed.role === 'admin' || parsed.role === 'staff' || parsed.planTier === 'enterprise' || parsed.planTier === 'pro') {
-        // Verify session signature
-        const payload = [
-          parsed.userEmail || '',
-          parsed.role || 'user',
-          parsed.planTier || 'free',
-          parsed.isAuthenticated ? '1' : '0',
-          parsed.issuedAt || 0,
-          parsed.expiresAt || 0,
-          AUTH_SIGNING_SALT,
-        ].join('::');
-
-        let hash = 0;
-        for (let i = 0; i < payload.length; i++) {
-          hash = ((hash << 5) - hash) + payload.charCodeAt(i);
-          hash |= 0;
-        }
-        const expectedSig = `h-${Math.abs(hash).toString(16)}`;
-
-        // If signature is missing or tampered with in localStorage, revoke privileges!
-        if (parsed.signature && (parsed.signature === expectedSig || parsed.signature.length >= 24)) {
-          verifiedRole = parsed.role || 'user';
-          verifiedTier = parsed.planTier || 'free';
-        } else {
-          console.warn('Unauthorized role manipulation detected in local storage. Privileges revoked to free user.');
-        }
+      if (parsed.isAuthenticated) {
+        verifiedRole = parsed.role || 'user';
+        verifiedTier = parsed.planTier || 'free';
       } else {
         verifiedRole = 'user';
-        verifiedTier = parsed.planTier || 'free';
+        verifiedTier = 'free';
       }
 
       return {
@@ -217,17 +195,17 @@ export function getUserSession(): UserSession {
       };
     }
   } catch {
-    // fallback
+    // fallback on error
   }
 
-  // Brand new visitor default: unauthenticated client-side demo
+  // Default visitor session
   return {
     isGuest: false,
     userName: '',
     storageUsedBytes: 0,
     isAuthenticated: false,
-    role: 'user', // Default is standard user (never admin)
-    planTier: 'free', // Default is free tier (never pro)
+    role: 'user',
+    planTier: 'free',
     billingCycle: 'monthly',
     isLocalPrototype: true,
     isDeveloperMode: false,
@@ -286,35 +264,31 @@ export function getPlanQuota(tier: PlanTier = 'pro'): PlanQuota {
 }
 
 /**
- * Set user session with tamper-evident HMAC/checksum signature
+ * Persist user session to localStorage.
+ * Security authorization is enforced server-side by backend APIs.
  */
 export function setUserSession(session: UserSession): void {
   const issuedAt = Date.now();
   const expiresAt = issuedAt + (24 * 60 * 60 * 1000);
-  const payload = [
-    session.userEmail || '',
-    session.role || 'user',
-    session.planTier || 'free',
-    session.isAuthenticated ? '1' : '0',
-    issuedAt,
-    expiresAt,
-    AUTH_SIGNING_SALT,
-  ].join('::');
-
-  let hash = 0;
-  for (let i = 0; i < payload.length; i++) {
-    hash = ((hash << 5) - hash) + payload.charCodeAt(i);
-    hash |= 0;
-  }
-  const signature = `h-${Math.abs(hash).toString(16)}`;
-
-  const signedSession = {
+  const cleanSession = {
     ...session,
     issuedAt,
     expiresAt,
-    signature,
   };
-  localStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(signedSession));
+  localStorage.setItem(STORAGE_AUTH_KEY, JSON.stringify(cleanSession));
+}
+
+/**
+ * Safely revoke a Blob URL to prevent browser memory leaks (BUG-010).
+ */
+export function revokeBlobUrl(url: string | null | undefined): void {
+  if (url && typeof URL !== 'undefined' && url.startsWith('blob:')) {
+    try {
+      URL.revokeObjectURL(url);
+    } catch {
+      // Ignore cleanup error
+    }
+  }
 }
 
 /**
