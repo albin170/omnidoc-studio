@@ -16,6 +16,8 @@ from app.models.subscription_management import (
     UiConfigurationModel,
     AdminViewSessionModel
 )
+from app.models.password_reset import PasswordResetToken
+from app.models.revocation import RevokedToken
 
 __all__ = [
     "Organization",
@@ -36,4 +38,6 @@ __all__ = [
     "UserEntitlementOverrideModel",
     "UiConfigurationModel",
     "AdminViewSessionModel",
+    "PasswordResetToken",
+    "RevokedToken",
 ]

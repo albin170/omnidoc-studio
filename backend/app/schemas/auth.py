@@ -77,6 +77,15 @@ class UserLogin(BaseModel):
 class ConsentWithdrawRequest(BaseModel):
     consent_type: str = Field(..., description="Type of consent to withdraw (e.g., 'marketing_communication')")
 
+class ConsentGrantRequest(BaseModel):
+    terms_accepted: bool = Field(True, description="Explicit agreement to Terms of Service")
+    terms_version: str = Field(default=CURRENT_TERMS_VERSION)
+    privacy_accepted: bool = Field(True, description="Explicit acknowledgement of Privacy Policy")
+    privacy_version: str = Field(default=CURRENT_PRIVACY_VERSION)
+    ai_consent: bool = Field(False, description="Consent for AI document processing")
+    ai_consent_version: str = Field(default=CURRENT_AI_CONSENT_VERSION)
+    marketing_consent: bool = Field(False, description="Optional marketing communications")
+
 class PasswordResetRequest(BaseModel):
     email: EmailStr
 

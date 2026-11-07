@@ -47,7 +47,7 @@ async def test_register_login_and_user_isolation(client: AsyncClient):
     })
     assert res_a.status_code == 201
     user_a = res_a.json()
-    assert user_a["role"] == "admin"
+    assert user_a["role"] == "user"
     assert user_a["email"] == "alice@alpha-corp.com"
     assert user_a["terms_accepted"] is True
     assert user_a["marketing_consent"] is True
@@ -58,7 +58,7 @@ async def test_register_login_and_user_isolation(client: AsyncClient):
         "password": "Password123!"
     })
     assert login_a_json.status_code == 200
-    assert login_a_json.json()["role"] == "admin"
+    assert login_a_json.json()["role"] == "user"
 
     # Login User A via OAuth2 token endpoint
     login_a = await client.post("/api/v1/auth/token", data={
@@ -68,6 +68,12 @@ async def test_register_login_and_user_isolation(client: AsyncClient):
     assert login_a.status_code == 200
     token_a = login_a.json()["access_token"]
     headers_a = {"Authorization": f"Bearer {token_a}"}
+
+    # Verify newly registered customer CANNOT access administrator endpoints (403 Forbidden)
+    admin_telemetry_attempt = await client.get("/api/v1/admin/telemetry", headers=headers_a)
+    assert admin_telemetry_attempt.status_code == 403
+    admin_users_attempt = await client.get("/api/v1/admin/users", headers=headers_a)
+    assert admin_users_attempt.status_code == 403
 
     # Verify Profile A and consent records
     me_a = await client.get("/api/v1/auth/me", headers=headers_a)

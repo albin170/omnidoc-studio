@@ -172,7 +172,7 @@ async def seed_initial_plans_and_features(db: AsyncSession):
         db.add(default_org)
         await db.flush()
 
-    # Provision Initial Administrator (configured via environment or high-entropy secure default)
+    # Provision Initial Administrator (only on one-time initial setup; never overwrite existing passwords)
     admin_email = os.getenv("INITIAL_ADMIN_EMAIL", "admin@omnidoc.io").lower().strip()
     admin_password = os.getenv("INITIAL_ADMIN_PASSWORD", "OmniDoc#Admin9812!xK")
     admin_user = await db.scalar(select(User).where(User.email == admin_email))
@@ -184,16 +184,14 @@ async def seed_initial_plans_and_features(db: AsyncSession):
             role="admin",
             org_id=default_org.id,
             is_active=True,
-            terms_accepted=True,
-            privacy_accepted=True,
-            ai_consent=True
+            terms_accepted=False,
+            privacy_accepted=False,
+            ai_consent=False,
+            marketing_consent=False
         )
         db.add(admin_user)
-    else:
-        # Enforce credential rotation for exposed accounts
-        admin_user.hashed_password = get_password_hash(admin_password)
 
-    # Provision Standard Customer User for sandbox verification
+    # Provision Standard Customer User for initial test access (never overwrite existing passwords)
     user_email = os.getenv("INITIAL_USER_EMAIL", "user@omnidoc.io").lower().strip()
     user_password = os.getenv("INITIAL_USER_PASSWORD", "OmniDoc#User2026$vP")
     
@@ -213,16 +211,17 @@ async def seed_initial_plans_and_features(db: AsyncSession):
             role="user",
             org_id=user_org.id,
             is_active=True,
-            terms_accepted=True,
-            privacy_accepted=True,
-            ai_consent=True
+            terms_accepted=False,
+            privacy_accepted=False,
+            ai_consent=False,
+            marketing_consent=False
         )
         db.add(standard_user)
-    else:
-        # Enforce credential rotation
-        standard_user.hashed_password = get_password_hash(user_password)
 
-    await db.commit()
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
 
 # Alias for backwards compatibility
 seed_default_saas_data = seed_initial_plans_and_features
