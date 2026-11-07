@@ -261,6 +261,129 @@ export class OmniDocApiClient {
     return res.json();
   }
 
+  public async updateProfile(fullName: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/users/me`, {
+      method: 'PUT',
+      headers: this.headers,
+      body: JSON.stringify({ full_name: fullName.trim() }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Profile update failed');
+    }
+    return res.json();
+  }
+
+  public async changePassword(currentPassword: string, newPassword: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/users/me/change-password`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Password change failed');
+    }
+    return res.json();
+  }
+
+  public async deleteAccount(): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/users/me`, {
+      method: 'DELETE',
+      headers: this.headers,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Account deletion failed');
+    }
+    return res.json();
+  }
+
+  public async updateConsent(payload: { ai_consent?: boolean; marketing_consent?: boolean }): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/auth/consent/grant`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({
+        terms_version: '2026.1',
+        privacy_version: '2026.1',
+        ai_consent_version: '2026.1',
+        ...payload,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Failed to save consent choices');
+    }
+    return res.json();
+  }
+
+  public async getApiKeys(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/developer/keys`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load API keys: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async createApiKey(name: string, scopes?: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/developer/keys`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({ name, scopes }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'API key creation failed');
+    }
+    return res.json();
+  }
+
+  public async revokeApiKey(keyId: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/developer/keys/${keyId}`, {
+      method: 'DELETE',
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to revoke API key: ${res.statusText}`);
+  }
+
+  // --- Billing & Subscription APIs ---
+
+  public async getBillingStatus(): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/billing/status`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load billing status: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async createCheckoutSession(planSlug: string, billingInterval = 'monthly'): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/billing/checkout`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({
+        plan_slug: planSlug,
+        billing_interval: billingInterval,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Checkout initiation failed');
+    }
+    return res.json();
+  }
+
+  public async cancelSubscription(reason = 'User requested'): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/billing/cancel`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Subscription cancellation failed');
+    }
+    return res.json();
+  }
+
   // --- Admin Portal APIs ---
 
   public async getAdminTelemetry(): Promise<any> {

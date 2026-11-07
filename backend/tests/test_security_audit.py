@@ -19,7 +19,7 @@ def test_production_secret_key_enforcement():
         SECRET_KEY="a" * 33,
         CORS_ORIGINS=["*"]
     )
-    with pytest.raises(ValueError, match="Wildcard origin '\*' is forbidden"):
+    with pytest.raises(ValueError, match=r"Wildcard origin '\*' is forbidden"):
         prod_wildcard_settings.validate_production_security()
 
     # Valid production settings pass

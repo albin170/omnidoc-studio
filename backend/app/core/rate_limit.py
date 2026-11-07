@@ -3,10 +3,11 @@ import time
 import logging
 from typing import Dict, List, Optional
 from fastapi import Request, HTTPException, status
+from app.core.config import settings
 
 logger = logging.getLogger("omnidoc.rate_limit")
 
-# Centralized in-memory fallback sliding window
+# Centralized in-memory fallback sliding window (development & testing only)
 _request_records: Dict[str, List[float]] = {}
 _redis_client = None
 
@@ -19,7 +20,7 @@ def _get_redis_client():
             _redis_client = aioredis.from_url(redis_url, encoding="utf-8", decode_responses=True)
             logger.info("Connected to distributed Redis for shared rate limiting.")
         except Exception as e:
-            logger.warning("Redis initialization failed, using local sliding window: %s", e)
+            logger.warning("Redis initialization failed: %s", e)
             _redis_client = None
     return _redis_client
 
@@ -31,6 +32,7 @@ async def check_rate_limit_async(
     now = time.time()
     cutoff = now - window_seconds
     client = _get_redis_client()
+    is_prod = settings.ENVIRONMENT.lower() in ("production", "prod")
 
     if client:
         try:
@@ -53,9 +55,22 @@ async def check_rate_limit_async(
         except HTTPException:
             raise
         except Exception as e:
-            logger.warning("Distributed rate limit check encountered error, using memory fallback: %s", e)
+            if is_prod:
+                logger.error("Production Redis rate limiter error: %s", e)
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Distributed rate limiter service temporarily unavailable in production."
+                )
+            logger.warning("Distributed rate limit check encountered error, using dev memory fallback: %s", e)
 
-    # In-memory sliding window fallback
+    # In production, silent fallback to process-local memory is forbidden
+    if is_prod:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Production rate limiter configuration error: REDIS_URL must be configured."
+        )
+
+    # In-memory sliding window fallback for development and testing
     timestamps = _request_records.get(key, [])
     valid_timestamps = [ts for ts in timestamps if ts > cutoff]
     
@@ -86,8 +101,18 @@ def check_rate_limit(key: str, max_requests: int, window_seconds: int) -> None:
 
 def rate_limiter(max_requests: int, window_seconds: int):
     async def dependency(request: Request):
-        # Extract client IP
-        client_ip = request.client.host if request.client else "unknown_client"
+        # Extract client IP supporting reverse proxies (Render, Vercel, Cloudflare)
+        forwarded = request.headers.get("x-forwarded-for")
+        cf_ip = request.headers.get("cf-connecting-ip")
+        if forwarded:
+            client_ip = forwarded.split(",")[0].strip()
+        elif cf_ip:
+            client_ip = cf_ip.strip()
+        elif request.client:
+            client_ip = request.client.host
+        else:
+            client_ip = "unknown_client"
+
         path = request.url.path
         key = f"{client_ip}:{path}"
         await check_rate_limit_async(key, max_requests, window_seconds)

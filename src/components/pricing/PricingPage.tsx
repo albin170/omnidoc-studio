@@ -56,17 +56,23 @@ export const PricingPage: React.FC<PricingPageProps> = ({
     fetchPlans();
   }, []);
 
-  const handleUpgradeClick = (plan: any) => {
+  const handleUpgradeClick = async (plan: any) => {
     if (plan.slug === userSession.planTier) {
       addToast('info', 'Current Active Plan', `Your organization is currently subscribed to the ${plan.name} tier.`);
       return;
     }
-    // Gated Payment Processor Notice — no client-side local plan mutation
-    addToast(
-      'info',
-      'Upgrade Request Initiated',
-      `Direct card checkout for ${plan.name} is in private preview. To activate this tier for your workspace, contact your administrator or enterprise sales at sales@omnidoc.io.`
-    );
+    try {
+      const res = await omniDocClient.createCheckoutSession(plan.slug, billingCycle);
+      if (res.checkout_url) {
+        window.location.href = res.checkout_url;
+      }
+    } catch (err: any) {
+      addToast(
+        'info',
+        'Upgrade Notice',
+        err.message || `Direct card checkout for ${plan.name} is pending payment gateway configuration. To activate this tier for your workspace, contact enterprise billing at sales@omnidoc.studio.`
+      );
+    }
   };
 
   const formatStorage = (bytes: number) => {

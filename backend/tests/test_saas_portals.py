@@ -24,7 +24,7 @@ async def test_admin_and_user_portal_workflow(client: AsyncClient, db_session: A
         email="superadmin@omnidoc.io",
         hashed_password=get_password_hash("AdminPass123!"),
         full_name="Super Admin",
-        role="admin",
+        role="superadmin",
         is_active=True,
         terms_accepted=True,
         privacy_accepted=True,
@@ -149,10 +149,10 @@ async def test_admin_and_user_portal_workflow(client: AsyncClient, db_session: A
     )
     assert res_susp.status_code == 200
 
-    # M. Suspended user is BLOCKED from protected APIs
+    # M. Suspended user is BLOCKED from protected APIs (Phase 2.2: Consistent 403)
     res_ent_susp = await client.get("/api/v1/users/me/entitlements", headers=user_headers)
-    assert res_ent_susp.status_code == 400
-    assert "Inactive user account" in res_ent_susp.json()["detail"]
+    assert res_ent_susp.status_code == 403
+    assert "suspended" in res_ent_susp.json()["detail"].lower() or "inactive" in res_ent_susp.json()["detail"].lower()
 
     # N. Reactivate User
     res_react = await client.post(

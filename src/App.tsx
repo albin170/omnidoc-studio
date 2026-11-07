@@ -666,15 +666,15 @@ export const App: React.FC = () => {
             </div>
             <button
               onClick={async () => {
+                if (viewAsUserSession.originalAdminSession?.jwtToken) {
+                  omniDocClient.setToken(viewAsUserSession.originalAdminSession.jwtToken);
+                }
                 try {
                   await omniDocClient.exitAdminViewSession(viewAsUserSession.sessionId);
                 } catch (e) {
                   console.error(e);
                 }
                 if (viewAsUserSession.originalAdminSession) {
-                  if (viewAsUserSession.originalAdminSession.jwtToken) {
-                    omniDocClient.setToken(viewAsUserSession.originalAdminSession.jwtToken);
-                  }
                   handleUpdateSession(viewAsUserSession.originalAdminSession);
                 }
                 setViewAsUserSession(null);

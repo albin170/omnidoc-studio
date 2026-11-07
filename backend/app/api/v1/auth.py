@@ -19,6 +19,7 @@ from app.models.password_reset import PasswordResetToken
 from app.models.revocation import RevokedToken
 from app.models.audit import AuditEvent
 from app.core.rate_limit import rate_limiter
+from app.services.email_service import email_service
 from app.schemas.auth import (
     Token,
     UserRegister,
@@ -36,7 +37,7 @@ from app.schemas.auth import (
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED, dependencies=[Depends(rate_limiter(max_requests=20, window_seconds=60))])
 async def register_user(
     data: UserRegister,
     request: Request,
@@ -467,6 +468,9 @@ async def forgot_password(
         db.add(audit)
         await db.commit()
 
+        # Dispatch reset instructions via configured email service
+        email_service.send_password_reset_email(user.email, raw_token)
+
         # In testing environments, store raw token on app state for regression test verification
         if settings.ENVIRONMENT.lower() in ("test", "testing", "development"):
             setattr(request.app.state, f"_last_reset_token_{user.id}", raw_token)
@@ -477,7 +481,7 @@ async def forgot_password(
         "message": "If an account exists for that email address, password reset instructions have been dispatched."
     }
 
-@router.post("/reset-password")
+@router.post("/reset-password", dependencies=[Depends(rate_limiter(max_requests=10, window_seconds=60))])
 async def reset_password(
     payload: PasswordResetConfirm,
     db: AsyncSession = Depends(get_db)
@@ -528,9 +532,23 @@ async def reset_password(
             detail="Invalid password reset token."
         )
 
+    if len(payload.new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters with sufficient entropy."
+        )
+
     # Invalidate token immediately
     token_record.used_at = now
     user.hashed_password = get_password_hash(payload.new_password)
+
+    # Invalidate all prior sessions/tokens for this user after password reset
+    revocation = RevokedToken(
+        token_jti=f"pwd_reset_revocation_{user.id}_{int(now.timestamp())}",
+        user_id=user.id,
+        expires_at=now + timedelta(days=7)
+    )
+    db.add(revocation)
 
     audit = AuditEvent(
         org_id=user.org_id,

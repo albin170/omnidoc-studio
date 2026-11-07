@@ -28,6 +28,11 @@ router = APIRouter(prefix="/admin", tags=["Administrator Console"])
 ALLOWED_ROLES = {"superadmin", "admin", "staff", "user"}
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    if getattr(current_user, "is_impersonated", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Impersonated sessions are prohibited from accessing administrative endpoints"
+        )
     if current_user.role not in ("admin", "superadmin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -36,6 +41,11 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 def require_superadmin(current_user: User = Depends(get_current_user)) -> User:
+    if getattr(current_user, "is_impersonated", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Impersonated sessions are prohibited from accessing administrative endpoints"
+        )
     if current_user.role != "superadmin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -840,16 +850,24 @@ async def update_global_ui_config(
 @router.post("/view-sessions")
 async def create_view_as_user_session(
     req: CreateViewSessionRequest,
-    admin: User = Depends(require_admin),
+    admin: User = Depends(require_superadmin),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Creates a secure, short-lived, traceable session allowing the admin to inspect
+    Creates a secure, short-lived, traceable session allowing an authorized superadmin to inspect
     OmniDoc Studio exactly as the selected user without exposing or resetting user passwords.
+    Only authorized superadministrators can initiate privileged impersonation.
+    Never copies administrative roles into the impersonation token.
     """
     target = await db.get(User, req.target_user_id)
     if not target:
         raise HTTPException(status_code=404, detail="Target user not found")
+
+    if target.role in ("superadmin", "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot impersonate administrative or superadministrator accounts"
+        )
 
     session_token = f"view_{uuid.uuid4().hex}"
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=req.duration_minutes)
@@ -862,19 +880,21 @@ async def create_view_as_user_session(
         expires_at=expires_at
     )
     db.add(view_session)
+    await db.flush()
 
     org = await db.get(Organization, target.org_id)
-    # Generate scoped JWT representing view session
+    # Generate restricted impersonation JWT with session id and strictly demoted role
     scoped_jwt = create_access_token(
         data={
             "sub": target.id,
             "email": target.email,
             "user_id": target.id,
             "org_id": target.org_id,
-            "role": target.role,
+            "role": "user",  # Never copy privileged roles into impersonation token
             "plan_tier": org.plan_tier if org else "free",
             "is_admin_view": True,
             "acting_admin_id": admin.id,
+            "view_session_id": view_session.id,
             "view_session_token": session_token
         },
         expires_delta=timedelta(minutes=req.duration_minutes)
@@ -882,7 +902,11 @@ async def create_view_as_user_session(
 
     await record_admin_audit(
         db, admin, "ADMIN_VIEW_AS_USER_START", "user", target.id,
-        new_value={"target_email": target.email, "expires_at": expires_at.isoformat()}
+        new_value={
+            "target_email": target.email,
+            "view_session_id": view_session.id,
+            "expires_at": expires_at.isoformat()
+        }
     )
     await db.commit()
 
@@ -906,10 +930,23 @@ async def exit_view_as_user_session(
     db: AsyncSession = Depends(get_db)
 ):
     sess = await db.get(AdminViewSessionModel, session_id)
-    if sess:
-        sess.ended_at = datetime.now(timezone.utc)
-        await record_admin_audit(db, admin, "ADMIN_VIEW_AS_USER_END", "user", sess.target_user_id)
-        await db.commit()
+    if not sess:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Impersonation session not found"
+        )
+    # Verify administrator owns the session (Phase 2.1 Rule 12)
+    if sess.admin_id != admin.id and admin.role != "superadmin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to terminate an impersonation session owned by another administrator."
+        )
+    sess.ended_at = datetime.now(timezone.utc)
+    await record_admin_audit(
+        db, admin, "ADMIN_VIEW_AS_USER_END", "user", sess.target_user_id,
+        new_value={"view_session_id": sess.id}
+    )
+    await db.commit()
     return {"status": "SUCCESS", "message": "View as user session terminated"}
 
 # ===================== 9. Audit Logs =====================
