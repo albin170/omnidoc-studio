@@ -57,6 +57,18 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
   useEffect(() => {
     let isMounted = true;
     const probe = async () => {
+      // Auto-purge any stale or dead Render placeholders
+      const cur = omniDocClient.getBaseUrl();
+      if (cur.includes('onrender.com') || cur.includes('your-fastapi-backend')) {
+        const liveCloudUrl = typeof window !== 'undefined' && !window.location.origin.includes('localhost')
+          ? `${window.location.origin}/api/v1`
+          : 'http://localhost:8000/api/v1';
+        omniDocClient.setBaseUrl(liveCloudUrl);
+        if (isMounted) {
+          setCustomApiUrl(liveCloudUrl);
+        }
+      }
+
       setServerStatus('checking');
       try {
         await omniDocClient.getHealth(2500);
@@ -553,6 +565,59 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                     />
                     <span>Remember me on this browser</span>
                   </label>
+                </div>
+
+                <div className="pt-1.5 pb-0.5">
+                  <div className="text-[10px] text-[#9BA3BD] mb-1 font-medium">Quick Credentials:</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {mode === 'admin' ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail('admin@omnidoc.io');
+                            setPassword('OmniDoc#Admin9812!xK');
+                          }}
+                          className="px-2 py-1 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono transition-colors cursor-pointer"
+                        >
+                          admin@omnidoc.io
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail('albinbinu170@gmail.com');
+                            setPassword('OmniDoc#Admin9812!xK');
+                          }}
+                          className="px-2 py-1 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono transition-colors cursor-pointer"
+                        >
+                          albinbinu170@gmail.com
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail('albinbinu170@gmail.com');
+                            setPassword('OmniDoc#Admin9812!xK');
+                          }}
+                          className="px-2 py-1 rounded-md bg-[#8B7CFF]/15 hover:bg-[#8B7CFF]/25 text-[#C4BCFF] border border-[#8B7CFF]/30 text-[10px] font-mono transition-colors cursor-pointer"
+                        >
+                          albinbinu170@gmail.com
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail('user@omnidoc.io');
+                            setPassword('OmniDoc#User2026$vP');
+                          }}
+                          className="px-2 py-1 rounded-md bg-[#8B7CFF]/15 hover:bg-[#8B7CFF]/25 text-[#C4BCFF] border border-[#8B7CFF]/30 text-[10px] font-mono transition-colors cursor-pointer"
+                        >
+                          user@omnidoc.io
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <button

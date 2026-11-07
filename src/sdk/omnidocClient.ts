@@ -41,7 +41,7 @@ export class OmniDocApiClient {
     let configuredStorageUrl = typeof localStorage !== 'undefined' ? localStorage.getItem('omnidoc_api_url') : null;
     
     // Auto-clear invalid placeholder example URLs from user storage so they connect directly to the active live cloud backend
-    if (configuredStorageUrl && (configuredStorageUrl.includes('omnidoc-api.onrender.com') || configuredStorageUrl.includes('your-fastapi-backend'))) {
+    if (configuredStorageUrl && (configuredStorageUrl.includes('onrender.com') || configuredStorageUrl.includes('your-fastapi-backend'))) {
       if (typeof localStorage !== 'undefined') {
         localStorage.removeItem('omnidoc_api_url');
       }
