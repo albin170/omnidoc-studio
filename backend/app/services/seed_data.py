@@ -172,16 +172,20 @@ async def seed_initial_plans_and_features(db: AsyncSession):
         db.add(default_org)
         await db.flush()
 
-    # Provision Initial Administrator (only on one-time initial setup; never overwrite existing passwords)
+    # Provision Initial Superadministrator through secure one-time process
+    # Passwords must be supplied via environment variables; never hardcoded in source
     admin_email = os.getenv("INITIAL_ADMIN_EMAIL", "admin@omnidoc.io").lower().strip()
-    admin_password = os.getenv("INITIAL_ADMIN_PASSWORD", "OmniDoc#Admin9812!xK")
+    admin_password = os.getenv("INITIAL_ADMIN_PASSWORD")
+    if not admin_password and os.getenv("ENVIRONMENT", "development").lower() in ("development", "test", "testing"):
+        admin_password = os.getenv("DEV_BOOTSTRAP_ADMIN_PASSWORD", "OmniDoc#Admin9812!xK")
+
     admin_user = await db.scalar(select(User).where(User.email == admin_email))
-    if not admin_user:
+    if not admin_user and admin_password:
         admin_user = User(
             email=admin_email,
             hashed_password=get_password_hash(admin_password),
-            full_name="Lead Platform Administrator",
-            role="admin",
+            full_name="Platform Superadministrator",
+            role="superadmin",
             org_id=default_org.id,
             is_active=True,
             terms_accepted=False,
@@ -190,10 +194,15 @@ async def seed_initial_plans_and_features(db: AsyncSession):
             marketing_consent=False
         )
         db.add(admin_user)
+    elif admin_user and admin_user.role == "admin":
+        # Promote initial root admin to superadmin without mutating password
+        admin_user.role = "superadmin"
 
-    # Provision Standard Customer User for initial test access (never overwrite existing passwords)
+    # Provision Standard Customer User for test access (strictly via environment configuration)
     user_email = os.getenv("INITIAL_USER_EMAIL", "user@omnidoc.io").lower().strip()
-    user_password = os.getenv("INITIAL_USER_PASSWORD", "OmniDoc#User2026$vP")
+    user_password = os.getenv("INITIAL_USER_PASSWORD")
+    if not user_password and os.getenv("ENVIRONMENT", "development").lower() in ("development", "test", "testing"):
+        user_password = os.getenv("DEV_BOOTSTRAP_USER_PASSWORD", "OmniDoc#User2026$vP")
     
     # Customer organization
     user_org = await db.scalar(select(Organization).where(Organization.slug == "user-default-workspace"))
@@ -203,7 +212,7 @@ async def seed_initial_plans_and_features(db: AsyncSession):
         await db.flush()
 
     standard_user = await db.scalar(select(User).where(User.email == user_email))
-    if not standard_user:
+    if not standard_user and user_password:
         standard_user = User(
             email=user_email,
             hashed_password=get_password_hash(user_password),

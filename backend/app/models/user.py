@@ -11,8 +11,9 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(128), default="OmniDoc User", nullable=False)
-    role = Column(String(32), default="user", nullable=False) # admin, staff, user, auditor
+    role = Column(String(32), default="user", nullable=False) # superadmin, admin, staff, user, auditor
     is_active = Column(Boolean, default=True, nullable=False)
+    individual_plan_tier = Column(String(32), nullable=True) # Overrides org-level plan for this specific user
     
     # Consent Flags
     terms_accepted = Column(Boolean, default=False, nullable=False)

@@ -86,9 +86,9 @@ async def calculate_user_entitlements(user: User, db: AsyncSession) -> Effective
     # 1. Account status & suspension check
     is_suspended = not user.is_active
 
-    # 2. Query Organization & Plan
+    # 2. Query Organization & Plan (Individual user plan takes precedence over org subscription)
     org = await db.get(Organization, user.org_id)
-    plan_tier = org.plan_tier if org else "free"
+    plan_tier = getattr(user, "individual_plan_tier", None) or (org.plan_tier if org else "free")
 
     # Query active subscription if present
     sub = await db.scalar(

@@ -16,3 +16,4 @@ class PasswordResetToken(Base):
     ip_address = Column(String(64), nullable=True)
 
     user = relationship("User")
+

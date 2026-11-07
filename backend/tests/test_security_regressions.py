@@ -186,3 +186,152 @@ async def test_seeding_is_idempotent_and_does_not_overwrite_passwords(db_session
     # Verify password hash was NOT overwritten
     await db_session.refresh(user)
     assert verify_password("SuperCustomSecretPass999!", user.hashed_password) is True
+
+@pytest.mark.asyncio
+async def test_superadmin_authorization_and_ordinary_admin_restriction(client: AsyncClient, db_session: AsyncSession):
+    from app.core.security import get_password_hash, create_access_token
+    from app.models.organization import Organization
+    import uuid
+
+    org = Organization(name="Admin Auth Test Org", slug=f"admin-auth-{uuid.uuid4().hex[:6]}", plan_tier="enterprise")
+    db_session.add(org)
+    await db_session.flush()
+
+    superadmin = User(
+        email="root.super@test.com",
+        hashed_password=get_password_hash("SuperPass123!"),
+        full_name="Super Admin",
+        role="superadmin",
+        org_id=org.id,
+        is_active=True
+    )
+    ordinary_admin = User(
+        email="ordinary.admin@test.com",
+        hashed_password=get_password_hash("OrdinaryPass123!"),
+        full_name="Ordinary Admin",
+        role="admin",
+        org_id=org.id,
+        is_active=True
+    )
+    target_user = User(
+        email="target.regular@test.com",
+        hashed_password=get_password_hash("TargetPass123!"),
+        full_name="Target Regular",
+        role="user",
+        org_id=org.id,
+        is_active=True
+    )
+    db_session.add_all([superadmin, ordinary_admin, target_user])
+    await db_session.commit()
+
+    token_super = create_access_token({"sub": superadmin.id, "email": superadmin.email, "role": "superadmin"})
+    token_ordinary = create_access_token({"sub": ordinary_admin.id, "email": ordinary_admin.email, "role": "admin"})
+
+    # 1. Ordinary admin tries to promote target_user to admin -> MUST FAIL 403
+    fail_res = await client.patch(
+        f"/api/v1/admin/users/{target_user.id}",
+        headers={"Authorization": f"Bearer {token_ordinary}"},
+        json={"role": "admin"}
+    )
+    assert fail_res.status_code == 403
+    assert "Only superadministrators" in fail_res.json()["detail"]
+
+    # 2. Superadmin promotes target_user to admin -> MUST SUCCEED 200
+    success_res = await client.patch(
+        f"/api/v1/admin/users/{target_user.id}",
+        headers={"Authorization": f"Bearer {token_super}"},
+        json={"role": "admin"}
+    )
+    assert success_res.status_code == 200
+
+@pytest.mark.asyncio
+async def test_individual_user_plan_does_not_mutate_organization_plan(client: AsyncClient, db_session: AsyncSession):
+    from app.core.security import get_password_hash, create_access_token
+    from app.models.organization import Organization
+    import uuid
+
+    org = Organization(name="Multi Tenant Plan Org", slug=f"mt-plan-{uuid.uuid4().hex[:6]}", plan_tier="free")
+    db_session.add(org)
+    await db_session.flush()
+
+    superadmin = User(
+        email="plan.super@test.com",
+        hashed_password=get_password_hash("Pass123!"),
+        full_name="Plan Admin",
+        role="superadmin",
+        org_id=org.id,
+        is_active=True
+    )
+    user1 = User(
+        email="member1@test.com",
+        hashed_password=get_password_hash("Pass123!"),
+        full_name="Member One",
+        role="user",
+        org_id=org.id,
+        is_active=True
+    )
+    user2 = User(
+        email="member2@test.com",
+        hashed_password=get_password_hash("Pass123!"),
+        full_name="Member Two",
+        role="user",
+        org_id=org.id,
+        is_active=True
+    )
+    db_session.add_all([superadmin, user1, user2])
+    await db_session.commit()
+
+    token_super = create_access_token({"sub": superadmin.id, "email": superadmin.email, "role": "superadmin"})
+
+    # Update Member 1's plan to "pro"
+    update_res = await client.patch(
+        f"/api/v1/admin/users/{user1.id}",
+        headers={"Authorization": f"Bearer {token_super}"},
+        json={"plan_tier": "pro"}
+    )
+    assert update_res.status_code == 200
+
+    # Verify Member 1 has individual plan "pro"
+    detail1 = await client.get(f"/api/v1/admin/users/{user1.id}", headers={"Authorization": f"Bearer {token_super}"})
+    assert detail1.status_code == 200
+    assert detail1.json()["plan_tier"] == "pro"
+    assert detail1.json()["individual_plan_tier"] == "pro"
+
+    # Verify Member 2 STILL has organization plan "free" and was NOT changed
+    detail2 = await client.get(f"/api/v1/admin/users/{user2.id}", headers={"Authorization": f"Bearer {token_super}"})
+    assert detail2.status_code == 200
+    assert detail2.json()["plan_tier"] == "free"
+    assert detail2.json()["individual_plan_tier"] is None
+
+    # Verify Organization plan_tier is STILL "free"
+    await db_session.refresh(org)
+    assert org.plan_tier == "free"
+
+    # Now explicitly update organization subscription to "starter"
+    org_res = await client.patch(
+        f"/api/v1/admin/organizations/{org.id}/subscription",
+        headers={"Authorization": f"Bearer {token_super}"},
+        json={"plan_tier": "starter"}
+    )
+    assert org_res.status_code == 200
+
+    # Member 2 now inherits "starter", while Member 1 retains individual override "pro"
+    detail2_updated = await client.get(f"/api/v1/admin/users/{user2.id}", headers={"Authorization": f"Bearer {token_super}"})
+    assert detail2_updated.json()["plan_tier"] == "starter"
+
+    detail1_recheck = await client.get(f"/api/v1/admin/users/{user1.id}", headers={"Authorization": f"Bearer {token_super}"})
+    assert detail1_recheck.json()["plan_tier"] == "pro"
+
+@pytest.mark.asyncio
+async def test_rate_limiting_triggers_429(client: AsyncClient):
+    from app.core.rate_limit import clear_rate_limits
+    clear_rate_limits()
+
+    # Rate limit for forgot-password is 10 requests per 15 min
+    status_codes = []
+    for _ in range(12):
+        res = await client.post("/api/v1/auth/forgot-password", json={"email": "ratelimit.test@example.com"})
+        status_codes.append(res.status_code)
+
+    assert 429 in status_codes
+    clear_rate_limits()

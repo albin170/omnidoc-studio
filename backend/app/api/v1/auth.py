@@ -18,6 +18,7 @@ from app.models.consent import ConsentRecord
 from app.models.password_reset import PasswordResetToken
 from app.models.revocation import RevokedToken
 from app.models.audit import AuditEvent
+from app.core.rate_limit import rate_limiter
 from app.schemas.auth import (
     Token,
     UserRegister,
@@ -162,7 +163,7 @@ async def register_user(
             detail=f"Registration failed: {str(e)}"
         )
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=Token, dependencies=[Depends(rate_limiter(max_requests=20, window_seconds=60))])
 async def login_json(
     credentials: UserLogin,
     db: AsyncSession = Depends(get_db)
@@ -181,11 +182,11 @@ async def login_json(
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Account is disabled")
 
-    # Fetch actual plan tier from organization
+    # Fetch actual plan tier from individual override or organization
     org_stmt = select(Organization).where(Organization.id == user.org_id)
     org_res = await db.execute(org_stmt)
     org = org_res.scalars().first()
-    plan_tier = org.plan_tier if org else "free"
+    plan_tier = user.individual_plan_tier or (org.plan_tier if org else "free")
 
     token = create_access_token(data={"sub": user.id, "org_id": user.org_id, "role": user.role, "plan_tier": plan_tier})
     return Token(
@@ -199,7 +200,7 @@ async def login_json(
         plan_tier=plan_tier
     )
 
-@router.post("/token", response_model=Token)
+@router.post("/token", response_model=Token, dependencies=[Depends(rate_limiter(max_requests=20, window_seconds=60))])
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
@@ -217,11 +218,11 @@ async def login_for_access_token(
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Account is disabled")
 
-    # Fetch actual plan tier from organization
+    # Fetch actual plan tier from individual override or organization
     org_stmt = select(Organization).where(Organization.id == user.org_id)
     org_res = await db.execute(org_stmt)
     org = org_res.scalars().first()
-    plan_tier = org.plan_tier if org else "free"
+    plan_tier = user.individual_plan_tier or (org.plan_tier if org else "free")
 
     token = create_access_token(data={"sub": user.id, "org_id": user.org_id, "role": user.role, "plan_tier": plan_tier})
     return Token(
@@ -414,7 +415,7 @@ async def logout(
         "message": "Successfully logged out and session revoked."
     }
 
-@router.post("/forgot-password")
+@router.post("/forgot-password", dependencies=[Depends(rate_limiter(max_requests=10, window_seconds=900))])
 async def forgot_password(
     payload: PasswordResetRequest,
     request: Request,

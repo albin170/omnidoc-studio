@@ -11,6 +11,7 @@ from sqlalchemy import select, func, update, delete, or_
 from app.core.database import get_db
 from app.core.security import get_current_user, create_access_token, verify_password, get_password_hash
 from app.core.config import settings
+from app.core.rate_limit import rate_limiter
 from app.models.user import User
 from app.models.organization import Organization
 from app.models.document import Document
@@ -24,13 +25,21 @@ from app.services.entitlement_service import calculate_user_entitlements
 
 router = APIRouter(prefix="/admin", tags=["Administrator Console"])
 
-ALLOWED_ROLES = {"admin", "staff", "user"}
+ALLOWED_ROLES = {"superadmin", "admin", "staff", "user"}
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
-    if current_user.role != "admin":
+    if current_user.role not in ("admin", "superadmin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Administrative privileges required to access this endpoint"
+        )
+    return current_user
+
+def require_superadmin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "superadmin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Superadministrator privileges required for this action"
         )
     return current_user
 
@@ -76,6 +85,8 @@ class UserAdminOut(BaseModel):
     org_id: str
     org_name: str
     plan_tier: str
+    individual_plan_tier: Optional[str] = None
+    org_plan_tier: Optional[str] = None
     created_at: str
     storage_used_bytes: int
     documents_count: int
@@ -187,7 +198,7 @@ async def record_admin_audit(
 
 # ===================== 1. Admin Authentication =====================
 
-@router.post("/auth/login", response_model=AdminLoginResponse)
+@router.post("/auth/login", response_model=AdminLoginResponse, dependencies=[Depends(rate_limiter(max_requests=10, window_seconds=60))])
 async def admin_login(req: AdminLoginRequest, db: AsyncSession = Depends(get_db)):
     """
     Dedicated Administrator Login. Verifies role == 'admin' before issuing token.
@@ -202,7 +213,7 @@ async def admin_login(req: AdminLoginRequest, db: AsyncSession = Depends(get_db)
             detail="Invalid administrative credentials"
         )
     
-    if user.role != "admin":
+    if user.role not in ("admin", "superadmin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: User does not hold administrative privileges"
@@ -362,7 +373,9 @@ async def list_users(
             is_active=u.is_active,
             org_id=u.org_id,
             org_name=org.name if org else "Default",
-            plan_tier=org.plan_tier if org else "free",
+            plan_tier=u.individual_plan_tier or (org.plan_tier if org else "free"),
+            individual_plan_tier=u.individual_plan_tier,
+            org_plan_tier=org.plan_tier if org else "free",
             created_at=u.created_at.isoformat(),
             storage_used_bytes=storage_sum,
             documents_count=docs_count
@@ -380,12 +393,11 @@ async def create_user(
         raise HTTPException(status_code=400, detail="User with this email already exists")
 
     # Enforce role creation restrictions: only superadmins can provision admin accounts
-    if req.role == "admin" and admin.role != "superadmin":
-        if admin.email != os.getenv("INITIAL_ADMIN_EMAIL", "admin@omnidoc.io"):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Privilege escalation denied: Provisioning administrator accounts requires superadmin privileges"
-            )
+    if req.role in ("admin", "superadmin") and admin.role != "superadmin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Privilege escalation denied: Provisioning administrator accounts requires superadmin privileges"
+        )
 
     org = Organization(
         name=req.org_name or f"{req.full_name}'s Workspace",
@@ -425,7 +437,9 @@ async def create_user(
         is_active=new_user.is_active,
         org_id=org.id,
         org_name=org.name,
-        plan_tier=org.plan_tier,
+        plan_tier=new_user.individual_plan_tier or org.plan_tier,
+        individual_plan_tier=new_user.individual_plan_tier,
+        org_plan_tier=org.plan_tier,
         created_at=new_user.created_at.isoformat(),
         storage_used_bytes=0,
         documents_count=0
@@ -459,7 +473,9 @@ async def get_user_detail(
         "is_active": user.is_active,
         "org_id": user.org_id,
         "org_name": org.name if org else "",
-        "plan_tier": org.plan_tier if org else "free",
+        "plan_tier": user.individual_plan_tier or (org.plan_tier if org else "free"),
+        "individual_plan_tier": user.individual_plan_tier,
+        "org_plan_tier": org.plan_tier if org else "free",
         "created_at": user.created_at.isoformat(),
         "entitlements": ent.to_dict(),
         "overrides": overrides
@@ -479,15 +495,14 @@ async def update_user(
     if user.id == admin.id and req.role and req.role != "admin":
         raise HTTPException(status_code=400, detail="Administrators cannot demote their own account")
 
-    # Enforce role promotion restriction: only superadmins can elevate users to admin
-    if req.role == "admin" and user.role != "admin" and admin.role != "superadmin":
-        if admin.email != os.getenv("INITIAL_ADMIN_EMAIL", "admin@omnidoc.io"):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Privilege escalation denied: Only superadministrators can promote users to admin"
-            )
+    # Enforce role promotion restriction: only superadmins can elevate users to admin or superadmin
+    if req.role in ("admin", "superadmin") and user.role not in ("admin", "superadmin") and admin.role != "superadmin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Privilege escalation denied: Only superadministrators can promote users to administrator"
+        )
 
-    prev = {"full_name": user.full_name, "role": user.role, "is_active": user.is_active}
+    prev = {"full_name": user.full_name, "role": user.role, "is_active": user.is_active, "individual_plan_tier": user.individual_plan_tier}
 
     if req.full_name is not None:
         user.full_name = req.full_name
@@ -496,14 +511,41 @@ async def update_user(
     if req.is_active is not None:
         user.is_active = req.is_active
 
+    # Set individual user plan tier override (does not affect other organization members)
     if req.plan_tier is not None:
-        org = await db.get(Organization, user.org_id)
-        if org:
-            org.plan_tier = req.plan_tier
+        user.individual_plan_tier = req.plan_tier
 
     await record_admin_audit(db, admin, "ADMIN_UPDATE_USER", "user", user.id, previous_value=prev, new_value=req.model_dump(exclude_unset=True))
     await db.commit()
     return {"status": "SUCCESS", "message": "User updated successfully"}
+
+class UpdateOrgSubscriptionAdminRequest(BaseModel):
+    plan_tier: str
+
+@router.patch("/organizations/{org_id}/subscription")
+async def update_organization_subscription(
+    org_id: str,
+    req: UpdateOrgSubscriptionAdminRequest,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Explicit Organization-level subscription plan update.
+    Requires administrative privileges and leaves individual user overrides intact.
+    """
+    org = await db.get(Organization, org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    prev = {"plan_tier": org.plan_tier}
+    org.plan_tier = req.plan_tier
+
+    await record_admin_audit(
+        db, admin, "ADMIN_UPDATE_ORG_SUBSCRIPTION", "organization", org.id,
+        previous_value=prev, new_value={"plan_tier": req.plan_tier}
+    )
+    await db.commit()
+    return {"status": "SUCCESS", "message": f"Organization subscription plan updated to {req.plan_tier}"}
 
 @router.post("/users/{user_id}/suspend")
 async def suspend_user(

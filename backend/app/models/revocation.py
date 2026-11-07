@@ -11,3 +11,4 @@ class RevokedToken(Base):
     user_id = Column(String(36), nullable=False, index=True)
     revoked_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     expires_at = Column(DateTime, nullable=False, index=True)
+
