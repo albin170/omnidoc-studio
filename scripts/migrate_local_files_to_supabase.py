@@ -1,17 +1,22 @@
 import os
+import sys
 import mimetypes
 from supabase import create_client
 
 def migrate():
-    url = "https://kflqymlcrtqepwjeulpb.supabase.co"
-    key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbHF5bWxjcnRxZXB3amV1bHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDMwNDI3MywiZXhwIjoyMTA5ODgwMjczfQ.-hrU9vqXaPVsf9PwBVNCefQjWIpL_Rfm5RGUftsS7i8"
-    bucket = "documents"
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    bucket = os.getenv("SUPABASE_BUCKET_NAME", "documents")
     
+    if not url or not key:
+        print("Error: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required.")
+        sys.exit(1)
+        
     sb = create_client(url, key)
-    vault_dir = os.path.abspath("C:/Users/Dell/Documents/omnidoc-studio/storage_vault")
+    vault_dir = os.path.abspath(os.getenv("STORAGE_DIR", "storage_vault"))
     
     if not os.path.exists(vault_dir):
-        print(f"Directory {vault_dir} does not exist.")
+        print(f"Directory {vault_dir} does not exist. Nothing to migrate.")
         return
 
     uploaded = 0
@@ -48,8 +53,9 @@ def migrate():
                     print(f"Error uploading {rel_path}: {e}")
                     failed += 1
 
-    print(f"\nMigration complete: {uploaded} uploaded, {skipped} skipped, {failed} failed.")
+    print("==========================================")
+    print(f"Migration complete! Uploaded: {uploaded}, Skipped: {skipped}, Failed: {failed}")
+    print("==========================================")
 
 if __name__ == "__main__":
     migrate()
-

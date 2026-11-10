@@ -32,6 +32,19 @@ __pycache__
 *.pyo
 *.db
 storage_vault
+temp_vault
+backups/
+*.dump
+*.sql
+*.sql.gz
+*.bak
+*.pem
+*.key
+*.cert
+
+# Environment and Secret configuration
 .env
+.env.*
+!.env.example
 *.env
 backend/.env

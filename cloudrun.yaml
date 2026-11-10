@@ -28,15 +28,27 @@ spec:
         - name: ENVIRONMENT
           value: "production"
         - name: SECRET_KEY
-          value: "omnidoc_prod_sec_key_d92f8a1103c8479e2bc91e7041a384f5_supabase_ready"
+          valueFrom:
+            secretKeyRef:
+              name: omnidoc-secret-key
+              key: latest
         - name: DATABASE_URL
-          value: "postgresql+asyncpg://postgres.kflqymlcrtqepwjeulpb:OmniDoc_Db_2026_SecureKey!@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"
+          valueFrom:
+            secretKeyRef:
+              name: omnidoc-database-url
+              key: latest
         - name: STORAGE_PROVIDER
           value: "supabase"
         - name: SUPABASE_URL
-          value: "https://kflqymlcrtqepwjeulpb.supabase.co"
+          valueFrom:
+            secretKeyRef:
+              name: omnidoc-supabase-url
+              key: latest
         - name: SUPABASE_SERVICE_ROLE_KEY
-          value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbHF5bWxjcnRxZXB3amV1bHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDMwNDI3MywiZXhwIjoyMTA5ODgwMjczfQ.-hrU9vqXaPVsf9PwBVNCefQjWIpL_Rfm5RGUftsS7i8"
+          valueFrom:
+            secretKeyRef:
+              name: omnidoc-supabase-service-role-key
+              key: latest
         - name: SUPABASE_BUCKET_NAME
           value: "documents"
         - name: FRONTEND_URL
@@ -45,4 +57,3 @@ spec:
           value: "false"
         - name: TRUST_PROXY_HEADERS
           value: "true"
-
