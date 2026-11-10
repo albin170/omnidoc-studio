@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from sqlalchemy import Column, String, Integer, BigInteger, Boolean, Text, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from app.core.database import Base, utc_now
 
 class PlanModel(Base):
     __tablename__ = "plans"
@@ -33,8 +33,8 @@ class PlanModel(Base):
     # Serialized features enabled for this plan
     features_json = Column(Text, default='["pdf_tools","docx_studio","sheet_studio"]', nullable=False)
 
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
 
     subscriptions = relationship("SubscriptionModel", back_populates="plan", cascade="all, delete-orphan")
 
@@ -48,7 +48,7 @@ class FeatureModel(Base):
     category = Column(String(64), default="General", nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     default_enabled = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
 
 class SubscriptionModel(Base):
     __tablename__ = "subscriptions"
@@ -59,12 +59,12 @@ class SubscriptionModel(Base):
     plan_id = Column(String(36), ForeignKey("plans.id", ondelete="RESTRICT"), nullable=False, index=True)
     status = Column(String(32), default="active", nullable=False) # active, trialing, past_due, canceled, expired
     billing_cycle = Column(String(16), default="monthly", nullable=False)
-    current_period_start = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    current_period_start = Column(DateTime, default=utc_now, nullable=False)
     current_period_end = Column(DateTime, nullable=True)
     cancel_at_period_end = Column(Boolean, default=False, nullable=False)
     payment_provider = Column(String(32), default="manual", nullable=False) # manual, stripe, paypal
     external_subscription_id = Column(String(128), nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
 
     plan = relationship("PlanModel", back_populates="subscriptions")
 
@@ -87,8 +87,8 @@ class UserEntitlementOverrideModel(Base):
     expires_at = Column(DateTime, nullable=True)
     admin_notes = Column(Text, nullable=True)
     created_by_admin_id = Column(String(36), nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
 
     __table_args__ = (
         Index("ix_user_feature_override", "user_id", "feature_key", unique=True),
@@ -106,7 +106,7 @@ class UiConfigurationModel(Base):
     disabled_modules_json = Column(Text, default="[]", nullable=False) # JSON array of disabled module keys
     feature_flags_json = Column(Text, default="{}", nullable=False)
     updated_by_admin_id = Column(String(36), nullable=True)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
 
     __table_args__ = (
         Index("ix_ui_scope_target", "scope", "target_id", unique=True),
@@ -120,7 +120,7 @@ class AdminViewSessionModel(Base):
     target_user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     session_token = Column(String(128), unique=True, index=True, nullable=False)
     is_read_only = Column(Boolean, default=True, nullable=False)
-    started_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    started_at = Column(DateTime, default=utc_now, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     ended_at = Column(DateTime, nullable=True)
 

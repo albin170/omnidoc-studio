@@ -73,7 +73,7 @@ async def upload_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    filename = file.filename or "uploaded_file"
+    filename = os.path.basename(file.filename or "uploaded_file").replace("\x00", "")
     ext = filename.split(".")[-1].lower() if "." in filename else ""
     if ext not in settings.ALLOWED_EXTENSIONS:
         raise HTTPException(
@@ -83,17 +83,6 @@ async def upload_document(
 
     # Server-Side Entitlements calculated before streaming to resolve global limit conflict (Section 4.B)
     entitlements = await calculate_user_entitlements(current_user, db)
-
-    # Enforce plan document upload count limit (Section 4.B)
-    if entitlements.upload_limit > 0:
-        doc_count = await db.scalar(
-            select(func.count(Document.id)).where(Document.org_id == current_user.org_id)
-        ) or 0
-        if doc_count >= entitlements.upload_limit:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Plan document upload limit reached ({entitlements.upload_limit} documents). Upgrade your plan or delete existing documents."
-            )
 
     # Bounded chunk streaming to prevent memory exhaustion, capped by plan max_file_size_bytes
     max_allowed = min(settings.MAX_UPLOAD_SIZE_BYTES, entitlements.max_file_size_bytes)
@@ -114,10 +103,22 @@ async def upload_document(
 
     content = b"".join(chunks)
 
-    # Concurrency-safe storage quota verification: lock organization row
+    # Concurrency-safe quota verification: lock organization row
     await db.scalar(
         select(Organization).where(Organization.id == current_user.org_id).with_for_update()
     )
+
+    # Enforce plan document upload count limit within lock (Section 4.B)
+    if entitlements.upload_limit > 0:
+        doc_count = await db.scalar(
+            select(func.count(Document.id)).where(Document.org_id == current_user.org_id)
+        ) or 0
+        if doc_count >= entitlements.upload_limit:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Plan document upload limit reached ({entitlements.upload_limit} documents). Upgrade your plan or delete existing documents."
+            )
+
     used_storage = await db.scalar(
         select(func.sum(Document.file_size)).where(Document.org_id == current_user.org_id)
     ) or 0
@@ -292,10 +293,11 @@ async def download_document_file(
     db.add(audit)
     await db.commit()
 
+    safe_filename = doc.filename.replace("\r", "").replace("\n", "").replace('"', '\\"')
     return Response(
         content=file_bytes,
         media_type=doc.mime_type,
-        headers={"Content-Disposition": f'attachment; filename="{doc.filename}"'}
+        headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'}
     )
 
 @router.delete("/{document_id}", status_code=status.HTTP_200_OK)
@@ -313,7 +315,10 @@ async def delete_document(
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
 
-    storage_vault.delete_file(org_id=current_user.org_id, storage_path=doc.storage_path)
+    try:
+        storage_vault.delete_file(org_id=current_user.org_id, storage_path=doc.storage_path)
+    except Exception as cleanup_err:
+        logger.warning("Storage file deletion error during document delete: %s", cleanup_err)
 
     audit = AuditEvent(
         org_id=current_user.org_id,

@@ -893,6 +893,7 @@ async def create_view_as_user_session(
             "org_id": target.org_id,
             "role": "user",  # Never copy privileged roles into impersonation token
             "plan_tier": org.plan_tier if org else "free",
+            "token_version": target.token_version or 1,
             "is_admin_view": True,
             "acting_admin_id": admin.id,
             "view_session_id": view_session.id,

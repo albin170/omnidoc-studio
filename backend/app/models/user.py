@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from app.core.database import Base, utc_now
 
 class User(Base):
     __tablename__ = "users"
@@ -22,7 +22,7 @@ class User(Base):
     ai_consent = Column(Boolean, default=False, nullable=False)
     marketing_consent = Column(Boolean, default=False, nullable=False)
     
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
 
     org_id = Column(String(36), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
     organization = relationship("Organization", back_populates="users")

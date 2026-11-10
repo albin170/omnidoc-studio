@@ -310,11 +310,19 @@ class BillingService:
                     db.add(audit)
 
         # Mark event processed
-        db.add(IdempotencyRecordModel(
-            idempotency_key=f"stripe_{event_id}",
-            response_json=f'{{"status": "processed", "type": "{event_type}"}}'
-        ))
-        await db.commit()
+        try:
+            db.add(IdempotencyRecordModel(
+                key=f"stripe_{event_id}",
+                result_json=f'{{"status": "processed", "type": "{event_type}"}}'
+            ))
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            # If concurrent duplicate delivery caused a database unique constraint conflict, return idempotent skip
+            if "unique" in str(e).lower() or "integrity" in str(e).lower() or "duplicate" in str(e).lower():
+                return {"status": "idempotent_skip", "event_id": event_id}
+            logger.error("Failed to record Stripe webhook idempotency for event %s: %s", event_id, e)
+            raise e
 
         return {"status": "success", "event_id": event_id, "type": event_type}
 

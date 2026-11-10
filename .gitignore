@@ -32,3 +32,6 @@ __pycache__
 *.pyo
 *.db
 storage_vault
+.env
+*.env
+backend/.env

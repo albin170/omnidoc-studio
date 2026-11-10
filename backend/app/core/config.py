@@ -137,7 +137,15 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "CRITICAL SECURITY CONFIGURATION ERROR: Production SECRET_KEY lacks sufficient cryptographic entropy."
                 )
-            if self.STORAGE_PROVIDER == "s3":
+            if not self.DATABASE_URL or "sqlite" in self.DATABASE_URL.lower():
+                raise ValueError(
+                    "CRITICAL CONFIGURATION ERROR: Production requires a persistent PostgreSQL database connection (e.g., postgresql+asyncpg://...). Temporary SQLite is strictly prohibited in production."
+                )
+            if self.STORAGE_PROVIDER.lower() in ("local", "") or self.STORAGE_PROVIDER.lower() not in ("s3", "r2", "supabase"):
+                raise ValueError(
+                    "CRITICAL CONFIGURATION ERROR: Production requires persistent object storage (STORAGE_PROVIDER=s3 or compatible). Local ephemeral storage is strictly prohibited in production."
+                )
+            if self.STORAGE_PROVIDER.lower() == "s3":
                 if not self.S3_BUCKET_NAME:
                     raise ValueError(
                         "CRITICAL CONFIGURATION ERROR: S3_BUCKET_NAME must be configured when STORAGE_PROVIDER=s3 in production."
@@ -163,15 +171,6 @@ class Settings(BaseSettings):
             raise ValueError(
                 "CRITICAL CONFIGURATION ERROR: DATABASE_URL must be set for any environment."
             )
-        if self.ENVIRONMENT.lower() in ("production", "prod"):
-            if "sqlite" in self.DATABASE_URL.lower():
-                raise ValueError(
-                    "CRITICAL CONFIGURATION ERROR: Production requires a persistent PostgreSQL database connection (e.g., postgresql+asyncpg://...). Temporary SQLite is strictly prohibited in production."
-                )
-            if self.STORAGE_PROVIDER == "local":
-                raise ValueError(
-                    "CRITICAL CONFIGURATION ERROR: Production requires persistent object storage (STORAGE_PROVIDER=s3 or compatible). Local ephemeral storage is strictly prohibited in production."
-                )
         # Ensure production security constraints are also validated
         self.validate_production_security()
 

@@ -133,14 +133,14 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive or suspended user account")
 
     # Enforce server-controlled token version invalidation (Section 2.B)
+    expected_token_ver = getattr(user, "token_version", 1)
     token_ver = payload.get("token_version")
-    if token_ver is not None and getattr(user, "token_version", None) is not None:
-        if token_ver != user.token_version:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Session invalidated by recent password change or security revocation. Please log in again.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+    if token_ver != expected_token_ver:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session invalidated by recent password change or security revocation. Please log in again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     # If impersonated, bind session identity and strictly demote role so target privilege cannot escalate
     if is_admin_view and view_session:
@@ -151,7 +151,18 @@ async def get_current_user(
         user.role = "user"
 
         # Record immutable audit event for impersonated access (Phase 2.1 Rule 13)
-        client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else None)
+        client_host = request.client.host if request.client else None
+        forwarded = request.headers.get("x-forwarded-for")
+        cf_ip = request.headers.get("cf-connecting-ip")
+        is_trusted_proxy = settings.TRUST_PROXY_HEADERS or (client_host and client_host in settings.TRUSTED_PROXIES)
+        if is_trusted_proxy and forwarded:
+            client_ip = forwarded.split(",")[0].strip()
+        elif is_trusted_proxy and cf_ip:
+            client_ip = cf_ip.strip()
+        elif client_host:
+            client_ip = client_host
+        else:
+            client_ip = None
         access_audit = AuditEvent(
             id=str(uuid.uuid4()),
             org_id=user.org_id,

@@ -159,11 +159,12 @@ async def calculate_user_entitlements(user: User, db: AsyncSession) -> Effective
     enabled_set = set(plan_features)
     overrides_applied = {}
 
-    # 4. Apply Individual User Overrides
+    # 4. Apply Individual User Overrides (Ordered deterministically by creation time and id)
     now = datetime.now(timezone.utc)
     user_overrides = await db.scalars(
         select(UserEntitlementOverrideModel)
         .where(UserEntitlementOverrideModel.user_id == user.id)
+        .order_by(UserEntitlementOverrideModel.created_at.asc(), UserEntitlementOverrideModel.id.asc())
     )
 
     for ov in user_overrides.all():

@@ -1,10 +1,10 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from sqlalchemy import Column, String, Boolean, Text, DateTime, ForeignKey, Integer
-from app.core.database import Base
+from app.core.database import Base, utc_now
 
 def utcnow():
-    return datetime.now(timezone.utc)
+    return utc_now()
 
 class Workflow(Base):
     __tablename__ = "workflows"

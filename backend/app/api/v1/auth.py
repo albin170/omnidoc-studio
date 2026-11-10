@@ -503,8 +503,13 @@ async def forgot_password(
         db.add(audit)
         await db.commit()
 
-        # Dispatch reset instructions via configured email service
-        await email_service.send_password_reset_email(user.email, raw_token)
+        # Dispatch reset instructions via configured email service (Section 5.A)
+        email_sent = await email_service.send_password_reset_email(user.email, raw_token)
+        if not email_sent and settings.ENVIRONMENT.lower() in ("production", "prod"):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Password reset email delivery failed due to email service unavailability. Please contact support."
+            )
 
         # In testing environments, store raw token on app state for regression test verification
         if settings.ENVIRONMENT.lower() in ("test", "testing", "development"):

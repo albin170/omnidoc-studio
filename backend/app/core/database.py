@@ -1,7 +1,11 @@
 from typing import AsyncGenerator
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 from app.core.config import settings
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 is_sqlite = "sqlite" in settings.DATABASE_URL.lower()
 
