@@ -81,7 +81,8 @@ class Settings(BaseSettings):
     EMAILS_FROM_NAME: str = os.getenv("EMAILS_FROM_NAME", "OmniDoc Studio Security")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
-    # Payment Gateway (Stripe)
+    # Payment Gateway (Stripe - completely disabled by default for zero-cost operation)
+    ENABLE_STRIPE: bool = os.getenv("ENABLE_STRIPE", "false").lower() in ("true", "1")
     STRIPE_SECRET_KEY: Optional[str] = os.getenv("STRIPE_SECRET_KEY")
     STRIPE_WEBHOOK_SECRET: Optional[str] = os.getenv("STRIPE_WEBHOOK_SECRET")
 

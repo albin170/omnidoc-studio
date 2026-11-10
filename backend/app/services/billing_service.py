@@ -26,6 +26,8 @@ class BillingService:
 
     @property
     def is_configured(self) -> bool:
+        if not getattr(settings, "ENABLE_STRIPE", False):
+            return False
         return bool(self.secret_key and self.secret_key.startswith("sk_"))
 
     async def create_checkout_session(

@@ -61,18 +61,12 @@ export const PricingPage: React.FC<PricingPageProps> = ({
       addToast('info', 'Current Active Plan', `Your organization is currently subscribed to the ${plan.name} tier.`);
       return;
     }
-    try {
-      const res = await omniDocClient.createCheckoutSession(plan.slug, billingCycle);
-      if (res.checkout_url) {
-        window.location.href = res.checkout_url;
-      }
-    } catch (err: any) {
-      addToast(
-        'info',
-        'Upgrade Notice',
-        err.message || `Direct card checkout for ${plan.name} is pending payment gateway configuration. To activate this tier for your workspace, contact enterprise billing at sales@omnidoc.studio.`
-      );
-    }
+    // Stripe disabled notice
+    addToast(
+      'info',
+      'Free Community Plan Active',
+      `Card payments are currently disabled. Your organization has full access to core conversion, OCR, and document intelligence tools under the Community plan. For custom enterprise quotas, contact sales@omnidoc.studio.`
+    );
   };
 
   const formatStorage = (bytes: number) => {

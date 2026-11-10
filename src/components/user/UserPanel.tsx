@@ -227,14 +227,11 @@ export const UserPanel: React.FC<UserPanelProps> = ({
   };
 
   const handlePlanCheckout = async (planSlug: string, planName: string) => {
-    try {
-      const res = await omniDocClient.createCheckoutSession(planSlug, userSession.billingCycle || 'monthly');
-      if (res.checkout_url) {
-        window.location.href = res.checkout_url;
-      }
-    } catch (err: any) {
-      addToast('info', 'Checkout Status', err.message || `Direct card checkout for ${planName} is pending gateway configuration. Please contact sales@omnidoc.studio to upgrade.`);
-    }
+    addToast(
+      'info',
+      'Free Community Tier Active',
+      `Card payments are currently disabled. Your organization has full access to core conversion, OCR, and document intelligence tools under the Community plan. For custom enterprise quotas, contact sales@omnidoc.studio.`
+    );
   };
 
   const handleExportUserData = async () => {
