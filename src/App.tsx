@@ -63,7 +63,8 @@ import {
   ArrowLeft,
   Sparkles,
   GitCompare,
-  Layers
+  Layers,
+  LogOut
 } from 'lucide-react';
 import { OmniDocLogo } from './components/common/OmniDocLogo';
 import { useToast } from './services/toastService';
@@ -609,6 +610,13 @@ export const App: React.FC = () => {
             <UserIcon className="w-4 h-4" />
           </button>
           <button
+            onClick={handleLogout}
+            className="p-1.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:text-rose-100"
+            title="Log Out"
+          >
+            <LogOut className="w-4 h-4 text-rose-400" />
+          </button>
+          <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="p-1.5 rounded-lg bg-white/10 text-slate-200 hover:text-white"
             title="Open Menu"
@@ -783,6 +791,15 @@ export const App: React.FC = () => {
               >
                 <HelpCircle className="w-4 h-4" />
               </button>
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 hover:text-rose-200 text-xs font-bold border border-rose-500/30 cursor-pointer transition-colors"
+                title="Log Out & Switch Account"
+              >
+                <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                <span className="hidden lg:inline">Sign Out</span>
+              </button>
             </div>
           </div>
         )}
@@ -810,6 +827,7 @@ export const App: React.FC = () => {
             onOpenCollab={() => setIsCollabOpen(true)}
             onOpenDeveloper={() => setIsDeveloperOpen(true)}
             userRole={userSession.role}
+            onLogout={handleLogout}
           />
         )}
 

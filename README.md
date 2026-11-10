@@ -1,12 +1,51 @@
-# OmniDoc Studio — Convert, Edit & Create Any Document
+# OmniDoc Studio — Enterprise Document Intelligence Platform
 
 > **"Every file. Every format. One workspace."**
 
-OmniDoc Studio is an all-in-one, production-ready document and image platform. It unites a comprehensive document converter, full PDF editor, Word document processor, PowerPoint slide builder, spreadsheet data engine, photo/graphics editor with AI background removal, and client-side OCR scanner into a single, unified workspace.
+OmniDoc Studio is an all-in-one, production-grade document and image engineering SaaS platform. It unites an autonomous document converter, full PDF editor, Word document processor, PowerPoint slide builder, spreadsheet data engine, photo/graphics editor with AI background removal, client-side OCR scanner, cryptographic document verification, and cloud-native document vaults into a single, unified workspace.
+
+**Production Frontend**: [https://omnidoc-studio-jet.vercel.app](https://omnidoc-studio-jet.vercel.app)
 
 ---
 
-## 🌟 Key Features & Dedicated Workspaces
+## 🏛️ Production Architecture
+
+```
+                  ┌─────────────────────────────────────────┐
+                  │          OmniDoc Client Browser          │
+                  │       (React 19 + TypeScript + Vite)     │
+                  └────────────────────┬────────────────────┘
+                                       │ HTTPS / WSS
+                                       ▼
+        ┌─────────────────────────────────────────────────────────────┐
+        │                 API Routing / Edge Layer                    │
+        │                                                             │
+        │  • Direct /api/v1/*   ──► Vercel Serverless (api/index.py)  │
+        │  • Custom Backend URL ──► Google Cloud Run Container        │
+        └──────────────┬──────────────────────────────┬───────────────┘
+                       │                              │
+                       ▼                              ▼
+        ┌──────────────────────────────┐┌─────────────────────────────┐
+        │   FastAPI Core Services      ││   Supabase Cloud Services   │
+        │  • JWT Auth & RBAC           ││                             │
+        │  • Multi-Tenant Isolation    ││  • PostgreSQL (17.11 Pooler)│
+        │  • HMAC Signed Downloads     ││  • Private Storage Buckets  │
+        │  • Health & Metrics Probes   ││  • Row-Level Security       │
+        └──────────────────────────────┘└─────────────────────────────┘
+```
+
+- **Frontend**: Vercel (React 19 + TypeScript + Tailwind CSS + Lucide Icons + Vite)
+- **Backend (Dual Deployment Ready)**:
+  - **Vercel Serverless Function** (`api/index.py` via Python WSGI/ASGI): Zero-cold-start single-domain hosting on Vercel.
+  - **Google Cloud Run** (`Dockerfile` + `cloudrun.yaml`): High-concurrency container deployment with autoscaling (0–10 instances).
+- **Database**: Supabase PostgreSQL 17.11 with SSL (`sslmode=require`), async connection pooling, and Alembic migrations decoupled from container startup.
+- **File Storage**: Supabase Storage (`documents` private bucket) with tenant isolation path prefixing (`{org_id}/{doc_id}/{filename}`) and tamper-resistant HMAC-SHA256 signed download URLs.
+- **Authentication**: FastAPI JWT authentication with tenant/organization context, role-based access control (`superadmin`, `admin`, `user`), and password hashing with bcrypt/argon2.
+- **Payments**: Stripe completely disabled (`ENABLE_STRIPE=false`) for sovereign zero-cost community and enterprise deployments.
+
+---
+
+## 🌟 Key Workspaces & Capabilities
 
 ### 1. 🔄 Universal Conversion Hub
 - **Multi-Format Matrix**: Real conversion paths between **PDF, DOCX, PPTX, XLSX, CSV, PNG, JPG, WebP, Markdown, and TXT**.
@@ -36,13 +75,7 @@ OmniDoc Studio is an all-in-one, production-ready document and image platform. I
 
 ### 5. 📈 Spreadsheet Studio (XLSX & CSV)
 - **Tabular Data Grid**: Interactive cells with column headers (A, B, C...) and row numbers.
-- **Formula Engine**: Evaluates standard uppercase spreadsheet functions:
-  - `=SUM(A1:A5)`
-  - `=AVERAGE(A1:A5)`
-  - `=MIN(A1:A5)`
-  - `=MAX(A1:A5)`
-  - `=COUNT(A1:A5)`
-  - Arithmetic expressions e.g. `=(A1+B1)*1.2`
+- **Formula Engine**: Evaluates standard uppercase spreadsheet functions: `=SUM(A1:A5)`, `=AVERAGE(A1:A5)`, `=MIN(A1:A5)`, `=MAX(A1:A5)`, `=COUNT(A1:A5)`, arithmetic expressions e.g. `=(A1+B1)*1.2`.
 - **Import / Export**: Parse `.xlsx` and `.csv` files via SheetJS; export directly to `.xlsx`, `.csv`, or formatted PDF table reports.
 
 ### 6. 🎨 Photo & Graphics Studio
@@ -60,82 +93,119 @@ OmniDoc Studio is an all-in-one, production-ready document and image platform. I
 - **1-Click Send**: Send recognized text directly into Word Document Studio, or export as Searchable PDF, DOCX, or TXT.
 
 ### 8. 📚 Starter Templates Gallery
-- **Ready-to-use Presets**:
-  - *Executive Business Proposal* (opens in Word Studio)
-  - *Senior Software Engineer CV* (opens in Word Studio)
-  - *Startup Investor Pitch Deck* (opens in PowerPoint Studio)
-  - *Financial Invoice & Balance Sheet* (opens in Spreadsheet Studio)
-  - *Product Launch Social Graphic* (opens in Image Studio)
-
-### 9. 🛡️ Privacy, Projects & History
-- **100% Client-Side Architecture**: Sensitive files are processed locally in RAM; zero document data is leaked to external servers.
-- **Local Persistence**: Save projects and version snapshots to browser IndexedDB / LocalStorage.
-- **Data Export & Danger Zone**: Export your entire project collection as a JSON backup or permanently purge all local memory in one click.
+- Ready-to-use presets: *Executive Business Proposal*, *Senior Software Engineer CV*, *Startup Investor Pitch Deck*, *Financial Invoice & Balance Sheet*, *Product Launch Social Graphic*.
 
 ---
 
-## 🚀 Quick Start & Development
+## 🔒 Security, Session Management & Universal Logout
+
+- **Universal Logout Controls**:
+  - Accessible directly on the top header bar of the main Dashboard.
+  - Present on the studio breadcrumb bar across all active editors (PDF, Word, Slides, Sheets, Image, etc.).
+  - Prominently anchored in the persistent footer of the Account & Studio Panel across every tab (`profile`, `plan`, `security`, `api`).
+  - Available on mobile navigation headers and collapsed sidebar state.
+- **Tenant Isolation**: Files and database queries are strictly scoped to the user's `organization_id`.
+- **Private Buckets**: Supabase Storage buckets are private; unauthenticated direct access is completely blocked.
+- **HMAC Signed URLs**: Time-limited download URLs signed with backend secret, preventing token tampering or URL spoofing.
+- **Zero Secrets Committed**: All credentials removed from git, deployment YAMLs, and migration scripts. Fully managed through environment variables and Secret Managers.
+
+---
+
+## 📖 Operational Runbooks & Documentation
+
+The repository includes complete production engineering runbooks in the project root:
+
+| Runbook | Description |
+| :--- | :--- |
+| [`AUDIT_FINDINGS.md`](./AUDIT_FINDINGS.md) | Comprehensive audit of architecture, credentials, storage, and database lifecycle |
+| [`SECURITY_REMEDIATION.md`](./SECURITY_REMEDIATION.md) | Credential rotation, secret manager mapping, and BFG history purge instructions |
+| [`SUPABASE_STORAGE_SETUP.md`](./SUPABASE_STORAGE_SETUP.md) | Bucket creation, RLS policies, CORS, and adapter configuration |
+| [`DATABASE_MIGRATION.md`](./DATABASE_MIGRATION.md) | Safe migration procedures, export/import scripts, and checksum validation |
+| [`CLOUD_RUN_DEPLOYMENT.md`](./CLOUD_RUN_DEPLOYMENT.md) | Google Cloud Run container deployment, gcloud commands, and Secret Manager bindings |
+| [`BACKUP_AND_RESTORE.md`](./BACKUP_AND_RESTORE.md) | Automated PostgreSQL dumps, GCS/S3 sync, and point-in-time recovery |
+| [`ROLLBACK_PLAN.md`](./ROLLBACK_PLAN.md) | Instant Cloud Run revision traffic rollback and database migration reversal |
+| [`PRODUCTION_CHECKLIST.md`](./PRODUCTION_CHECKLIST.md) | Pre-flight and post-deployment verification checklist |
+
+---
+
+## 🚀 Quick Start & Local Development
 
 ### Prerequisites
 - Node.js >= 18.0.0
 - npm >= 9.0.0
+- Python >= 3.11
 
-### Installation
+### 1. Frontend Setup
 ```bash
 cd omnidoc-studio
 npm install
-```
-
-### Running Locally
-```bash
 npm run dev
 ```
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### Running Automated Tests
+### 2. Backend Setup
 ```bash
-npm test
+cd backend
+python -m venv venv
+# Linux/macOS:
+source venv/bin/activate
+# Windows:
+.\venv\Scripts\activate
+
+pip install -r requirements.txt
+cp ../.env.example ../.env  # configure your Supabase credentials
+uvicorn app.main:app --reload --port 8000
 ```
 
-### Production Build & Typecheck
+### 3. Database Schema Migration
+Migrations are decoupled from container boot to prevent race conditions during autoscaling:
 ```bash
-npm run build
-npm run preview
+python scripts/run_migrations.py
 ```
-
----
-
-## 🌐 Deploy to Vercel via GitHub
-
-OmniDoc Studio is pre-configured with `vercel.json` for instant deployment on Vercel:
-
-1. **Push your repository to GitHub**:
-   ```bash
-   # Create a repository on https://github.com/new named 'omnidoc-studio'
-   git remote add origin https://github.com/albin170/omnidoc-studio.git
-   git push -u origin main
-   ```
-
-2. **Deploy on Vercel**:
-   - Go to [vercel.com/new](https://vercel.com/new) and log in with your GitHub account.
-   - Click **Import** next to your `omnidoc-studio` repository.
-   - Framework preset will automatically be detected as **Vite**.
-   - Click **Deploy**.
-   - Your studio is live within 30 seconds with a free `.vercel.app` URL and automatic HTTPS!
-   - Every future commit to `main` will automatically build and deploy.
 
 ---
 
 ## 🧪 Automated Testing
-OmniDoc Studio includes automated tests covering:
-- Format detection & magic byte identification (`src/tests/converter.test.ts`)
-- Human-readable file size calculations
-- Spreadsheet formula evaluation (`SUM`, `AVERAGE`, `MIN`, `MAX`, arithmetic substitutions)
-- Bidirectional spreadsheet column letter-to-index conversions (`A` <-> `0`, `Z` <-> `25`, `AA` <-> `26`)
+
+### Frontend Test Suite (117 Vitest tests)
+```bash
+npm test -- --run
+```
+Covers:
+- Studio upgrades & conversion cancellations (`AbortController`)
+- PDF sanitization & destructive redaction
+- Sheet formula evaluation & column coordinate conversions
+- File validation, storage error resilience, and quota enforcement
+
+### Backend Test Suite (39 Pytest tests)
+```bash
+python -m pytest backend/tests -v
+```
+Covers:
+- Supabase storage adapter integration & path traversal prevention
+- Session management, rollback, and connection cleanup
+- Password change & token revocation
+- Admin view-as-user isolation and RBAC checks
+- Database backup and restore utilities
 
 ---
 
-## 🔒 Security & Privacy Notice
-- OmniDoc Studio processes documents, presentations, spreadsheets, and photos entirely inside client-side WebAssembly, Canvas, and browser memory.
-- No documents are sent to external third-party training pipelines.
-- Temporary blobs and object URLs are revoked upon download or component unmount to prevent browser memory leaks.
+## 🚢 Deploying to Production
+
+### Deploying to Vercel (Frontend & Serverless API)
+OmniDoc Studio is pre-configured with `vercel.json`:
+```bash
+npx vercel --prod
+```
+
+### Deploying to Google Cloud Run (Container Backend)
+```bash
+gcloud builds submit --tag gcr.io/$PROJECT_ID/omnidoc-backend:latest .
+gcloud run deploy omnidoc-backend \
+  --image gcr.io/$PROJECT_ID/omnidoc-backend:latest \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated
+```
+See [`CLOUD_RUN_DEPLOYMENT.md`](./CLOUD_RUN_DEPLOYMENT.md) for full Secret Manager bindings and flags.
+

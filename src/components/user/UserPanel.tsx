@@ -951,6 +951,52 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             </div>
           )}
         </div>
+
+        {/* Persistent Modal Footer: Active Account & Universal Sign Out */}
+        <div className="p-4 px-6 border-t border-white/10 bg-white/[0.03] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-3 w-full sm:w-auto min-w-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#8B7CFF] to-[#42D6E8] flex items-center justify-center font-bold text-xs text-[#080B18] uppercase shadow-sm shrink-0">
+              {(userName || userEmail || 'U').charAt(0)}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-semibold text-[#F4F5FF] truncate">
+                {userEmail || 'Active Session'}
+              </span>
+              <div className="flex items-center gap-1.5 text-[10px] text-[#9BA3BD]">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span>Active Account</span>
+                <span>•</span>
+                <span className="uppercase font-mono text-[10px] text-[#42D6E8] font-bold">
+                  {userSession.role || 'Member'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
+            {onLogout && (
+              <button
+                type="button"
+                onClick={() => {
+                  onLogout();
+                  onClose();
+                }}
+                className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 hover:text-rose-200 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-sm active:scale-95"
+                title="Sign out of OmniDoc Studio"
+              >
+                <LogOut className="w-4 h-4 text-rose-400" />
+                <span>Sign Out</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[#9BA3BD] hover:text-white text-xs font-medium cursor-pointer transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

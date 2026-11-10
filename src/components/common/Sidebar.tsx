@@ -440,7 +440,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Quick Help & Logout Toolbar */}
-          {!isCollapsed && (
+          {!isCollapsed ? (
             <div className="flex items-center gap-1.5">
               <button
                 onClick={onOpenHelp}
@@ -457,6 +457,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <LogOut className="w-3.5 h-3.5 text-rose-400" />
                 <span>Logout</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-1.5">
+              <button
+                onClick={onLogout}
+                className="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 flex items-center justify-center transition-colors cursor-pointer border border-rose-500/20"
+                title="Log Out & Switch Account"
+              >
+                <LogOut className="w-3.5 h-3.5 text-rose-400" />
               </button>
             </div>
           )}

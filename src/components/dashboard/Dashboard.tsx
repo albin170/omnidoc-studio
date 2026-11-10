@@ -39,7 +39,8 @@ import {
   LayoutTemplate,
   History,
   Settings as SettingsIcon,
-  HelpCircle
+  HelpCircle,
+  LogOut
 } from 'lucide-react';
 import { ConversionHistoryItem, FileFormat, StoredProject, WorkspaceTab } from '../../types';
 import { detectFileFormat, formatFileSize, FORMAT_REGISTRY } from '../../services/formatDetector';
@@ -65,6 +66,7 @@ interface DashboardProps {
   onOpenCollab?: () => void;
   onOpenDeveloper?: () => void;
   userRole?: string;
+  onLogout?: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -88,6 +90,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onOpenCollab,
   onOpenDeveloper,
   userRole = 'user',
+  onLogout,
 }) => {
   const [isAdminView, setIsAdminView] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -248,6 +251,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             )}
           </div>
+
+          {/* Quick Sign Out / Logout */}
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="w-9 h-9 rounded-full glass-card hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-300 flex items-center justify-center text-[#9BA3BD] transition-all cursor-pointer shadow-sm ml-1"
+              title="Sign Out of OmniDoc Studio"
+            >
+              <LogOut className="w-4 h-4 text-rose-400" />
+            </button>
+          )}
         </div>
       </div>
 
