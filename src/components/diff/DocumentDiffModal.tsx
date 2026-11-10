@@ -79,13 +79,13 @@ export const DocumentDiffModal: React.FC<DocumentDiffModalProps> = ({
         {/* Header */}
         <div className="h-16 px-6 border-b border-white/10 flex items-center justify-between shrink-0 bg-white/[0.02]">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#A8DEFA]/15 text-[#A8DEFA] border border-[#A8DEFA]/30">
+            <div className="p-2 rounded-xl bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30">
               <GitCompare className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-base font-extrabold text-[#F5FAFF] flex items-center gap-2">
                 Document Diff &amp; Revision Analyzer
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-semibold border border-[#A8DEFA]/30">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#38BDF8]/20 text-[#38BDF8] font-semibold border border-[#38BDF8]/30">
                   v2.0 Intelligence
                 </span>
               </h2>
@@ -130,7 +130,7 @@ export const DocumentDiffModal: React.FC<DocumentDiffModalProps> = ({
                   type="text"
                   value={oldTitle}
                   onChange={(e) => setOldTitle(e.target.value)}
-                  className="bg-white/[0.04] border border-white/15 rounded-lg px-2.5 py-1 text-xs text-[#F5FAFF] font-semibold w-48 outline-none focus:border-[#A8DEFA]"
+                  className="bg-white/[0.04] border border-white/15 rounded-lg px-2.5 py-1 text-xs text-[#F5FAFF] font-semibold w-48 outline-none focus:border-[#38BDF8]"
                   placeholder="Original Document"
                 />
                 <span className="text-[11px] text-red-400 font-mono font-semibold flex items-center gap-1">
@@ -151,7 +151,7 @@ export const DocumentDiffModal: React.FC<DocumentDiffModalProps> = ({
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="bg-white/[0.04] border border-white/15 rounded-lg px-2.5 py-1 text-xs text-[#F5FAFF] font-semibold w-48 outline-none focus:border-[#A8DEFA]"
+                  className="bg-white/[0.04] border border-white/15 rounded-lg px-2.5 py-1 text-xs text-[#F5FAFF] font-semibold w-48 outline-none focus:border-[#38BDF8]"
                   placeholder="Revised Document"
                 />
                 <span className="text-[11px] text-emerald-400 font-mono font-semibold flex items-center gap-1">
@@ -168,7 +168,7 @@ export const DocumentDiffModal: React.FC<DocumentDiffModalProps> = ({
 
             <button
               onClick={handleRunDiff}
-              className="w-full py-2.5 rounded-xl glass-btn-primary text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#A8DEFA]/20"
+              className="w-full py-2.5 rounded-xl glass-btn-primary text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#38BDF8]/20"
             >
               <GitCompare className="w-4 h-4" />
               <span>Compute Document Comparison</span>

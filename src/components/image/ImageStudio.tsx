@@ -116,8 +116,8 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
         // Ambient glow rings
         ctx.save();
         ctx.shadowBlur = 40;
-        ctx.shadowColor = '#A8DEFA';
-        ctx.strokeStyle = 'rgba(168, 222, 250, 0.2)';
+        ctx.shadowColor = '#38BDF8';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(300, 300, 240, 0, Math.PI * 2);
@@ -136,17 +136,17 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
 
             const petalGrad = ctx.createLinearGradient(0, 0, 0, radius);
             if (layer === 3) {
-              petalGrad.addColorStop(0, '#7CC4ED');
-              petalGrad.addColorStop(0.6, '#A8DEFA');
-              petalGrad.addColorStop(1, 'rgba(168, 222, 250, 0.3)');
+              petalGrad.addColorStop(0, '#FF3366');
+              petalGrad.addColorStop(0.6, '#38BDF8');
+              petalGrad.addColorStop(1, 'rgba(56, 189, 248, 0.3)');
             } else if (layer === 2) {
-              petalGrad.addColorStop(0, '#A8DEFA');
+              petalGrad.addColorStop(0, '#38BDF8');
               petalGrad.addColorStop(0.7, '#A855F7');
-              petalGrad.addColorStop(1, 'rgba(168, 222, 250, 0.4)');
+              petalGrad.addColorStop(1, 'rgba(56, 189, 248, 0.4)');
             } else {
               petalGrad.addColorStop(0, '#FFFFFF');
               petalGrad.addColorStop(0.5, '#C084FC');
-              petalGrad.addColorStop(1, '#A8DEFA');
+              petalGrad.addColorStop(1, '#38BDF8');
             }
 
             ctx.fillStyle = petalGrad;
@@ -208,7 +208,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
 
     ctx.beginPath();
     ctx.arc(400, 300, 140, 0, Math.PI * 2);
-    ctx.fillStyle = '#7CC4ED';
+    ctx.fillStyle = '#FF3366';
     ctx.shadowColor = '#818cf8';
     ctx.shadowBlur = 40;
     ctx.fill();
@@ -446,7 +446,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
         text: 'PRO CERTIFIED',
         x: canvasRef.current!.width / 2 - 80,
         y: canvasRef.current!.height / 4,
-        bgColor: '#7CC4ED',
+        bgColor: '#FF3366',
       },
     ]);
   };
@@ -496,15 +496,15 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
       {/* Top Header matching reference */}
       <div className="h-14 border-b border-white/10 bg-[#0B1420]/85 backdrop-blur-2xl px-5 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#A8DEFA] to-[#A8DEFA] flex items-center justify-center p-0.5 shadow-md shadow-[#A8DEFA]/20">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#38BDF8] to-[#38BDF8] flex items-center justify-center p-0.5 shadow-md shadow-[#38BDF8]/20">
             <div className="w-full h-full bg-[#070B13] rounded-[10px] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[#A8DEFA]" />
+              <Sparkles className="w-4 h-4 text-[#38BDF8]" />
             </div>
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-bold text-[#F5FAFF] tracking-tight">Image Studio</h1>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-semibold border border-[#A8DEFA]/30">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#38BDF8]/20 text-[#38BDF8] font-semibold border border-[#38BDF8]/30">
                 AURORA CANVAS
               </span>
             </div>
@@ -522,8 +522,8 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
             <Undo className="w-4 h-4" />
           </button>
 
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all">
-            <Upload className="w-3.5 h-3.5 text-[#A8DEFA]" />
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all">
+            <Upload className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span>Open Photo</span>
             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && loadImageFile(e.target.files[0])} />
           </label>
@@ -531,7 +531,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(imageName, { adjustments, hasBackgroundRemoved, bgReplacementType, bgValue, layers })}
-              className="p-2 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#A7B8CA] hover:text-[#A8DEFA] cursor-pointer transition-all"
+              className="p-2 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#A7B8CA] hover:text-[#38BDF8] cursor-pointer transition-all"
               title="Save Image Project"
             >
               <Save className="w-4 h-4" />
@@ -555,10 +555,10 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
               setActiveTool(isCropActive ? 'none' : 'crop');
             }}
             className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              isCropActive ? 'bg-[#A8DEFA]/25 text-[#F5FAFF] border border-[#A8DEFA]/40 shadow-sm' : 'glass-card text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-white/20'
+              isCropActive ? 'bg-[#38BDF8]/25 text-[#F5FAFF] border border-[#38BDF8]/40 shadow-sm' : 'glass-card text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-white/20'
             }`}
           >
-            <CropIcon className="w-4 h-4 text-[#A8DEFA]" />
+            <CropIcon className="w-4 h-4 text-[#38BDF8]" />
             <span>Crop</span>
           </button>
 
@@ -567,7 +567,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
             onClick={() => setShowResizeModal(true)}
             className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold glass-card text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-white/20 transition-all cursor-pointer"
           >
-            <Maximize2 className="w-4 h-4 text-[#A8DEFA]" />
+            <Maximize2 className="w-4 h-4 text-[#38BDF8]" />
             <span>Resize</span>
           </button>
 
@@ -576,7 +576,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
             onClick={() => handleRotate(90)}
             className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold glass-card text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-white/20 transition-all cursor-pointer"
           >
-            <RotateCw className="w-4 h-4 text-[#A8DEFA]" />
+            <RotateCw className="w-4 h-4 text-[#38BDF8]" />
             <span>Rotate</span>
           </button>
 
@@ -584,7 +584,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
           <button
             onClick={() => setActiveTool(activeTool === 'filters' ? 'none' : 'filters')}
             className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeTool === 'filters' ? 'bg-[#A8DEFA]/25 text-[#F5FAFF] border border-[#A8DEFA]/40' : 'glass-card text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-white/20'
+              activeTool === 'filters' ? 'bg-[#38BDF8]/25 text-[#F5FAFF] border border-[#38BDF8]/40' : 'glass-card text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-white/20'
             }`}
           >
             <Palette className="w-4 h-4 text-pink-400" />
@@ -595,10 +595,10 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
           <button
             onClick={() => setActiveTool(activeTool === 'adjust' ? 'none' : 'adjust')}
             className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeTool === 'adjust' ? 'bg-[#A8DEFA]/25 text-[#F5FAFF] border border-[#A8DEFA]/40' : 'glass-card text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-white/20'
+              activeTool === 'adjust' ? 'bg-[#38BDF8]/25 text-[#F5FAFF] border border-[#38BDF8]/40' : 'glass-card text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-white/20'
             }`}
           >
-            <Sliders className="w-4 h-4 text-[#A8DEFA]" />
+            <Sliders className="w-4 h-4 text-[#38BDF8]" />
             <span>Adjust</span>
           </button>
 
@@ -619,7 +619,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
             onClick={handleAddTextLayer}
             className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold glass-card text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-white/20 transition-all cursor-pointer"
           >
-            <Type className="w-4 h-4 text-[#A8DEFA]" />
+            <Type className="w-4 h-4 text-[#38BDF8]" />
             <span>Add Text</span>
           </button>
 
@@ -635,7 +635,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
         {/* Center Canvas Viewport */}
         <div className="flex-1 overflow-auto p-4 md:p-8 flex items-center justify-center bg-[#070B13]/60 relative select-none custom-scrollbar">
           {/* Ambient Glow Aura */}
-          <div className="absolute w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-[#A8DEFA]/20 to-[#A8DEFA]/20 blur-3xl pointer-events-none" />
+          <div className="absolute w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-[#38BDF8]/20 to-[#38BDF8]/20 blur-3xl pointer-events-none" />
 
           <canvas
             ref={canvasRef}
@@ -646,7 +646,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
               isEraserActive ? 'cursor-crosshair' : 'cursor-default'
             }`}
             style={{
-              boxShadow: '0 0 60px rgba(168, 222, 250, 0.25), 0 20px 40px rgba(0,0,0,0.6)',
+              boxShadow: '0 0 60px rgba(56, 189, 248, 0.25), 0 20px 40px rgba(0,0,0,0.6)',
             }}
           />
         </div>
@@ -678,7 +678,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-[11px] text-[#A7B8CA] font-medium">Quality</label>
-              <span className="text-xs font-mono font-bold text-[#A8DEFA]">{quality}%</span>
+              <span className="text-xs font-mono font-bold text-[#38BDF8]">{quality}%</span>
             </div>
             <input
               type="range"
@@ -686,7 +686,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
               max="100"
               value={quality}
               onChange={(e) => setQuality(parseInt(e.target.value))}
-              className="w-full accent-[#A8DEFA] cursor-pointer"
+              className="w-full accent-[#38BDF8] cursor-pointer"
             />
           </div>
 
@@ -694,7 +694,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
           <button
             onClick={handleExport}
             disabled={isProcessing}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] hover:brightness-110 text-white text-xs font-bold shadow-lg shadow-[#A8DEFA]/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#38BDF8] to-[#FF3366] hover:brightness-110 text-white text-xs font-bold shadow-lg shadow-[#38BDF8]/30 flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             <DownloadCloud className="w-4 h-4" />
             <span>Export Image</span>
@@ -717,7 +717,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
                   max="200"
                   value={adjustments.brightness}
                   onChange={(e) => handleAdjustmentChange('brightness', parseInt(e.target.value))}
-                  className="w-full accent-[#A8DEFA]"
+                  className="w-full accent-[#38BDF8]"
                 />
               </div>
               <div className="space-y-2">
@@ -731,7 +731,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
                   max="200"
                   value={adjustments.contrast}
                   onChange={(e) => handleAdjustmentChange('contrast', parseInt(e.target.value))}
-                  className="w-full accent-[#A8DEFA]"
+                  className="w-full accent-[#38BDF8]"
                 />
               </div>
               <div className="space-y-2">
@@ -745,7 +745,7 @@ export const ImageStudio: React.FC<ImageStudioProps> = ({
                   max="200"
                   value={adjustments.saturation}
                   onChange={(e) => handleAdjustmentChange('saturation', parseInt(e.target.value))}
-                  className="w-full accent-[#A8DEFA]"
+                  className="w-full accent-[#38BDF8]"
                 />
               </div>
             </div>

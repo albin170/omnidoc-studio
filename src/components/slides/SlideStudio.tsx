@@ -314,9 +314,9 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(deckTitle, { slides })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all"
             >
-              <Save className="w-3.5 h-3.5 text-[#A8DEFA]" />
+              <Save className="w-3.5 h-3.5 text-[#38BDF8]" />
               <span>Save</span>
             </button>
           )}
@@ -341,7 +341,7 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
           <button
             onClick={handleExportPptx}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#A8DEFA]/20 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#38BDF8]/20 cursor-pointer"
           >
             <DownloadCloud className="w-3.5 h-3.5" />
             <span>Export .PPTX</span>

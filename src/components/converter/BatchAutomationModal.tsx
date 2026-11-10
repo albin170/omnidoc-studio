@@ -88,13 +88,13 @@ export const BatchAutomationModal: React.FC<BatchAutomationModalProps> = ({ isOp
         {/* Header */}
         <div className="h-16 px-6 border-b border-white/10 flex items-center justify-between shrink-0 bg-white/[0.02]">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#A8DEFA]/15 text-[#A8DEFA] border border-[#A8DEFA]/30">
+            <div className="p-2 rounded-xl bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30">
               <Layers className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-base font-extrabold text-[#F5FAFF] flex items-center gap-2">
                 Batch Document Conversion &amp; ZIP Automation
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-semibold border border-[#A8DEFA]/30">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#38BDF8]/20 text-[#38BDF8] font-semibold border border-[#38BDF8]/30">
                   v2.0 Automation
                 </span>
               </h2>
@@ -121,7 +121,7 @@ export const BatchAutomationModal: React.FC<BatchAutomationModalProps> = ({ isOp
             <select
               value={targetFormat}
               onChange={(e) => setTargetFormat(e.target.value as FileFormat)}
-              className="w-full bg-[#0B1420] border border-white/15 rounded-xl px-3 py-2 text-[#F5FAFF] font-semibold outline-none focus:border-[#A8DEFA]"
+              className="w-full bg-[#0B1420] border border-white/15 rounded-xl px-3 py-2 text-[#F5FAFF] font-semibold outline-none focus:border-[#38BDF8]"
             >
               <option value="pdf">PDF (Portable Document Format)</option>
               <option value="docx">DOCX (Microsoft Word)</option>
@@ -139,14 +139,14 @@ export const BatchAutomationModal: React.FC<BatchAutomationModalProps> = ({ isOp
               type="text"
               value={namingPattern}
               onChange={(e) => setNamingPattern(e.target.value)}
-              className="w-full bg-white/[0.04] border border-white/15 rounded-xl px-3 py-2 text-[#F5FAFF] font-mono outline-none focus:border-[#A8DEFA]"
+              className="w-full bg-white/[0.04] border border-white/15 rounded-xl px-3 py-2 text-[#F5FAFF] font-mono outline-none focus:border-[#38BDF8]"
               placeholder="{original}_converted_{date}"
             />
           </div>
 
           <div className="flex items-end gap-2">
             <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-[#F5FAFF] font-semibold border border-white/15 cursor-pointer transition-colors">
-              <Upload className="w-4 h-4 text-[#A8DEFA]" />
+              <Upload className="w-4 h-4 text-[#38BDF8]" />
               <span>Add Files</span>
               <input type="file" multiple className="hidden" onChange={handleFileSelect} />
             </label>
@@ -176,7 +176,7 @@ export const BatchAutomationModal: React.FC<BatchAutomationModalProps> = ({ isOp
                 className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/10 text-xs"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-[#A8DEFA]/15 text-[#A8DEFA] border border-[#A8DEFA]/30 font-bold flex items-center justify-center text-[10px]">
+                  <div className="w-7 h-7 rounded-lg bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30 font-bold flex items-center justify-center text-[10px]">
                     {idx + 1}
                   </div>
                   <div>
@@ -186,7 +186,7 @@ export const BatchAutomationModal: React.FC<BatchAutomationModalProps> = ({ isOp
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono text-[#A8DEFA] uppercase">
+                  <span className="text-[11px] font-mono text-[#38BDF8] uppercase">
                     &rarr; {targetFormat}
                   </span>
                 </div>
@@ -220,7 +220,7 @@ export const BatchAutomationModal: React.FC<BatchAutomationModalProps> = ({ isOp
             <button
               onClick={handleExecuteBatch}
               disabled={isProcessing || selectedFiles.length === 0}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl glass-btn-primary text-white font-bold text-xs shadow-lg shadow-[#A8DEFA]/30 cursor-pointer disabled:opacity-40"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl glass-btn-primary text-white font-bold text-xs shadow-lg shadow-[#38BDF8]/30 cursor-pointer disabled:opacity-40"
             >
               {isProcessing ? (
                 <>

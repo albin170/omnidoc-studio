@@ -577,11 +577,11 @@ export const App: React.FC = () => {
   return (
     /* Full-Screen, 100% Viewport App Shell — Liquid Glass */
     <div className="w-full h-screen min-h-screen m-0 p-0 overflow-hidden flex flex-col md:flex-row bg-[#03050C] text-[#F5FAFF] select-none relative font-sans">
-      {/* Deep Spatial Background — Ice Blue Ambient Lighting */}
+      {/* Deep Spatial Background — Red & Blue Translucent Ambient Halos */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="ambient-glow-1 absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-[#A8DEFA]/10 blur-[180px]" />
-        <div className="ambient-glow-2 absolute top-1/3 -right-40 w-[550px] h-[550px] rounded-full bg-[#A8DEFA]/8 blur-[200px]" />
-        <div className="ambient-glow-3 absolute -bottom-40 left-1/3 w-[500px] h-[500px] rounded-full bg-[#7CC4ED]/6 blur-[180px]" />
+        <div className="ambient-glow-1 absolute -top-40 -left-40 w-[620px] h-[620px] rounded-full bg-[#FF3366]/14 blur-[180px]" />
+        <div className="ambient-glow-2 absolute top-1/3 -right-40 w-[580px] h-[580px] rounded-full bg-[#38BDF8]/15 blur-[200px]" />
+        <div className="ambient-glow-3 absolute -bottom-40 left-1/3 w-[520px] h-[520px] rounded-full bg-[#2563EB]/14 blur-[190px]" />
       </div>
 
       {/* Global Window Drag-and-Drop Listener */}
@@ -698,11 +698,11 @@ export const App: React.FC = () => {
 
         {/* User-Friendly Studio Navigation & Quick Switcher Breadcrumb (shown in active studios) */}
         {activeTab !== 'dashboard' && (
-          <div className="h-12 border-b border-[rgba(180,225,255,0.12)] lg-topbar px-4 sm:px-6 flex items-center justify-between shrink-0 select-none z-10">
+          <div className="h-12 border-b border-[rgba(255, 255, 255,0.12)] lg-topbar px-4 sm:px-6 flex items-center justify-between shrink-0 select-none z-10">
             <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-[#F5FAFF] border border-[rgba(180,225,255,0.12)] font-bold text-xs transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-[#F5FAFF] border border-[rgba(255, 255, 255,0.12)] font-bold text-xs transition-colors cursor-pointer"
                 title="Return to Dashboard (Ctrl+D)"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
@@ -715,7 +715,7 @@ export const App: React.FC = () => {
                 <span className="text-xs font-extrabold text-[#F5FAFF] font-display">
                   {studioTitles[activeTab]}
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-[#A8DEFA]/15 text-[#A8DEFA] border border-[#A8DEFA]/25 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-md bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/25 text-[10px] font-bold">
                   ACTIVE
                 </span>
               </div>
@@ -727,7 +727,7 @@ export const App: React.FC = () => {
               <select
                 value={activeTab}
                 onChange={(e) => setActiveTab(e.target.value as WorkspaceTab)}
-                className="px-2.5 py-1 rounded-xl bg-[#0B1420]/90 hover:bg-[#0B1420] border border-[rgba(180,225,255,0.14)] text-[11px] font-semibold text-[#F5FAFF] outline-none cursor-pointer hidden sm:block backdrop-blur-md"
+                className="px-2.5 py-1 rounded-xl bg-[#0B1420]/90 hover:bg-[#0B1420] border border-[rgba(255, 255, 255,0.14)] text-[11px] font-semibold text-[#F5FAFF] outline-none cursor-pointer hidden sm:block backdrop-blur-md"
                 title="Quick switch to another studio"
               >
                 <option value="dashboard" className="bg-[#0B1420] text-white">Dashboard</option>
@@ -751,16 +751,16 @@ export const App: React.FC = () => {
 
               <button
                 onClick={() => setIsAiOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#A8DEFA]/12 hover:bg-[#A8DEFA]/22 text-[#A8DEFA] text-xs font-bold border border-[#A8DEFA]/25 cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#38BDF8]/12 hover:bg-[#38BDF8]/22 text-[#38BDF8] text-xs font-bold border border-[#38BDF8]/25 cursor-pointer"
                 title="AI Document Assistant"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
                 <span className="hidden md:inline">AI Help</span>
               </button>
 
               <button
                 onClick={() => setIsDiffOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#A8DEFA]/10 hover:bg-[#A8DEFA]/20 text-[#A7B8CA] hover:text-[#A8DEFA] text-xs font-bold border border-[rgba(180,225,255,0.14)] cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#A7B8CA] hover:text-[#38BDF8] text-xs font-bold border border-[rgba(255, 255, 255,0.14)] cursor-pointer"
                 title="Compare Revisions & View Diffs"
               >
                 <GitCompare className="w-3.5 h-3.5" />
@@ -769,7 +769,7 @@ export const App: React.FC = () => {
 
               <button
                 onClick={() => setIsBatchOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#A8DEFA]/10 hover:bg-[#A8DEFA]/20 text-[#A7B8CA] hover:text-[#A8DEFA] text-xs font-bold border border-[rgba(180,225,255,0.14)] cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#A7B8CA] hover:text-[#38BDF8] text-xs font-bold border border-[rgba(255, 255, 255,0.14)] cursor-pointer"
                 title="Batch Convert & ZIP Automation"
               >
                 <Layers className="w-3.5 h-3.5" />

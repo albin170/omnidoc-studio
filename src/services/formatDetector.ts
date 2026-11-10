@@ -95,7 +95,7 @@ export const FORMAT_REGISTRY: Record<FileFormat, FormatMetadata> = {
     label: 'Markdown Note',
     mimeType: 'text/markdown',
     category: 'text',
-    color: '#7CC4ED',
+    color: '#FF3366',
     allowedConversions: ['pdf', 'docx', 'html', 'txt'],
   },
 };

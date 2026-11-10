@@ -226,25 +226,25 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#03050C]/95 backdrop-blur-2xl overflow-y-auto select-none">
-      {/* Dynamic Spatial Ambient Lighting */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#A8DEFA]/14 blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-[#7CC4ED]/10 blur-[150px] pointer-events-none" />
+      {/* Dynamic Spatial Ambient Lighting — Red & Blue */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#FF3366]/18 blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-[#38BDF8]/18 blur-[160px] pointer-events-none" />
 
       {/* Main Liquid Glass Modal Card */}
-      <div className="relative w-full max-w-4xl rounded-[28px] border border-[rgba(180,225,255,0.22)] lg-primary shadow-[0_30px_90px_rgba(0,0,0,0.85)] overflow-hidden grid grid-cols-1 md:grid-cols-12 my-auto">
+      <div className="relative w-full max-w-4xl rounded-[28px] border border-white/20 lg-liquid-6 shadow-[0_30px_90px_rgba(0,0,0,0.9)] overflow-hidden grid grid-cols-1 md:grid-cols-12 my-auto">
         
         {/* Left Side: Brand & Live Architecture Badge (5 cols) */}
-        <div className="md:col-span-5 p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-[rgba(180,225,255,0.14)] bg-gradient-to-br from-[#A8DEFA]/10 via-[#060B18]/90 to-transparent relative overflow-hidden">
+        <div className="md:col-span-5 p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/10 bg-gradient-to-br from-[#FF3366]/15 via-[#060B18]/92 to-[#38BDF8]/15 relative overflow-hidden">
           <div className="space-y-6 relative z-10">
             <div className="flex items-center gap-3">
               <OmniDocLogo className="w-9 h-9" />
               <div>
                 <span className="text-xl font-black tracking-tight text-[#F5FAFF] font-display">OmniDoc</span>
-                <span className="text-xs px-2 py-0.5 ml-1.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-mono border border-[#A8DEFA]/30 font-bold">
+                <span className="text-xs px-2 py-0.5 ml-1.5 rounded-full bg-gradient-to-r from-[#FF3366]/20 to-[#38BDF8]/20 text-[#38BDF8] font-mono border border-[#38BDF8]/30 font-bold">
                   {mode === 'admin' ? 'ADMIN' : 'STUDIO'}
                 </span>
                 <p className="text-[10px] text-[#A7B8CA] font-medium tracking-wide">
-                  {mode === 'admin' ? 'Administrative Governance Console' : 'Floating Liquid Glass Workspace'}
+                  {mode === 'admin' ? 'Administrative Governance Console' : 'Liquid Glass Workspace'}
                 </p>
               </div>
             </div>
@@ -269,30 +269,30 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
             {/* Feature Bullets */}
             <div className="space-y-3 pt-2">
               <div className="flex items-start gap-2.5 text-xs text-[#F5FAFF]">
-                <CheckCircle2 className="w-4 h-4 text-[#A8DEFA] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#FF3366] shrink-0 mt-0.5" />
                 <span>Backend JWT authentication &amp; tenant isolation</span>
               </div>
               <div className="flex items-start gap-2.5 text-xs text-[#F5FAFF]">
-                <CheckCircle2 className="w-4 h-4 text-[#A8DEFA] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#38BDF8] shrink-0 mt-0.5" />
                 <span>Full-suite PDF, OpenXML Word, PPTX &amp; Excel engines</span>
               </div>
               <div className="flex items-start gap-2.5 text-xs text-[#F5FAFF]">
-                <CheckCircle2 className="w-4 h-4 text-[#A8DEFA] shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-[#FF3366] shrink-0 mt-0.5" />
                 <span>Zero-leak client-side privacy &amp; verified redaction</span>
               </div>
             </div>
           </div>
 
           {/* Clean Status Footer with Non-Intrusive Advanced Settings Option */}
-          <div className="pt-6 border-t border-[rgba(180,225,255,0.12)] flex flex-col gap-2 relative z-10 text-[11px] text-[#A7B8CA]">
+          <div className="pt-6 border-t border-white/10 flex flex-col gap-2 relative z-10 text-[11px] text-[#A7B8CA]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Server className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                <Server className="w-3.5 h-3.5 text-[#38BDF8]" />
                 <span className="font-medium">Backend Engine</span>
               </div>
               <div className="flex items-center gap-1.5">
                 {serverStatus === 'checking' && (
-                  <span className="px-2 py-0.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-mono text-[10px] font-bold border border-[#A8DEFA]/30 animate-pulse">
+                  <span className="px-2 py-0.5 rounded-full bg-[#38BDF8]/20 text-[#38BDF8] font-mono text-[10px] font-bold border border-[#38BDF8]/30 animate-pulse">
                     CHECKING...
                   </span>
                 )}
@@ -316,7 +316,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
               <button
                 type="button"
                 onClick={() => setShowUrlConfig(!showUrlConfig)}
-                className="text-[#A8DEFA] hover:text-[#D9F3FF] transition-colors cursor-pointer flex items-center gap-1 font-semibold"
+                className="text-[#38BDF8] hover:text-[#FF3366] transition-colors cursor-pointer flex items-center gap-1 font-semibold"
               >
                 <Sliders className="w-3 h-3" />
                 <span>{showUrlConfig ? 'Hide Endpoint' : 'Configure Endpoint'}</span>
@@ -325,7 +325,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
 
             {/* Advanced Endpoint Drawer (Folded by default) */}
             {showUrlConfig && (
-              <form onSubmit={handleSaveApiUrl} className="mt-2 space-y-2 p-2.5 rounded-xl bg-black/40 border border-[rgba(180,225,255,0.14)] animate-fade-in">
+              <form onSubmit={handleSaveApiUrl} className="mt-2 space-y-2 p-2.5 rounded-xl bg-black/40 border border-white/15 animate-fade-in">
                 <label className="text-[10px] text-[#A7B8CA] font-medium block">
                   Backend API Endpoint:
                 </label>
@@ -354,13 +354,13 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
           <div>
             {/* Mode Switcher */}
             <div className="flex items-center justify-between pb-5">
-              <div className="flex p-1 rounded-2xl bg-white/[0.05] border border-[rgba(180,225,255,0.14)] text-xs font-bold">
+              <div className="flex p-1 rounded-2xl bg-white/[0.05] border border-white/15 text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => setMode('signin')}
                   className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
                     mode === 'signin'
-                      ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] text-[#070B13] font-black shadow-sm'
+                      ? 'bg-gradient-to-r from-[#FF3366] to-[#2563EB] text-white font-black shadow-sm'
                       : 'text-[#A7B8CA] hover:text-white'
                   }`}
                 >
@@ -371,7 +371,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                   onClick={() => setMode('signup')}
                   className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
                     mode === 'signup'
-                      ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] text-[#070B13] font-black shadow-sm'
+                      ? 'bg-gradient-to-r from-[#FF3366] to-[#2563EB] text-white font-black shadow-sm'
                       : 'text-[#A7B8CA] hover:text-white'
                   }`}
                 >
@@ -486,7 +486,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 accent-[#A8DEFA] rounded"
+                      className="w-4 h-4 accent-[#FF3366] rounded cursor-pointer"
                     />
                     <span>Remember me on this browser</span>
                   </label>
@@ -585,17 +585,17 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                 </div>
 
                 {/* Consent Checkboxes */}
-                <div className="space-y-2 pt-2 border-t border-[rgba(180,225,255,0.12)]">
+                <div className="space-y-2 pt-2 border-t border-[rgba(255, 255, 255,0.12)]">
                   <label className="flex items-start gap-2 cursor-pointer text-[11px] text-[#F5FAFF]">
                     <input
                       type="checkbox"
                       checked={termsAccepted}
                       onChange={(e) => setTermsAccepted(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 accent-[#A8DEFA] rounded"
+                      className="mt-0.5 w-4 h-4 accent-[#38BDF8] rounded"
                       required
                     />
                     <span>
-                      I agree to the <span className="text-[#A8DEFA] font-semibold underline">Terms of Service</span> (v2026.1) <span className="text-red-400">*</span>
+                      I agree to the <span className="text-[#38BDF8] font-semibold underline">Terms of Service</span> (v2026.1) <span className="text-red-400">*</span>
                     </span>
                   </label>
 
@@ -604,11 +604,11 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                       type="checkbox"
                       checked={privacyAccepted}
                       onChange={(e) => setPrivacyAccepted(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 accent-[#A8DEFA] rounded"
+                      className="mt-0.5 w-4 h-4 accent-[#38BDF8] rounded"
                       required
                     />
                     <span>
-                      I acknowledge the <span className="text-[#A8DEFA] font-semibold underline">Privacy Policy</span> (v2026.1) <span className="text-red-400">*</span>
+                      I acknowledge the <span className="text-[#38BDF8] font-semibold underline">Privacy Policy</span> (v2026.1) <span className="text-red-400">*</span>
                     </span>
                   </label>
 
@@ -617,7 +617,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                       type="checkbox"
                       checked={aiConsent}
                       onChange={(e) => setAiConsent(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 accent-[#A8DEFA] rounded"
+                      className="mt-0.5 w-4 h-4 accent-[#38BDF8] rounded"
                       required
                     />
                     <span>
@@ -648,7 +648,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
           </div>
 
           {/* Quick Sandbox / Offline Studio Launch */}
-          <div className="pt-4 mt-3 border-t border-[rgba(180,225,255,0.12)] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="pt-4 mt-3 border-t border-[rgba(255, 255, 255,0.12)] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <span className="text-[#A7B8CA]">Want to test offline first?</span>
             <button
               type="button"
@@ -656,7 +656,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
               className="px-4 py-2 rounded-xl lg-secondary text-[#F5FAFF] font-bold transition-all cursor-pointer flex items-center gap-1.5"
             >
               <span>Instant Guest Mode (No Sign Up)</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#A8DEFA]" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#38BDF8]" />
             </button>
           </div>
         </div>

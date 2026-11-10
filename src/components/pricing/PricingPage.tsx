@@ -86,8 +86,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({
             ← Return to Dashboard
           </button>
         )}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 text-[#A8DEFA] text-xs font-bold">
-          <Sparkles className="w-3.5 h-3.5 text-[#A8DEFA]" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[#38BDF8] text-xs font-bold">
+          <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
           <span>Transparent Enterprise Pricing</span>
         </div>
         <h1 className="text-3xl md:text-5xl font-black tracking-tight text-[#F5FAFF]">
@@ -104,7 +104,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
               onClick={() => setBillingCycle('monthly')}
               className={`px-4 py-1.5 rounded-xl transition-all cursor-pointer ${
                 billingCycle === 'monthly'
-                  ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7363f8] text-white shadow-sm'
+                  ? 'bg-gradient-to-r from-[#38BDF8] to-[#7363f8] text-white shadow-sm'
                   : 'text-[#A7B8CA] hover:text-white'
               }`}
             >
@@ -114,7 +114,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
               onClick={() => setBillingCycle('annual')}
               className={`px-4 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                 billingCycle === 'annual'
-                  ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7363f8] text-white shadow-sm'
+                  ? 'bg-gradient-to-r from-[#38BDF8] to-[#7363f8] text-white shadow-sm'
                   : 'text-[#A7B8CA] hover:text-white'
               }`}
             >
@@ -130,7 +130,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
       {/* Loading & Error States */}
       {isLoading && (
         <div className="max-w-md mx-auto py-16 text-center space-y-3">
-          <div className="w-8 h-8 border-2 border-[#A8DEFA] border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-8 h-8 border-2 border-[#38BDF8] border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-xs text-[#A7B8CA]">Fetching official subscription plans from backend...</p>
         </div>
       )}
@@ -142,7 +142,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
           <p className="text-xs text-[#A7B8CA]">{loadError}</p>
           <button
             onClick={fetchPlans}
-            className="px-4 py-2 rounded-xl bg-[#A8DEFA] hover:bg-[#7869ec] text-white font-bold text-xs transition-colors"
+            className="px-4 py-2 rounded-xl bg-[#38BDF8] hover:bg-[#7869ec] text-white font-bold text-xs transition-colors"
           >
             Retry Loading Plans
           </button>
@@ -163,12 +163,12 @@ export const PricingPage: React.FC<PricingPageProps> = ({
               key={plan.slug}
               className={`relative rounded-3xl p-6 flex flex-col justify-between transition-all duration-300 border ${
                 isPopular
-                  ? 'bg-gradient-to-b from-[#A8DEFA]/15 via-[#0B1420] to-[#0B1420] border-[#A8DEFA]/50 shadow-2xl shadow-[#A8DEFA]/20'
-                  : 'bg-[#0B1420]/70 border-white/10 hover:border-white/20'
+                  ? 'lg-liquid-6 border-[#38BDF8]/50 shadow-2xl shadow-[#38BDF8]/20'
+                  : 'lg-secondary border-white/10 hover:border-white/20'
               }`}
             >
               {isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-gradient-to-r from-[#A8DEFA] to-[#A8DEFA] text-white text-[10px] font-black tracking-wide uppercase shadow">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-[#FF3366] via-[#E11D48] to-[#2563EB] text-white text-[10px] font-black tracking-wide uppercase shadow-lg shadow-[#FF3366]/30">
                   Most Popular
                 </div>
               )}
@@ -191,7 +191,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                     <span className="text-xs text-[#A7B8CA]">/ month</span>
                   </div>
                   {billingCycle === 'annual' && priceCents > 0 && (
-                    <p className="text-[11px] text-[#A8DEFA] mt-1">Billed annually (${(plan.annual_price_cents / 100).toFixed(0)}/yr)</p>
+                    <p className="text-[11px] text-[#38BDF8] mt-1">Billed annually (${(plan.annual_price_cents / 100).toFixed(0)}/yr)</p>
                   )}
                 </div>
 
@@ -199,13 +199,13 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                 <div className="space-y-2.5 py-4 border-y border-white/10 text-xs text-[#F5FAFF]">
                   <div className="flex items-center justify-between">
                     <span className="text-[#A7B8CA] flex items-center gap-1.5">
-                      <HardDrive className="w-3.5 h-3.5 text-[#A8DEFA]" /> Storage:
+                      <HardDrive className="w-3.5 h-3.5 text-[#38BDF8]" /> Storage:
                     </span>
                     <span className="font-bold">{formatStorage(plan.storage_quota_bytes)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[#A7B8CA] flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-[#A8DEFA]" /> Monthly Docs:
+                      <FileText className="w-3.5 h-3.5 text-[#38BDF8]" /> Monthly Docs:
                     </span>
                     <span className="font-bold">{plan.monthly_processing_quota === -1 ? 'Unlimited' : plan.monthly_processing_quota}</span>
                   </div>
@@ -217,7 +217,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[#A7B8CA] flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#A8DEFA]" /> AI Operations:
+                      <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" /> AI Operations:
                     </span>
                     <span className="font-bold">{plan.ai_processing_quota === -1 ? 'Unlimited' : plan.ai_processing_quota}</span>
                   </div>
@@ -269,7 +269,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                     isCurrent
                       ? 'bg-white/10 text-white/50 cursor-default'
                       : isPopular
-                      ? 'glass-btn-primary text-white shadow-lg shadow-[#A8DEFA]/30'
+                      ? 'glass-btn-primary text-white shadow-lg shadow-[#38BDF8]/30'
                       : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
                   }`}
                 >
@@ -291,7 +291,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
 
       {/* Compliance Notice */}
       <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-xs text-[#A7B8CA] flex items-center gap-3">
-        <ShieldCheck className="w-5 h-5 text-[#A8DEFA] shrink-0" />
+        <ShieldCheck className="w-5 h-5 text-[#38BDF8] shrink-0" />
         <span>
           Enterprise subscriptions are governed by server-side quota enforcement and verifiable tenant isolation. Payment transactions are audited via cryptographic event logs.
         </span>

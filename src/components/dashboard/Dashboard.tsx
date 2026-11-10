@@ -156,8 +156,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Global Drag Overlay */}
       {isDragging && (
-        <div className="fixed inset-0 z-50 bg-[#070B13]/85 backdrop-blur-xl border-2 border-dashed border-[#A8DEFA] flex flex-col items-center justify-center pointer-events-none animate-fade-in">
-          <UploadCloud className="w-16 h-16 text-[#A8DEFA] animate-bounce mb-3" />
+        <div className="fixed inset-0 z-50 bg-[#070B13]/85 backdrop-blur-xl border-2 border-dashed border-[#38BDF8] flex flex-col items-center justify-center pointer-events-none animate-fade-in">
+          <UploadCloud className="w-16 h-16 text-[#38BDF8] animate-bounce mb-3" />
           <h2 className="text-xl font-bold text-[#F5FAFF] font-display">Drop Documents Here</h2>
           <p className="text-sm text-[#A7B8CA] mt-1">OmniDoc will automatically detect format and launch the right studio.</p>
         </div>
@@ -166,14 +166,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* ========================================================================= */}
       {/* 1. TOP HEADER BAR: Search, Notifications, Theme & Upgrade Pill */}
       {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-[rgba(180,225,255,0.12)]">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-[rgba(255, 255, 255,0.12)]">
         {/* Search Input Bar (Liquid Glass Pill Style) */}
         <div
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-3 px-4 py-2 rounded-full lg-input hover:border-[#A8DEFA]/50 text-xs cursor-pointer transition-all w-full sm:w-80 text-[#A7B8CA] hover:text-[#F5FAFF] group shadow-inner"
+          className="flex items-center gap-3 px-4 py-2 rounded-full lg-input hover:border-[#38BDF8]/50 text-xs cursor-pointer transition-all w-full sm:w-80 text-[#A7B8CA] hover:text-[#F5FAFF] group shadow-inner"
           title="Press Ctrl+K to search anything"
         >
-          <Search className="w-4 h-4 text-[#A7B8CA] group-hover:text-[#A8DEFA] transition-colors shrink-0" />
+          <Search className="w-4 h-4 text-[#A7B8CA] group-hover:text-[#38BDF8] transition-colors shrink-0" />
           <span className="flex-1 font-medium text-[13px] text-[#A7B8CA]/90">Search workspace...</span>
           <kbd className="px-2 py-0.5 rounded-md bg-white/10 border border-white/10 text-[10px] font-mono font-bold text-[#F5FAFF]">
             Ctrl + K
@@ -190,7 +190,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           >
             <Bell className="w-4 h-4" />
             {recentProjects.length > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#A8DEFA] ring-2 ring-[#070B13] animate-pulse" />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#38BDF8] ring-2 ring-[#070B13] animate-pulse" />
             )}
           </button>
 
@@ -199,13 +199,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
             className="w-10 h-10 rounded-full lg-secondary flex items-center justify-center text-[#A7B8CA] hover:text-[#F5FAFF] transition-all cursor-pointer"
             title="Theme: Floating Liquid Glass"
           >
-            <Moon className="w-4 h-4 text-[#A8DEFA]" />
+            <Moon className="w-4 h-4 text-[#38BDF8]" />
           </button>
 
           {/* Upgrade Liquid Glass Button */}
           <button
             onClick={() => setActiveTab('pricing')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] hover:from-[#D9F3FF] hover:to-[#A8DEFA] text-[#070B13] text-xs font-extrabold shadow-[0_4px_20px_rgba(168,222,250,0.3)] transition-all cursor-pointer hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FF3366] hover:from-[#FF6688] hover:to-[#38BDF8] text-[#070B13] text-xs font-extrabold shadow-[0_4px_20px_rgba(56, 189, 248,0.3)] transition-all cursor-pointer hover:scale-105 active:scale-95"
             title="Upgrade to Pro Plan"
           >
             <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
@@ -219,9 +219,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             title="Account Profile"
           >
             {avatarUrl ? (
-              <img src={avatarUrl} alt={userName} className="w-9 h-9 rounded-full object-cover ring-2 ring-[#A8DEFA]/50 shadow-md" />
+              <img src={avatarUrl} alt={userName} className="w-9 h-9 rounded-full object-cover ring-2 ring-[#38BDF8]/50 shadow-md" />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#7CC4ED] to-[#A8DEFA] flex items-center justify-center text-[#070B13] font-black text-sm ring-2 ring-white/20 shadow-md">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF3366] to-[#38BDF8] flex items-center justify-center text-[#070B13] font-black text-sm ring-2 ring-white/20 shadow-md">
                 {userName ? userName[0].toUpperCase() : 'A'}
               </div>
             )}
@@ -241,17 +241,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. HERO WELCOME SECTION WITH FLOATING LIQUID GLASS MATERIAL               */}
+      {/* 2. HERO WELCOME SECTION WITH MASTER LIQUID GLASS EFFECT 6                 */}
       {/* ========================================================================= */}
-      <div className="relative rounded-[28px] p-6 md:p-8 overflow-hidden lg-primary border border-[rgba(180,225,255,0.22)] shadow-[0_20px_50px_rgba(0,0,0,0.45)] flex flex-col md:flex-row items-center justify-between gap-6">
-        {/* Subtle Ambient Ice-Blue Reflections */}
-        <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-[#A8DEFA]/15 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-20 w-80 h-80 rounded-full bg-[#7CC4ED]/12 blur-3xl pointer-events-none" />
+      <div className="relative rounded-[28px] p-6 md:p-8 overflow-hidden lg-liquid-6 border border-white/15 shadow-[0_25px_65px_rgba(0,0,0,0.85)] flex flex-col md:flex-row items-center justify-between gap-6">
+        {/* Subtle Ambient Red & Blue Translucent Reflections */}
+        <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-[#FF3366]/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-20 w-80 h-80 rounded-full bg-[#38BDF8]/20 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-xl space-y-3 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#A8DEFA]/10 border border-[#A8DEFA]/25 text-[#A8DEFA] text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Liquid Glass Spatial Workspace</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-[#FF3366]/15 to-[#38BDF8]/15 border border-[#38BDF8]/30 text-[#38BDF8] text-xs font-semibold">
+            <Sparkles className="w-3.5 h-3.5 text-[#FF3366]" />
+            <span>Liquid Glass Spatial Workspace • Level 6</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#F5FAFF] tracking-tight font-display">
@@ -273,7 +273,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               onClick={() => setActiveTab('templates')}
               className="lg-btn-secondary flex items-center gap-2"
             >
-              <LayoutTemplate className="w-4 h-4 text-[#A8DEFA]" />
+              <LayoutTemplate className="w-4 h-4 text-[#38BDF8]" />
               <span>Browse Templates</span>
             </button>
           </div>
@@ -281,25 +281,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* 3D Floating Translucent Document Graphic */}
         <div className="relative shrink-0 w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center animate-float-gentle">
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#A8DEFA]/25 to-[#7CC4ED]/20 rounded-3xl blur-2xl opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#FF3366]/30 to-[#38BDF8]/30 rounded-3xl blur-2xl opacity-70" />
 
-          <div className="relative w-28 h-36 sm:w-32 sm:h-40 rounded-2xl lg-secondary border border-[rgba(180,225,255,0.3)] shadow-2xl p-3 flex flex-col justify-between transform -rotate-3 transition-transform hover:rotate-0">
+          <div className="relative w-28 h-36 sm:w-32 sm:h-40 rounded-2xl lg-liquid-3 border border-white/20 shadow-2xl p-3 flex flex-col justify-between transform -rotate-3 transition-transform hover:rotate-0">
             {/* Document Lines */}
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 pb-1 border-b border-white/10">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#A8DEFA]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#7CC4ED]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#FF3366] shadow-[0_0_8px_rgba(255,51,102,0.6)]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#38BDF8] shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
               </div>
-              <div className="w-16 h-2 rounded bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED]" />
+              <div className="w-16 h-2 rounded bg-gradient-to-r from-[#FF3366] via-[#E11D48] to-[#38BDF8]" />
               <div className="w-20 h-1.5 rounded bg-white/25" />
               <div className="w-14 h-1.5 rounded bg-white/15" />
               <div className="w-18 h-1.5 rounded bg-white/20" />
             </div>
 
             {/* Glowing Bottom Ribbon */}
-            <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[9px] text-[#A8DEFA] font-mono font-bold">
+            <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[9px] text-[#38BDF8] font-mono font-bold">
               <span>OMNI.DOC</span>
-              <Sparkles className="w-3 h-3 text-[#A8DEFA]" />
+              <Sparkles className="w-3 h-3 text-[#FF3366]" />
             </div>
           </div>
         </div>
@@ -309,29 +309,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 3. FOUR PROMINENT QUICK ACTION CARDS                                      */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Convert Files */}
+        {/* Card 1: Convert Files (Ruby Red) */}
         <div
           onClick={() => setActiveTab('converter')}
-          className="lg-secondary rounded-2xl p-5 cursor-pointer hover:border-[#A8DEFA]/60 group relative overflow-hidden"
+          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-[#FF3366]/60 group relative overflow-hidden"
         >
-          <div className="w-11 h-11 rounded-xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 flex items-center justify-center text-[#A8DEFA] mb-4 group-hover:scale-110 lg-glow-ice transition-all">
+          <div className="w-11 h-11 rounded-xl bg-[#FF3366]/15 border border-[#FF3366]/30 flex items-center justify-center text-[#FF3366] mb-4 group-hover:scale-110 lg-glow-red transition-all">
             <RefreshCw className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors font-display">
+          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#FF3366] transition-colors font-display">
             Convert Files
           </h3>
           <p className="text-xs text-[#A7B8CA] mt-1">Universal batch conversion</p>
         </div>
 
-        {/* Card 2: Edit PDF */}
+        {/* Card 2: Edit PDF (Sapphire Blue) */}
         <div
           onClick={() => setActiveTab('pdf')}
-          className="lg-secondary rounded-2xl p-5 cursor-pointer hover:border-[#A8DEFA]/60 group relative overflow-hidden"
+          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-[#38BDF8]/60 group relative overflow-hidden"
         >
-          <div className="w-11 h-11 rounded-xl bg-[#7CC4ED]/15 border border-[#7CC4ED]/30 flex items-center justify-center text-[#7CC4ED] mb-4 group-hover:scale-110 lg-glow-ice transition-all">
+          <div className="w-11 h-11 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] mb-4 group-hover:scale-110 lg-glow-blue transition-all">
             <PenTool className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors font-display">
+          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors font-display">
             Edit PDF
           </h3>
           <p className="text-xs text-[#A7B8CA] mt-1">Annotate &amp; Sign PDF</p>
@@ -340,7 +340,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Card 3: Work with Excel */}
         <div
           onClick={() => setActiveTab('sheets')}
-          className="lg-secondary rounded-2xl p-5 cursor-pointer hover:border-emerald-400/60 group relative overflow-hidden"
+          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-emerald-400/60 group relative overflow-hidden"
         >
           <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-110 transition-all">
             <Table className="w-5 h-5" />
@@ -351,15 +351,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <p className="text-xs text-[#A7B8CA] mt-1">Analyze &amp; Calculate</p>
         </div>
 
-        {/* Card 4: Create Workflow */}
+        {/* Card 4: Create Workflow (Red-Blue Chromatic) */}
         <div
           onClick={() => setActiveTab('workflow')}
-          className="lg-secondary rounded-2xl p-5 cursor-pointer hover:border-[#A8DEFA]/60 group relative overflow-hidden"
+          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-[#38BDF8]/60 group relative overflow-hidden"
         >
-          <div className="w-11 h-11 rounded-xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 flex items-center justify-center text-[#A8DEFA] mb-4 group-hover:scale-110 transition-all">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#FF3366]/20 to-[#38BDF8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] mb-4 group-hover:scale-110 lg-glow-dual transition-all">
             <Boxes className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#D9F3FF] transition-colors font-display">
+          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors font-display">
             Create Workflow
           </h3>
           <p className="text-xs text-[#A7B8CA] mt-1">Automated Document Pipelines</p>
@@ -371,12 +371,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Column (6 cols): Recent Documents */}
-        <div className="lg:col-span-6 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
-          <div className="flex items-center justify-between pb-2 border-b border-[rgba(180,225,255,0.1)]">
+        <div className="lg:col-span-6 lg-secondary rounded-2xl p-5 border border-[rgba(255, 255, 255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
+          <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Recent Documents</h2>
             <button
               onClick={() => setActiveTab('projects')}
-              className="text-xs text-[#A8DEFA] hover:text-[#D9F3FF] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-xs text-[#38BDF8] hover:text-[#FF3366] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
             >
               <span>View all</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -386,8 +386,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {displayDocuments.length === 0 ? (
             /* Honest, Elegant Empty State */
             <div className="py-8 flex flex-col items-center justify-center text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-[rgba(180,225,255,0.14)] flex items-center justify-center text-[#A7B8CA]">
-                <Folder className="w-6 h-6 text-[#A8DEFA]/60" />
+              <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/15 flex items-center justify-center text-[#A7B8CA]">
+                <Folder className="w-6 h-6 text-[#FF3366]/70" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-bold text-[#F5FAFF]">No saved documents yet</p>
@@ -399,7 +399,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 onClick={() => fileInputRef.current?.click()}
                 className="lg-btn-secondary text-xs flex items-center gap-1.5 py-1.5 px-3"
               >
-                <Plus className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                <Plus className="w-3.5 h-3.5 text-[#38BDF8]" />
                 <span>Upload First File</span>
               </button>
             </div>
@@ -423,14 +423,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       if (found) onLoadProject(found);
                       else setActiveTab(isPdf ? 'pdf' : isDocx ? 'docx' : 'sheets');
                     }}
-                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(255, 255, 255,0.12)] transition-all cursor-pointer group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${iconBg}`}>
                         <FileText className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors truncate">
+                        <div className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors truncate">
                           {doc.title}
                         </div>
                         <div className="text-[11px] text-[#A7B8CA]">
@@ -456,13 +456,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Center Column (3 cols): Storage Overview Radial Chart */}
-        <div className="lg:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
-          <div className="pb-2 border-b border-[rgba(180,225,255,0.1)] flex items-center justify-between gap-1">
+        <div className="lg:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255, 255, 255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
+          <div className="pb-2 border-b border-[rgba(255, 255, 255,0.1)] flex items-center justify-between gap-1">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display truncate">Storage Usage</h2>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 shrink-0 ${
               storageSource === 'cloud'
                 ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-                : 'bg-[#A8DEFA]/15 text-[#A8DEFA] border border-[#A8DEFA]/30'
+                : 'bg-gradient-to-r from-[#FF3366]/20 to-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30'
             }`}>
               {storageSource === 'cloud' ? <Database className="w-2.5 h-2.5" /> : <HardDrive className="w-2.5 h-2.5" />}
               <span>{storageSource === 'cloud' ? 'Cloud' : 'Sandbox'}</span>
@@ -485,7 +485,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   cx="48"
                   cy="48"
                   r={storageRadius}
-                  stroke="url(#storageIceGrad)"
+                  stroke="url(#storageRedBlueGrad)"
                   strokeWidth="8"
                   fill="transparent"
                   strokeDasharray={storageCircumference}
@@ -494,9 +494,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   className="transition-all duration-1000 ease-out"
                 />
                 <defs>
-                  <linearGradient id="storageIceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#7CC4ED" />
-                    <stop offset="100%" stopColor="#A8DEFA" />
+                  <linearGradient id="storageRedBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#FF3366" />
+                    <stop offset="100%" stopColor="#38BDF8" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -516,15 +516,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[rgba(180,225,255,0.1)] flex items-center justify-between text-[11px] text-[#A7B8CA]">
+          <div className="pt-2 border-t border-[rgba(255, 255, 255,0.1)] flex items-center justify-between text-[11px] text-[#A7B8CA]">
             <span className="truncate">{storageSource === 'cloud' ? 'Supabase Storage' : 'Local IndexedDB'}</span>
             <span className="text-emerald-400 font-semibold shrink-0 ml-1">Active</span>
           </div>
         </div>
 
         {/* Right Column (3 cols): Quick Access */}
-        <div className="lg:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-3 min-w-0">
-          <div className="pb-2 border-b border-[rgba(180,225,255,0.1)]">
+        <div className="lg:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255, 255, 255,0.14)] flex flex-col justify-between space-y-3 min-w-0">
+          <div className="pb-2 border-b border-[rgba(255, 255, 255,0.1)]">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Quick Access</h2>
           </div>
 
@@ -532,12 +532,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* My Projects */}
             <div
               onClick={() => setActiveTab('projects')}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[#FF3366]/30 transition-all cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#A8DEFA]/15 text-[#A8DEFA] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#FF3366]/15 text-[#FF3366] flex items-center justify-center shrink-0">
                 <Folder className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors flex-1 truncate">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#FF3366] transition-colors flex-1 truncate">
                 My Projects
               </span>
               <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
@@ -546,12 +546,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Templates */}
             <div
               onClick={() => setActiveTab('templates')}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[#38BDF8]/30 transition-all cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#7CC4ED]/15 text-[#7CC4ED] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center shrink-0">
                 <LayoutTemplate className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors flex-1 truncate">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors flex-1 truncate">
                 Templates
               </span>
               <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
@@ -560,12 +560,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Activity Log */}
             <div
               onClick={() => setActiveTab('projects')}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[#2563EB]/30 transition-all cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#D9F3FF]/15 text-[#D9F3FF] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#FF3366]/15 to-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center shrink-0">
                 <History className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#D9F3FF] transition-colors flex-1 truncate">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors flex-1 truncate">
                 Conversion History
               </span>
               <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
@@ -574,7 +574,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Settings */}
             <div
               onClick={onOpenSettings || (() => setActiveTab('settings'))}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(255, 255, 255,0.12)] transition-all cursor-pointer group"
             >
               <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
                 <SettingsIcon className="w-4 h-4" />

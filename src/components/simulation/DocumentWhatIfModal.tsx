@@ -71,13 +71,13 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 flex items-center justify-center text-[#A8DEFA]">
+            <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8]">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-[#F5FAFF]">Document What-If Simulator</h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30">
                   SIMULATION PREDICTION
                 </span>
               </div>
@@ -102,10 +102,10 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
             <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-[#F5FAFF] flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                  <Sliders className="w-3.5 h-3.5 text-[#38BDF8]" />
                   Font Scale Delta
                 </span>
-                <span className="font-mono font-bold text-[#A8DEFA]">
+                <span className="font-mono font-bold text-[#38BDF8]">
                   {fontSizeDelta > 0 ? `+${fontSizeDelta}` : fontSizeDelta} pt
                 </span>
               </div>
@@ -120,7 +120,7 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
                   setFontSizeDelta(val);
                   handleSimulate(val, removeCols, targetLang, targetLimit);
                 }}
-                className="w-full accent-[#A8DEFA] cursor-pointer"
+                className="w-full accent-[#38BDF8] cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-[#A7B8CA]">
                 <span>-3 pt (Compact)</span>
@@ -133,7 +133,7 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
             <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-[#F5FAFF] flex items-center gap-1.5">
-                  <Languages className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                  <Languages className="w-3.5 h-3.5 text-[#38BDF8]" />
                   Target Language Expansion
                 </span>
               </div>
@@ -144,7 +144,7 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
                   setTargetLang(val);
                   handleSimulate(fontSizeDelta, removeCols, val, targetLimit);
                 }}
-                className="w-full px-3 py-1.5 text-xs bg-[#0B1420] border border-white/15 rounded-lg text-[#F5FAFF] focus:outline-none focus:border-[#A8DEFA]"
+                className="w-full px-3 py-1.5 text-xs bg-[#0B1420] border border-white/15 rounded-lg text-[#F5FAFF] focus:outline-none focus:border-[#38BDF8]"
               >
                 <option value="">No Translation (1.0x)</option>
                 <option value="de">German (+28% expansion)</option>
@@ -161,10 +161,10 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
             <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-[#F5FAFF] flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                  <Layers className="w-3.5 h-3.5 text-[#38BDF8]" />
                   Remove Table Columns
                 </span>
-                <span className="font-mono font-bold text-[#A8DEFA]">{removeCols} col(s)</span>
+                <span className="font-mono font-bold text-[#38BDF8]">{removeCols} col(s)</span>
               </div>
               <div className="flex gap-2">
                 {[0, 1, 2, 3].map((num) => (
@@ -176,7 +176,7 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
                     }}
                     className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                       removeCols === num
-                        ? 'bg-[#A8DEFA]/20 text-[#A8DEFA] border-[#A8DEFA]/40'
+                        ? 'bg-[#38BDF8]/20 text-[#38BDF8] border-[#38BDF8]/40'
                         : 'bg-white/10 text-[#A7B8CA] border-white/15 hover:text-white'
                     }`}
                   >
@@ -217,7 +217,7 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
           </div>
 
           {/* Outcome Prediction Box */}
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-white/[0.04] via-white/[0.02] to-[#A8DEFA]/10 border border-[#A8DEFA]/20 space-y-4">
+          <div className="p-5 rounded-2xl bg-gradient-to-br from-white/[0.04] via-white/[0.02] to-[#38BDF8]/10 border border-[#38BDF8]/20 space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-[#A7B8CA] uppercase tracking-wider">
                 Predicted Layout Outcome
@@ -240,7 +240,7 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
               </div>
               <div className="p-3 rounded-xl bg-black/30 border border-white/10 text-center">
                 <div className="text-[11px] text-[#A7B8CA]">Text Volume</div>
-                <div className="text-xl font-extrabold text-[#A8DEFA]">
+                <div className="text-xl font-extrabold text-[#38BDF8]">
                   {Math.round(result.textExpansionRatio * 100)}%
                 </div>
               </div>
@@ -273,10 +273,10 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
             )}
 
             {result.recommendations.length > 0 && (
-              <div className="p-3 rounded-xl bg-[#A8DEFA]/10 border border-[#A8DEFA]/25 text-xs text-[#A8DEFA] space-y-1">
+              <div className="p-3 rounded-xl bg-[#38BDF8]/10 border border-[#38BDF8]/25 text-xs text-[#38BDF8] space-y-1">
                 {result.recommendations.map((r, idx) => (
                   <div key={idx} className="flex items-start gap-1.5">
-                    <Sparkles className="w-4 h-4 shrink-0 text-[#A8DEFA] mt-0.5" />
+                    <Sparkles className="w-4 h-4 shrink-0 text-[#38BDF8] mt-0.5" />
                     <span>{r}</span>
                   </div>
                 ))}
@@ -303,7 +303,7 @@ export const DocumentWhatIfModal: React.FC<DocumentWhatIfModalProps> = ({
             </button>
             <button
               onClick={onClose}
-              className="glass-btn-primary flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold shadow-lg shadow-[#A8DEFA]/20 transition-all cursor-pointer"
+              className="glass-btn-primary flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold shadow-lg shadow-[#38BDF8]/20 transition-all cursor-pointer"
             >
               <span>Apply Parameters</span>
               <ArrowRight className="w-3.5 h-3.5" />

@@ -194,7 +194,7 @@ export const AutonomousWorkspace: React.FC = () => {
             <button
               onClick={() => setMode('hybrid')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${mode === 'hybrid'
-                  ? 'bg-[#A8DEFA]/25 border border-[#A8DEFA]/40 text-[#F5FAFF] shadow-lg shadow-[#A8DEFA]/20 lg-glow-ice'
+                  ? 'bg-[#38BDF8]/25 border border-[#38BDF8]/40 text-[#F5FAFF] shadow-lg shadow-[#38BDF8]/20 lg-glow-ice'
                   : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
                 }`}
             >
@@ -204,7 +204,7 @@ export const AutonomousWorkspace: React.FC = () => {
             <button
               onClick={() => setMode('cloud')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${mode === 'cloud'
-                  ? 'bg-[#A8DEFA]/25 border border-[#A8DEFA]/40 text-[#A8DEFA] shadow-lg shadow-[#A8DEFA]/20'
+                  ? 'bg-[#38BDF8]/25 border border-[#38BDF8]/40 text-[#38BDF8] shadow-lg shadow-[#38BDF8]/20'
                   : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
                 }`}
             >
@@ -219,7 +219,7 @@ export const AutonomousWorkspace: React.FC = () => {
           <button
             onClick={() => setSubTab('agent')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'agent'
-                ? 'glass-btn-primary shadow-lg shadow-[#A8DEFA]/25 lg-glow-ice'
+                ? 'glass-btn-primary shadow-lg shadow-[#38BDF8]/25 lg-glow-ice'
                 : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05]'
               }`}
           >
@@ -230,7 +230,7 @@ export const AutonomousWorkspace: React.FC = () => {
           <button
             onClick={() => setSubTab('radar')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'radar'
-                ? 'glass-btn-primary shadow-lg shadow-[#A8DEFA]/25 lg-glow-ice'
+                ? 'glass-btn-primary shadow-lg shadow-[#38BDF8]/25 lg-glow-ice'
                 : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05]'
               }`}
           >
@@ -241,7 +241,7 @@ export const AutonomousWorkspace: React.FC = () => {
           <button
             onClick={() => setSubTab('graph')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'graph'
-                ? 'glass-btn-primary shadow-lg shadow-[#A8DEFA]/25 lg-glow-ice'
+                ? 'glass-btn-primary shadow-lg shadow-[#38BDF8]/25 lg-glow-ice'
                 : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05]'
               }`}
           >
@@ -252,7 +252,7 @@ export const AutonomousWorkspace: React.FC = () => {
           <button
             onClick={() => setSubTab('search')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'search'
-                ? 'glass-btn-primary shadow-lg shadow-[#A8DEFA]/25 lg-glow-ice'
+                ? 'glass-btn-primary shadow-lg shadow-[#38BDF8]/25 lg-glow-ice'
                 : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05]'
               }`}
           >
@@ -271,7 +271,7 @@ export const AutonomousWorkspace: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base font-semibold text-[#F5FAFF] flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-[#A8DEFA]" />
+                    <Layers className="w-4 h-4 text-[#38BDF8]" />
                     Define Autonomous Document Objective
                   </h2>
                   <p className="text-xs text-[#A7B8CA] mt-0.5">
@@ -285,7 +285,7 @@ export const AutonomousWorkspace: React.FC = () => {
                       key={p.id}
                       onClick={() => handleSelectPreset(p.id)}
                       className={`px-3 py-1 rounded-xl text-xs font-medium border transition-all ${selectedPreset === p.id
-                          ? 'bg-[#A8DEFA]/20 text-[#A8DEFA] border-[#A8DEFA]/40 shadow-sm'
+                          ? 'bg-[#38BDF8]/20 text-[#38BDF8] border-[#38BDF8]/40 shadow-sm'
                           : 'glass-card text-[#A7B8CA] border-white/10 hover:text-[#F5FAFF]'
                         }`}
                     >
@@ -300,13 +300,13 @@ export const AutonomousWorkspace: React.FC = () => {
                   value={objective}
                   onChange={(e) => setObjective(e.target.value)}
                   rows={3}
-                  className="w-full bg-[#080E1C] border border-[rgba(180,225,255,0.18)] rounded-2xl p-4 text-sm text-[#F5FAFF] placeholder-[#62758A] focus:outline-none focus:ring-2 focus:ring-[#A8DEFA]/30 focus:border-[#A8DEFA] transition-all resize-none"
+                  className="w-full bg-[#080E1C] border border-[rgba(255, 255, 255,0.18)] rounded-2xl p-4 text-sm text-[#F5FAFF] placeholder-[#62758A] focus:outline-none focus:ring-2 focus:ring-[#38BDF8]/30 focus:border-[#38BDF8] transition-all resize-none"
                   placeholder="State your goal (e.g., extract invoice line items, detect tax discrepancies, synthesize reconciliation Excel workbook)..."
                 />
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
                   <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <label className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white/[0.04] hover:bg-white/[0.08] text-[#A7B8CA] border border-[rgba(180,225,255,0.14)] cursor-pointer transition-all">
+                    <label className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white/[0.04] hover:bg-white/[0.08] text-[#A7B8CA] border border-[rgba(255, 255, 255,0.14)] cursor-pointer transition-all">
                       <FileText className="w-4 h-4 text-[#A7B8CA]" />
                       <span>
                         {uploadedFiles.length > 0
@@ -357,7 +357,7 @@ export const AutonomousWorkspace: React.FC = () => {
 
             {/* Active Execution Plan Card */}
             {activeJob && (
-              <div className="bg-slate-900/70 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur space-y-6">
+              <div className="lg-liquid-6 border border-white/15 rounded-3xl p-6 shadow-2xl space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2">
@@ -367,7 +367,7 @@ export const AutonomousWorkspace: React.FC = () => {
                             : activeJob.status === 'awaiting_approval'
                               ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                               : activeJob.status === 'running'
-                                ? 'bg-[#A8DEFA]/10 text-[#A8DEFA] border-[#A8DEFA]/30'
+                                ? 'bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/30'
                                 : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
                           }`}
                       >
@@ -400,10 +400,10 @@ export const AutonomousWorkspace: React.FC = () => {
                           : node.status === 'waiting_approval'
                             ? 'bg-amber-950/30 border-amber-500/50 shadow-lg shadow-amber-950/20'
                             : node.status === 'running'
-                              ? 'bg-[#A8DEFA]/15 border-[#A8DEFA]/40 shadow-lg shadow-[#A8DEFA]/10'
+                              ? 'bg-[#38BDF8]/15 border-[#38BDF8]/40 shadow-lg shadow-[#38BDF8]/10'
                               : node.status === 'failed'
                                 ? 'bg-rose-950/20 border-rose-500/40'
-                                : 'bg-[#080E1C]/60 border-[rgba(180,225,255,0.1)]'
+                                : 'bg-[#080E1C]/60 border-[rgba(255, 255, 255,0.1)]'
                         }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -427,7 +427,7 @@ export const AutonomousWorkspace: React.FC = () => {
                           </span>
                         )}
                         {node.status === 'running' && (
-                          <span className="text-xs text-[#A8DEFA] font-semibold flex items-center gap-1">
+                          <span className="text-xs text-[#38BDF8] font-semibold flex items-center gap-1">
                             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                             Running
                           </span>
@@ -747,7 +747,7 @@ export const AutonomousWorkspace: React.FC = () => {
                           ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300'
                           : node.type === 'contradiction'
                             ? 'bg-rose-950/20 border-rose-500/40 text-rose-300'
-                            : 'bg-[#A8DEFA]/20 border-[#A8DEFA]/40 text-[#A8DEFA]'
+                            : 'bg-[#38BDF8]/20 border-[#38BDF8]/40 text-[#38BDF8]'
                       }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">

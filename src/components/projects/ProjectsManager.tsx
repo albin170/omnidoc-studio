@@ -48,7 +48,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
       case 'sheets':
         return <Table className="w-4 h-4 text-emerald-400" />;
       case 'image':
-        return <ImageIcon className="w-4 h-4 text-[#A8DEFA]" />;
+        return <ImageIcon className="w-4 h-4 text-[#38BDF8]" />;
       default:
         return <FileCode className="w-4 h-4 text-indigo-400" />;
     }
@@ -83,7 +83,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
       <div className="glass-panel p-6 rounded-3xl border border-white/12 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <FolderArchive className="w-5 h-5 text-[#A8DEFA]" />
+            <FolderArchive className="w-5 h-5 text-[#38BDF8]" />
             <h1 className="text-xl md:text-2xl font-bold text-[#F5FAFF] tracking-tight">
               Projects, History &amp; Privacy
             </h1>
@@ -99,7 +99,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
             onClick={() => setActiveSubTab('projects')}
             className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
               activeSubTab === 'projects'
-                ? 'glass-btn-primary shadow-md shadow-[#A8DEFA]/20 lg-glow-ice'
+                ? 'glass-btn-primary shadow-md shadow-[#38BDF8]/20 lg-glow-ice'
                 : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
             }`}
           >
@@ -109,7 +109,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
             onClick={() => setActiveSubTab('history')}
             className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
               activeSubTab === 'history'
-                ? 'glass-btn-primary shadow-md shadow-[#A8DEFA]/20 lg-glow-ice'
+                ? 'glass-btn-primary shadow-md shadow-[#38BDF8]/20 lg-glow-ice'
                 : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
             }`}
           >
@@ -119,7 +119,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
             onClick={() => setActiveSubTab('privacy')}
             className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
               activeSubTab === 'privacy'
-                ? 'glass-btn-primary shadow-md shadow-[#A8DEFA]/20 lg-glow-ice'
+                ? 'glass-btn-primary shadow-md shadow-[#38BDF8]/20 lg-glow-ice'
                 : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
             }`}
           >
@@ -144,7 +144,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
               {projects.map((proj) => (
                 <div
                   key={proj.id}
-                  className="p-5 rounded-2xl glass-card border-white/10 hover:border-[#A8DEFA]/50 transition-all flex flex-col justify-between group shadow-lg"
+                  className="p-5 rounded-2xl glass-card border-white/10 hover:border-[#38BDF8]/50 transition-all flex flex-col justify-between group shadow-lg"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -157,7 +157,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                     </div>
 
                     <div>
-                      <h4 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors truncate">
+                      <h4 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors truncate">
                         {proj.title}
                       </h4>
                       <p className="text-[11px] text-[#A7B8CA] mt-1">
@@ -169,7 +169,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                   <div className="flex items-center justify-between pt-4 mt-3 border-t border-white/10">
                     <button
                       onClick={() => onLoadProject(proj)}
-                      className="flex items-center gap-1.5 text-xs text-[#A8DEFA] hover:text-[#A8DEFA] font-semibold cursor-pointer transition-colors"
+                      className="flex items-center gap-1.5 text-xs text-[#38BDF8] hover:text-[#38BDF8] font-semibold cursor-pointer transition-colors"
                     >
                       <span>Open Workspace</span>
                       <ArrowRight className="w-3.5 h-3.5" />

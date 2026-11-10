@@ -112,7 +112,7 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 text-[#A8DEFA]">
+            <div className="p-2.5 rounded-2xl bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[#38BDF8]">
               <GitCommit className="w-5 h-5" />
             </div>
             <div>
@@ -120,7 +120,7 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
                 <h2 className="font-extrabold text-base text-[#F5FAFF] tracking-tight">
                   Document Data Lineage &amp; Provenance
                 </h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30">
                   v2.1 TRACEABILITY
                 </span>
               </div>
@@ -152,7 +152,7 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
               disabled={isExtracting}
               className="flex items-center gap-2 px-4 py-2 rounded-xl glass-btn-primary text-white font-extrabold text-xs transition-colors cursor-pointer"
             >
-              <Upload className="w-4 h-4 text-[#A8DEFA]" />
+              <Upload className="w-4 h-4 text-[#38BDF8]" />
               <span>Select Document</span>
             </button>
             <span className="text-xs text-[#A7B8CA] font-medium truncate max-w-[200px]">
@@ -173,7 +173,7 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
                 onClick={handleExportCsv}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F5FAFF] border border-white/15 transition-colors cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                <FileSpreadsheet className="w-3.5 h-3.5 text-[#38BDF8]" />
                 <span>Export CSV</span>
               </button>
             </div>
@@ -189,7 +189,7 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
             </div>
             <div>
               <span className="text-[#A7B8CA]">Mean Confidence:</span>
-              <span className="ml-2 font-mono font-bold text-[#A8DEFA]">{avgConfidence}%</span>
+              <span className="ml-2 font-mono font-bold text-[#38BDF8]">{avgConfidence}%</span>
             </div>
             <div>
               <span className="text-[#A7B8CA]">Flagged For Review:</span>
@@ -237,7 +237,7 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6">
           {isExtracting && (
             <div className="py-16 flex flex-col items-center justify-center gap-3 text-[#A7B8CA]">
-              <div className="w-8 h-8 border-2 border-[#A8DEFA] border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[#38BDF8] border-t-transparent rounded-full animate-spin" />
               <p className="text-xs font-medium">Extracting field lineage and confidence scores...</p>
             </div>
           )}
@@ -287,7 +287,7 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
 
                     <div className="flex items-baseline gap-2">
                       <span className="text-[11px] text-[#A7B8CA]">Extracted Value:</span>
-                      <span className="font-mono text-sm font-extrabold text-[#A8DEFA] select-text">
+                      <span className="font-mono text-sm font-extrabold text-[#38BDF8] select-text">
                         {String(field.extractedValue)}
                       </span>
                     </div>

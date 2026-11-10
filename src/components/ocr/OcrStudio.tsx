@@ -153,10 +153,10 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
       <div className="h-14 border-b border-white/10 bg-[#0B1420]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <ScanText className="w-5 h-5 text-[#A8DEFA]" />
+            <ScanText className="w-5 h-5 text-[#38BDF8]" />
             <h2 className="text-sm font-bold text-[#F5FAFF] tracking-tight">OCR Document Scanner</h2>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-semibold border border-[#A8DEFA]/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#38BDF8]/20 text-[#38BDF8] font-semibold border border-[#38BDF8]/30">
             TESSERACT AI · PDF &amp; IMAGES
           </span>
         </div>
@@ -178,8 +178,8 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
             </select>
           </div>
 
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all">
-            <Upload className="w-3.5 h-3.5 text-[#A8DEFA]" />
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all">
+            <Upload className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span>Select PDF / Image</span>
             <input
               type="file"
@@ -192,7 +192,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
           <button
             onClick={handleRunOcr}
             disabled={!sourceFile || isRecognizing}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary disabled:opacity-40 text-xs font-semibold shadow-lg shadow-[#A8DEFA]/20 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary disabled:opacity-40 text-xs font-semibold shadow-lg shadow-[#38BDF8]/20 cursor-pointer"
           >
             {isRecognizing ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -208,7 +208,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
       <div className="flex-1 p-6 md:p-8 flex flex-col md:flex-row gap-6 items-stretch justify-center max-w-7xl mx-auto w-full overflow-hidden select-none">
         {/* Left Card: Upload Document */}
         <label
-          className="w-full md:w-1/2 rounded-3xl glass-panel border border-white/15 p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#A8DEFA]/50 transition-all group min-h-[380px] shadow-2xl relative overflow-hidden"
+          className="w-full md:w-1/2 rounded-3xl glass-panel border border-white/15 p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#38BDF8]/50 transition-all group min-h-[380px] shadow-2xl relative overflow-hidden"
         >
           <input
             type="file"
@@ -237,11 +237,11 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
                   Ready
                 </span>
               </div>
-              <span className="text-[11px] text-[#A8DEFA] font-semibold underline mt-1">Change File</span>
+              <span className="text-[11px] text-[#38BDF8] font-semibold underline mt-1">Change File</span>
             </div>
           ) : (
             <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-2xl bg-[#A8DEFA]/10 border border-[#A8DEFA]/30 flex items-center justify-center text-[#A8DEFA] shadow-lg shadow-[#A8DEFA]/15 group-hover:scale-105 transition-all mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-[#38BDF8]/10 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] shadow-lg shadow-[#38BDF8]/15 group-hover:scale-105 transition-all mb-4">
                 <Upload className="w-8 h-8" />
               </div>
               <h3 className="text-base font-bold text-[#F5FAFF]">Upload Document</h3>
@@ -271,7 +271,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
                       sourceFile?.name.replace(/\.[^/.]+$/, '') || 'OCR Document'
                     )
                   }
-                  className="p-1.5 rounded-xl glass-card text-[#A8DEFA] hover:border-[#A8DEFA]/50 text-xs flex items-center gap-1 cursor-pointer transition-all"
+                  className="p-1.5 rounded-xl glass-card text-[#38BDF8] hover:border-[#38BDF8]/50 text-xs flex items-center gap-1 cursor-pointer transition-all"
                   title="Open in Word Studio"
                 >
                   <PenTool className="w-3.5 h-3.5" />
@@ -286,7 +286,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
                 value={editableText}
                 onChange={(e) => setEditableText(e.target.value)}
                 placeholder="OCR extracted text will appear here..."
-                className="w-full flex-1 bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-[#F5FAFF] font-sans text-xs md:text-sm leading-relaxed outline-none focus:border-[#A8DEFA]/50 resize-none custom-scrollbar"
+                className="w-full flex-1 bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-[#F5FAFF] font-sans text-xs md:text-sm leading-relaxed outline-none focus:border-[#38BDF8]/50 resize-none custom-scrollbar"
               />
             </div>
           </div>
@@ -301,7 +301,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] hover:brightness-110 text-white text-xs font-semibold shadow-lg shadow-[#A8DEFA]/30 cursor-pointer transition-all"
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#38BDF8] to-[#FF3366] hover:brightness-110 text-white text-xs font-semibold shadow-lg shadow-[#38BDF8]/30 cursor-pointer transition-all"
               >
                 <Copy className="w-3.5 h-3.5" />
                 <span>{copied ? 'Copied' : 'Copy Text'}</span>

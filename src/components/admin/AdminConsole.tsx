@@ -360,7 +360,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-1">
               <span className="text-[11px] font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-[#A8DEFA]" /> Total Registered Users
+                <Users className="w-3.5 h-3.5 text-[#38BDF8]" /> Total Registered Users
               </span>
               <div className="text-2xl font-black text-[#F5FAFF]">{telemetry?.total_users ?? 0}</div>
               <p className="text-[10px] text-emerald-400 font-medium">
@@ -382,7 +382,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
             <div className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-1">
               <span className="text-[11px] font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-[#A8DEFA]" /> Documents Vault
+                <FileText className="w-3.5 h-3.5 text-[#38BDF8]" /> Documents Vault
               </span>
               <div className="text-2xl font-black text-[#F5FAFF]">{telemetry?.total_documents ?? 0}</div>
               <p className="text-[10px] text-[#A7B8CA]">
@@ -392,7 +392,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
             <div className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-1">
               <span className="text-[11px] font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5 text-[#A8DEFA]" /> Autonomous Jobs
+                <Activity className="w-3.5 h-3.5 text-[#38BDF8]" /> Autonomous Jobs
               </span>
               <div className="text-2xl font-black text-[#F5FAFF]">{telemetry?.total_jobs ?? 0}</div>
               <p className="text-[10px] text-red-400">
@@ -405,7 +405,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-5 rounded-2xl bg-[#0B1420]/60 border border-white/10 space-y-3">
               <h3 className="text-xs font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#A8DEFA]" /> Recent Registrations
+                <Users className="w-4 h-4 text-[#38BDF8]" /> Recent Registrations
               </h3>
               <div className="space-y-2">
                 {telemetry?.recent_registrations?.length > 0 ? (
@@ -514,7 +514,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                         </span>
                       </td>
                       <td className="py-3">
-                        <span className="font-bold text-[#A8DEFA] uppercase text-[11px] font-mono">
+                        <span className="font-bold text-[#38BDF8] uppercase text-[11px] font-mono">
                           {u.plan_tier}
                         </span>
                       </td>
@@ -538,7 +538,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                         </button>
                         <button
                           onClick={() => handleStartViewAsUser(u)}
-                          className="px-2.5 py-1 rounded-lg bg-[#A8DEFA]/20 hover:bg-[#A8DEFA]/30 text-[#A8DEFA] text-[11px] font-bold cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-[#38BDF8]/20 hover:bg-[#38BDF8]/30 text-[#38BDF8] text-[11px] font-bold cursor-pointer"
                         >
                           View As
                         </button>
@@ -707,7 +707,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
               <div key={p.id} className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-black text-white text-base">{p.name}</h3>
-                  <span className="font-mono text-xs text-[#A8DEFA] uppercase">{p.slug}</span>
+                  <span className="font-mono text-xs text-[#38BDF8] uppercase">{p.slug}</span>
                 </div>
                 <div className="text-2xl font-black text-white">
                   ${(p.monthly_price_cents / 100).toFixed(2)}
@@ -743,12 +743,12 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
               <div key={feat.id} className="p-4 rounded-2xl bg-[#0B1420]/70 border border-white/10 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white text-sm">{feat.name}</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#A8DEFA]/20 text-[#A8DEFA] font-bold">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#38BDF8]/20 text-[#38BDF8] font-bold">
                     {feat.category}
                   </span>
                 </div>
                 <p className="text-xs text-[#A7B8CA]">{feat.description}</p>
-                <div className="pt-2 text-[10px] font-mono text-[#A8DEFA]">
+                <div className="pt-2 text-[10px] font-mono text-[#38BDF8]">
                   Key: {feat.feature_key}
                 </div>
               </div>

@@ -23,10 +23,10 @@ export const OnboardingBanner: React.FC<OnboardingBannerProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[24px] lg-primary border border-[rgba(180,225,255,0.22)] text-[#F5FAFF] p-5 sm:p-6 shadow-2xl select-none animate-fade-in">
+    <div className="relative overflow-hidden rounded-[24px] lg-primary border border-[rgba(255, 255, 255,0.22)] text-[#F5FAFF] p-5 sm:p-6 shadow-2xl select-none animate-fade-in">
       {/* Background ambient lighting */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-[#A8DEFA]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-[#7CC4ED]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-80 h-80 bg-[#38BDF8]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-[#FF3366]/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Dismiss Button */}
       <button
@@ -40,7 +40,7 @@ export const OnboardingBanner: React.FC<OnboardingBannerProps> = ({
       <div className="relative z-10 space-y-4">
         {/* Title & Badge */}
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="px-2.5 py-0.5 rounded-full bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 text-[#A8DEFA] font-bold text-[10px] tracking-wide uppercase flex items-center gap-1.5">
+          <span className="px-2.5 py-0.5 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[#38BDF8] font-bold text-[10px] tracking-wide uppercase flex items-center gap-1.5">
             <Zap className="w-3 h-3 text-amber-400" />
             <span>Fast-Track Guide</span>
           </span>
@@ -54,7 +54,7 @@ export const OnboardingBanner: React.FC<OnboardingBannerProps> = ({
           {/* Step 1 */}
           <div className="p-3.5 rounded-2xl lg-secondary space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-5 h-5 rounded-lg bg-[#A8DEFA]/20 border border-[#A8DEFA]/35 text-[#F5FAFF] font-extrabold text-[11px] flex items-center justify-center shrink-0">
+              <span className="w-5 h-5 rounded-lg bg-[#38BDF8]/20 border border-[#38BDF8]/35 text-[#F5FAFF] font-extrabold text-[11px] flex items-center justify-center shrink-0">
                 1
               </span>
               <span className="font-bold text-xs text-[#F5FAFF]">Drop or Pick Studio</span>
@@ -67,7 +67,7 @@ export const OnboardingBanner: React.FC<OnboardingBannerProps> = ({
           {/* Step 2 */}
           <div className="p-3.5 rounded-2xl lg-secondary space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-5 h-5 rounded-lg bg-[#7CC4ED]/20 border border-[#7CC4ED]/35 text-[#D9F3FF] font-extrabold text-[11px] flex items-center justify-center shrink-0">
+              <span className="w-5 h-5 rounded-lg bg-[#FF3366]/20 border border-[#FF3366]/35 text-[#FF6688] font-extrabold text-[11px] flex items-center justify-center shrink-0">
                 2
               </span>
               <span className="font-bold text-xs text-[#F5FAFF]">Edit, Transform &amp; Sign</span>
@@ -92,7 +92,7 @@ export const OnboardingBanner: React.FC<OnboardingBannerProps> = ({
         </div>
 
         {/* Quick Actions */}
-        <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs border-t border-[rgba(180,225,255,0.1)]">
+        <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs border-t border-[rgba(255, 255, 255,0.1)]">
           <div className="flex items-center gap-2 text-[11px] text-[#A7B8CA]">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>High-Speed In-Browser Execution • Privacy Guaranteed</span>
@@ -101,7 +101,7 @@ export const OnboardingBanner: React.FC<OnboardingBannerProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={onOpenCommandPalette}
-              className="font-bold text-[#A8DEFA] hover:text-[#D9F3FF] transition-colors cursor-pointer flex items-center gap-1"
+              className="font-bold text-[#38BDF8] hover:text-[#FF6688] transition-colors cursor-pointer flex items-center gap-1"
             >
               <span>Command Palette (Ctrl+K)</span>
               <ArrowRight className="w-3.5 h-3.5" />

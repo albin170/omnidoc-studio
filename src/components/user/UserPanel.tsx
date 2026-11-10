@@ -368,7 +368,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
         {/* Header */}
         <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/[0.03]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#A8DEFA]/30 to-[#A8DEFA]/30 border border-[#A8DEFA]/40 text-[#A8DEFA] flex items-center justify-center font-bold shadow-md shadow-[#A8DEFA]/20">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#38BDF8]/30 to-[#38BDF8]/30 border border-[#38BDF8]/40 text-[#38BDF8] flex items-center justify-center font-bold shadow-md shadow-[#38BDF8]/20">
               <User className="w-5 h-5" />
             </div>
             <div>
@@ -395,7 +395,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('profile')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'profile'
-                ? 'border-[#A8DEFA] text-[#A8DEFA] font-bold'
+                ? 'border-[#38BDF8] text-[#38BDF8] font-bold'
                 : 'border-transparent hover:text-white'
             }`}
           >
@@ -407,11 +407,11 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('plan')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'plan'
-                ? 'border-[#A8DEFA] text-[#A8DEFA] font-bold'
+                ? 'border-[#38BDF8] text-[#38BDF8] font-bold'
                 : 'border-transparent hover:text-white'
             }`}
           >
-            <Zap className="w-4 h-4 text-[#A8DEFA]" />
+            <Zap className="w-4 h-4 text-[#38BDF8]" />
             <span>Plans &amp; Quota</span>
           </button>
 
@@ -419,7 +419,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('security')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'security'
-                ? 'border-[#A8DEFA] text-[#A8DEFA] font-bold'
+                ? 'border-[#38BDF8] text-[#38BDF8] font-bold'
                 : 'border-transparent hover:text-white'
             }`}
           >
@@ -431,7 +431,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('api')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'api'
-                ? 'border-[#A8DEFA] text-[#A8DEFA] font-bold'
+                ? 'border-[#38BDF8] text-[#38BDF8] font-bold'
                 : 'border-transparent hover:text-white'
             }`}
           >
@@ -459,7 +459,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                       onClick={() => setSelectedAvatar(avatar)}
                       className={`w-12 h-12 rounded-2xl object-cover cursor-pointer transition-all border-2 ${
                         selectedAvatar === avatar
-                          ? 'border-[#A8DEFA] ring-2 ring-[#A8DEFA]/40 scale-105'
+                          ? 'border-[#38BDF8] ring-2 ring-[#38BDF8]/40 scale-105'
                           : 'border-transparent hover:opacity-80'
                       }`}
                     />
@@ -476,7 +476,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     placeholder="e.g. Zach Marion"
-                    className="w-full p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#A8DEFA] outline-none text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 font-medium"
+                    className="w-full p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#38BDF8] outline-none text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 font-medium"
                   />
                 </div>
 
@@ -496,7 +496,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                 <button
                   onClick={handleSaveProfile}
                   disabled={isSavingProfile}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] text-white font-bold text-xs hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-2"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#38BDF8] to-[#FF3366] text-white font-bold text-xs hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-2"
                 >
                   {isSavingProfile ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                   <span>Save Profile</span>
@@ -504,15 +504,15 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               </div>
 
               {/* Status info box */}
-              <div className="p-4 rounded-2xl bg-[#A8DEFA]/10 border border-[#A8DEFA]/30 flex items-center justify-between text-xs">
+              <div className="p-4 rounded-2xl bg-[#38BDF8]/10 border border-[#38BDF8]/30 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="w-5 h-5 text-[#A8DEFA]" />
+                  <ShieldCheck className="w-5 h-5 text-[#38BDF8]" />
                   <div>
                     <div className="font-bold text-[#F5FAFF]">Authenticated Account</div>
                     <div className="text-[#A7B8CA] text-[11px]">Protected by JWT session authentication and tenant isolation</div>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-[#A8DEFA] text-white font-bold text-[10px] shadow-sm shadow-[#A8DEFA]/40 uppercase">
+                <span className="px-2.5 py-1 rounded-full bg-[#38BDF8] text-white font-bold text-[10px] shadow-sm shadow-[#38BDF8]/40 uppercase">
                   {userSession.role || 'USER'}
                 </span>
               </div>
@@ -526,12 +526,12 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <div className="font-bold text-[#F5FAFF] flex items-center gap-2">
-                    <HardDrive className="w-4 h-4 text-[#A8DEFA]" />
+                    <HardDrive className="w-4 h-4 text-[#38BDF8]" />
                     <span>Storage Quota</span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
                       userSession.authSource === 'backend' || backendUsage?.storage_used_bytes != null
                         ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30'
+                        : 'bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30'
                     }`}>
                       {userSession.authSource === 'backend' || backendUsage?.storage_used_bytes != null
                         ? 'Cloud Vault (Supabase)'
@@ -546,7 +546,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                 <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      quotaPct > 90 ? 'bg-rose-500' : 'bg-gradient-to-r from-[#A8DEFA] to-[#A8DEFA]'
+                      quotaPct > 90 ? 'bg-rose-500' : 'bg-gradient-to-r from-[#38BDF8] to-[#38BDF8]'
                     }`}
                     style={{ width: `${quotaPct}%` }}
                   />
@@ -554,7 +554,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
                 <div className="flex items-center justify-between text-[11px] text-[#A7B8CA] pt-0.5">
                   <span>{backendUsage?.documents_count ?? totalProjectsCount} documents stored</span>
-                  <span className="text-[#A8DEFA] font-semibold">
+                  <span className="text-[#38BDF8] font-semibold">
                     Active Plan: {(backendEntitlements?.plan_name || userSession.planTier || 'Free Community').toUpperCase()}
                   </span>
                 </div>
@@ -568,7 +568,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                     onClick={() => onUpdateSession({ ...userSession, billingCycle: 'monthly' })}
                     className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       (userSession.billingCycle || 'monthly') === 'monthly'
-                        ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7363f8] text-white shadow-xs'
+                        ? 'bg-gradient-to-r from-[#38BDF8] to-[#7363f8] text-white shadow-xs'
                         : 'text-[#A7B8CA] hover:text-white'
                     }`}
                   >
@@ -578,7 +578,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                     onClick={() => onUpdateSession({ ...userSession, billingCycle: 'annual' })}
                     className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       (userSession.billingCycle || 'monthly') === 'annual'
-                        ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7363f8] text-white shadow-xs'
+                        ? 'bg-gradient-to-r from-[#38BDF8] to-[#7363f8] text-white shadow-xs'
                         : 'text-[#A7B8CA] hover:text-white'
                     }`}
                   >
@@ -602,7 +602,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                       key={p.tier}
                       className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
                         isCurrent
-                          ? 'border-[#A8DEFA] bg-[#A8DEFA]/15 shadow-lg shadow-[#A8DEFA]/20 ring-1 ring-[#A8DEFA]/40'
+                          ? 'border-[#38BDF8] bg-[#38BDF8]/15 shadow-lg shadow-[#38BDF8]/20 ring-1 ring-[#38BDF8]/40'
                           : 'border-white/10 bg-white/[0.03] hover:border-white/20'
                       }`}
                     >
@@ -612,7 +612,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                             {p.badge}
                           </span>
                           {isCurrent && (
-                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#A8DEFA] text-white">
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#38BDF8] text-white">
                               ACTIVE
                             </span>
                           )}
@@ -625,7 +625,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                             <span className="text-xs text-[#A7B8CA]">{p.period}</span>
                           </div>
                           {(userSession.billingCycle || 'monthly') === 'annual' && p.tier !== 'free' && (
-                            <div className="text-[10px] text-[#A8DEFA] font-mono mt-0.5">{p.annualTotal} billed annually</div>
+                            <div className="text-[10px] text-[#38BDF8] font-mono mt-0.5">{p.annualTotal} billed annually</div>
                           )}
                         </div>
 
@@ -633,15 +633,15 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
                         <div className="pt-2 border-t border-white/10 space-y-1 text-[11px] text-[#A7B8CA]">
                           <div className="flex items-center gap-1.5 font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#38BDF8]" />
                             <span>{p.maxSize}</span>
                           </div>
                           <div className="flex items-center gap-1.5 font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#38BDF8]" />
                             <span>{p.storage}</span>
                           </div>
                           <div className="flex items-center gap-1.5 font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#38BDF8]" />
                             <span>{p.monthlyProcessing}</span>
                           </div>
                         </div>
@@ -652,7 +652,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                         disabled={isCurrent}
                         className={`w-full mt-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isCurrent
-                            ? 'bg-[#A8DEFA]/20 text-[#A8DEFA] cursor-default'
+                            ? 'bg-[#38BDF8]/20 text-[#38BDF8] cursor-default'
                             : 'glass-btn-primary text-white shadow-xs'
                         }`}
                       >
@@ -671,7 +671,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               {/* Password Change Form */}
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
                 <div className="font-bold text-[#F5FAFF] flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-[#A8DEFA]" />
+                  <Lock className="w-4 h-4 text-[#38BDF8]" />
                   <span>Update Account Password</span>
                 </div>
                 <form onSubmit={handleChangePassword} className="space-y-3">
@@ -682,7 +682,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#A8DEFA]"
+                      className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#38BDF8]"
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -693,7 +693,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#A8DEFA]"
+                        className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#38BDF8]"
                       />
                     </div>
                     <div>
@@ -703,7 +703,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#A8DEFA]"
+                        className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#38BDF8]"
                       />
                     </div>
                   </div>
@@ -711,7 +711,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                     <button
                       type="submit"
                       disabled={isChangingPassword}
-                      className="px-4 py-1.5 rounded-xl bg-[#A8DEFA] hover:bg-[#7363f8] text-white font-bold transition-colors cursor-pointer"
+                      className="px-4 py-1.5 rounded-xl bg-[#38BDF8] hover:bg-[#7363f8] text-white font-bold transition-colors cursor-pointer"
                     >
                       {isChangingPassword ? 'Updating...' : 'Update Password'}
                     </button>
@@ -723,7 +723,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
                 <div className="font-bold text-[#F5FAFF] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-[#A8DEFA]" />
+                    <ShieldCheck className="w-4 h-4 text-[#38BDF8]" />
                     <span>Active Session Information</span>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono">
@@ -755,7 +755,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               {/* Privacy Settings & Consent Management (Phase 5) */}
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
                 <div className="font-bold text-[#F5FAFF] flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-[#A8DEFA]" />
+                  <Globe className="w-4 h-4 text-[#38BDF8]" />
                   <span>Privacy &amp; Processing Consents</span>
                 </div>
                 <div className="space-y-2 pt-1 text-xs">
@@ -768,7 +768,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                       type="checkbox"
                       checked={aiConsentEnabled}
                       onChange={(e) => handleToggleAiConsent(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#A8DEFA] cursor-pointer"
+                      className="w-4 h-4 rounded text-[#38BDF8] cursor-pointer"
                     />
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
@@ -780,7 +780,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                       type="checkbox"
                       checked={marketingConsentEnabled}
                       onChange={(e) => setMarketingConsentEnabled(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#A8DEFA] cursor-pointer"
+                      className="w-4 h-4 rounded text-[#38BDF8] cursor-pointer"
                     />
                   </div>
                 </div>
@@ -789,7 +789,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               {/* Data Export & Account Deletion */}
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
                 <div className="font-bold text-[#F5FAFF] flex items-center gap-2">
-                  <Download className="w-4 h-4 text-[#A8DEFA]" />
+                  <Download className="w-4 h-4 text-[#38BDF8]" />
                   <span>Privacy &amp; Data Rights (GDPR / CCPA)</span>
                 </div>
                 <p className="text-[#A7B8CA] text-[11px]">
@@ -854,7 +854,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                   </p>
                   <button
                     onClick={() => setActiveTab('plan')}
-                    className="px-4 py-2 rounded-xl bg-[#A8DEFA] text-white font-bold cursor-pointer hover:bg-[#7363f8] transition-colors"
+                    className="px-4 py-2 rounded-xl bg-[#38BDF8] text-white font-bold cursor-pointer hover:bg-[#7363f8] transition-colors"
                   >
                     View Upgrade Options
                   </button>
@@ -898,12 +898,12 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                         value={newKeyName}
                         onChange={(e) => setNewKeyName(e.target.value)}
                         placeholder="Key Identifier (e.g. CI/CD Pipeline, Production Worker)"
-                        className="flex-1 p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#A8DEFA] outline-none text-[#F5FAFF] placeholder:text-[#A7B8CA]/50"
+                        className="flex-1 p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#38BDF8] outline-none text-[#F5FAFF] placeholder:text-[#A7B8CA]/50"
                       />
                       <button
                         onClick={handleCreateApiKey}
                         disabled={isCreatingKey}
-                        className="px-4 py-2.5 rounded-xl bg-[#A8DEFA] hover:bg-[#7363f8] text-white font-bold flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
+                        className="px-4 py-2.5 rounded-xl bg-[#38BDF8] hover:bg-[#7363f8] text-white font-bold flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
                       >
                         <Plus className="w-4 h-4" />
                         <span>{isCreatingKey ? 'Generating...' : 'Generate Key'}</span>
@@ -964,7 +964,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
         {/* Persistent Modal Footer: Active Account & Universal Sign Out */}
         <div className="p-4 px-6 border-t border-white/10 bg-white/[0.03] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3 w-full sm:w-auto min-w-0">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#A8DEFA] to-[#A8DEFA] flex items-center justify-center font-bold text-xs text-[#070B13] uppercase shadow-sm shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#38BDF8] to-[#38BDF8] flex items-center justify-center font-bold text-xs text-[#070B13] uppercase shadow-sm shrink-0">
               {(userName || userEmail || 'U').charAt(0)}
             </div>
             <div className="flex flex-col min-w-0">
@@ -975,7 +975,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                 <span>Active Account</span>
                 <span>•</span>
-                <span className="uppercase font-mono text-[10px] text-[#A8DEFA] font-bold">
+                <span className="uppercase font-mono text-[10px] text-[#38BDF8] font-bold">
                   {userSession.role || 'Member'}
                 </span>
               </div>

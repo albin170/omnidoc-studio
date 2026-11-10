@@ -225,15 +225,15 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
       {/* Top Action Bar matching reference */}
       <div className="h-14 border-b border-white/10 bg-[#0B1420]/85 backdrop-blur-2xl px-5 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#A8DEFA] to-[#A8DEFA] flex items-center justify-center p-0.5 shadow-md shadow-[#A8DEFA]/20">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#38BDF8] to-[#38BDF8] flex items-center justify-center p-0.5 shadow-md shadow-[#38BDF8]/20">
             <div className="w-full h-full bg-[#070B13] rounded-[10px] flex items-center justify-center">
-              <TableIcon className="w-4 h-4 text-[#A8DEFA]" />
+              <TableIcon className="w-4 h-4 text-[#38BDF8]" />
             </div>
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-bold text-[#F5FAFF] tracking-tight">DOCX Studio</h1>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-semibold border border-[#A8DEFA]/30">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#38BDF8]/20 text-[#38BDF8] font-semibold border border-[#38BDF8]/30">
                 PRO WRITER
               </span>
             </div>
@@ -243,8 +243,8 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
 
         {/* Export Controls */}
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all">
-            <Upload className="w-3.5 h-3.5 text-[#A8DEFA]" />
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all">
+            <Upload className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span className="hidden sm:inline">Import DOCX</span>
             <input type="file" accept=".docx,.txt,.html,.md" className="hidden" onChange={handleImportDocx} />
           </label>
@@ -252,9 +252,9 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(docTitle, { content: editorRef.current?.innerHTML })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all"
             >
-              <Save className="w-3.5 h-3.5 text-[#A8DEFA]" />
+              <Save className="w-3.5 h-3.5 text-[#38BDF8]" />
               <span>Save</span>
             </button>
           )}
@@ -273,7 +273,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-3.5 py-1 rounded-lg bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#A8DEFA]/20"
+              className="flex items-center gap-1.5 px-3.5 py-1 rounded-lg bg-gradient-to-r from-[#38BDF8] to-[#FF3366] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#38BDF8]/20"
             >
               <DownloadCloud className="w-3.5 h-3.5" />
               <span>Export</span>
@@ -401,7 +401,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
             className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Insert Table"
           >
-            <TableIcon className="w-4 h-4 text-[#A8DEFA]" />
+            <TableIcon className="w-4 h-4 text-[#38BDF8]" />
           </button>
 
           {/* Clear format */}
@@ -416,7 +416,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {/* Search */}
           <button
             onClick={() => setIsFindOpen(!isFindOpen)}
-            className={`p-1.5 rounded-lg transition-colors ${isFindOpen ? 'text-[#A8DEFA] bg-[#A8DEFA]/20 border border-[#A8DEFA]/30' : 'hover:bg-white/[0.06] hover:text-[#F5FAFF]'}`}
+            className={`p-1.5 rounded-lg transition-colors ${isFindOpen ? 'text-[#38BDF8] bg-[#38BDF8]/20 border border-[#38BDF8]/30' : 'hover:bg-white/[0.06] hover:text-[#F5FAFF]'}`}
             title="Find & Replace"
           >
             <Search className="w-4 h-4" />
@@ -428,7 +428,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           <span>{wordsCount} words</span>
           <span>{charsCount} chars</span>
           <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-[#A8DEFA]" />
+            <Clock className="w-3 h-3 text-[#38BDF8]" />
             {readTimeMin} min read
           </span>
         </div>
@@ -453,7 +453,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           />
           <button
             onClick={handleFindReplace}
-            className="px-3 py-1 rounded-xl glass-btn-primary font-semibold cursor-pointer shadow-md shadow-[#A8DEFA]/20"
+            className="px-3 py-1 rounded-xl glass-btn-primary font-semibold cursor-pointer shadow-md shadow-[#38BDF8]/20"
           >
             Replace All
           </button>
@@ -500,7 +500,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           >
             -
           </button>
-          <span className="font-mono text-[11px] text-[#A8DEFA] w-10 text-center">{zoom}%</span>
+          <span className="font-mono text-[11px] text-[#38BDF8] w-10 text-center">{zoom}%</span>
           <button
             onClick={() => setZoom((z) => Math.min(200, z + 10))}
             className="w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center text-[#F5FAFF] cursor-pointer"

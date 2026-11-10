@@ -468,9 +468,9 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
       {/* Top Header matching reference */}
       <div className="h-14 border-b border-white/10 bg-[#0B1420]/85 backdrop-blur-2xl px-5 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#A8DEFA] to-[#A8DEFA] flex items-center justify-center p-0.5 shadow-md shadow-[#A8DEFA]/20">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#38BDF8] to-[#38BDF8] flex items-center justify-center p-0.5 shadow-md shadow-[#38BDF8]/20">
             <div className="w-full h-full bg-[#070B13] rounded-[10px] flex items-center justify-center">
-              <TableIcon className="w-4 h-4 text-[#A8DEFA]" />
+              <TableIcon className="w-4 h-4 text-[#38BDF8]" />
             </div>
           </div>
           <div>
@@ -493,16 +493,16 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
 
           <button
             onClick={() => setShowChartModal(true)}
-            className="p-2 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#A7B8CA] hover:text-[#A8DEFA] cursor-pointer transition-all"
+            className="p-2 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#A7B8CA] hover:text-[#38BDF8] cursor-pointer transition-all"
             title="Create Interactive Chart"
           >
-            <BarChart2 className="w-4 h-4 text-[#A8DEFA]" />
+            <BarChart2 className="w-4 h-4 text-[#38BDF8]" />
           </button>
 
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(sheetTitle, { sheets, sheetOrder, cellStyles })}
-              className="p-2 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#A7B8CA] hover:text-[#A8DEFA] cursor-pointer transition-all"
+              className="p-2 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#A7B8CA] hover:text-[#38BDF8] cursor-pointer transition-all"
               title="Save to Projects"
             >
               <Save className="w-4 h-4" />
@@ -513,7 +513,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] hover:brightness-110 text-white text-xs font-semibold shadow-lg shadow-[#A8DEFA]/30 cursor-pointer transition-all"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#38BDF8] to-[#FF3366] hover:brightness-110 text-white text-xs font-semibold shadow-lg shadow-[#38BDF8]/30 cursor-pointer transition-all"
             >
               <DownloadCloud className="w-3.5 h-3.5" />
               <span>Export</span>
@@ -557,9 +557,9 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           </div>
 
           {/* User Profile Avatar */}
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#7CC4ED] to-[#A8DEFA] p-0.5 ml-1">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FF3366] to-[#38BDF8] p-0.5 ml-1">
             <div className="w-full h-full rounded-full bg-[#080E1C] flex items-center justify-center text-xs font-bold text-white">
-              <User className="w-4 h-4 text-[#A8DEFA]" />
+              <User className="w-4 h-4 text-[#38BDF8]" />
             </div>
           </div>
         </div>
@@ -591,21 +591,21 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           {/* Text Formatting */}
           <button
             onClick={() => toggleCellStyle('bold', true)}
-            className={`p-1.5 rounded-lg font-bold transition-all ${activeStyle.bold ? 'bg-[#A8DEFA]/25 text-[#F5FAFF] border border-[#A8DEFA]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
+            className={`p-1.5 rounded-lg font-bold transition-all ${activeStyle.bold ? 'bg-[#38BDF8]/25 text-[#F5FAFF] border border-[#38BDF8]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
             title="Bold"
           >
             <BoldIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => toggleCellStyle('italic', true)}
-            className={`p-1.5 rounded-lg italic transition-all ${activeStyle.italic ? 'bg-[#A8DEFA]/25 text-[#F5FAFF] border border-[#A8DEFA]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
+            className={`p-1.5 rounded-lg italic transition-all ${activeStyle.italic ? 'bg-[#38BDF8]/25 text-[#F5FAFF] border border-[#38BDF8]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
             title="Italic"
           >
             <ItalicIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => toggleCellStyle('underline', true)}
-            className={`p-1.5 rounded-lg underline transition-all ${activeStyle.underline ? 'bg-[#A8DEFA]/25 text-[#F5FAFF] border border-[#A8DEFA]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
+            className={`p-1.5 rounded-lg underline transition-all ${activeStyle.underline ? 'bg-[#38BDF8]/25 text-[#F5FAFF] border border-[#38BDF8]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
             title="Underline"
           >
             <UnderlineIcon className="w-3.5 h-3.5" />
@@ -616,21 +616,21 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           {/* Alignments */}
           <button
             onClick={() => toggleCellStyle('align', 'left')}
-            className={`p-1.5 rounded-lg transition-all ${activeStyle.align === 'left' ? 'bg-[#A8DEFA]/25 text-[#A8DEFA] border border-[#A8DEFA]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
+            className={`p-1.5 rounded-lg transition-all ${activeStyle.align === 'left' ? 'bg-[#38BDF8]/25 text-[#38BDF8] border border-[#38BDF8]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
             title="Align Left"
           >
             <AlignLeft className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => toggleCellStyle('align', 'center')}
-            className={`p-1.5 rounded-lg transition-all ${activeStyle.align === 'center' ? 'bg-[#A8DEFA]/25 text-[#A8DEFA] border border-[#A8DEFA]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
+            className={`p-1.5 rounded-lg transition-all ${activeStyle.align === 'center' ? 'bg-[#38BDF8]/25 text-[#38BDF8] border border-[#38BDF8]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
             title="Align Center"
           >
             <AlignCenter className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => toggleCellStyle('align', 'right')}
-            className={`p-1.5 rounded-lg transition-all ${activeStyle.align === 'right' ? 'bg-[#A8DEFA]/25 text-[#A8DEFA] border border-[#A8DEFA]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
+            className={`p-1.5 rounded-lg transition-all ${activeStyle.align === 'right' ? 'bg-[#38BDF8]/25 text-[#38BDF8] border border-[#38BDF8]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
             title="Align Right"
           >
             <AlignRight className="w-3.5 h-3.5" />
@@ -675,7 +675,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           {/* Search Toggle */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-xl transition-all ${showSearch ? 'bg-[#A8DEFA]/25 text-[#F5FAFF] border border-[#A8DEFA]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-xl transition-all ${showSearch ? 'bg-[#38BDF8]/25 text-[#F5FAFF] border border-[#38BDF8]/40' : 'hover:bg-white/[0.06] text-[#A7B8CA]'}`}
             title="Find & Replace"
           >
             <Search className="w-3 h-3" />
@@ -687,10 +687,10 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
         <div className="flex items-center gap-1.5 text-[#A7B8CA] text-xs shrink-0">
           <button
             onClick={addRow}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl glass-card hover:border-[#A8DEFA]/50 hover:text-[#F5FAFF] cursor-pointer transition-all"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl glass-card hover:border-[#38BDF8]/50 hover:text-[#F5FAFF] cursor-pointer transition-all"
             title="Add row"
           >
-            <Plus className="w-3 h-3 text-[#A8DEFA]" />
+            <Plus className="w-3 h-3 text-[#38BDF8]" />
             <span>Row</span>
           </button>
           <button
@@ -704,10 +704,10 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           </button>
           <button
             onClick={addColumn}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl glass-card hover:border-[#A8DEFA]/50 hover:text-[#F5FAFF] cursor-pointer transition-all"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl glass-card hover:border-[#38BDF8]/50 hover:text-[#F5FAFF] cursor-pointer transition-all"
             title="Add column"
           >
-            <Plus className="w-3 h-3 text-[#A8DEFA]" />
+            <Plus className="w-3 h-3 text-[#38BDF8]" />
             <span>Col</span>
           </button>
         </div>
@@ -763,12 +763,12 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden border-r border-white/10">
           {/* Formula Bar */}
           <div className="h-10 border-b border-white/10 bg-[#0B1420]/50 backdrop-blur-xl px-4 flex items-center gap-3 shrink-0">
-            <div className="px-2.5 py-1 rounded-xl glass-card border-white/10 text-[#A8DEFA] font-mono text-xs font-bold w-14 text-center">
+            <div className="px-2.5 py-1 rounded-xl glass-card border-white/10 text-[#38BDF8] font-mono text-xs font-bold w-14 text-center">
               {activeCoord}
             </div>
 
             <div className="flex-1 flex items-center glass-input rounded-xl px-3 py-1 gap-2">
-              <Calculator className="w-3.5 h-3.5 text-[#A8DEFA] shrink-0" />
+              <Calculator className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
               <input
                 type="text"
                 value={formulaInput}
@@ -839,7 +839,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
                             }}
                             className={`h-7 px-2 border border-white/10 truncate transition-colors cursor-cell ${
                               isSelected
-                                ? 'bg-[#A8DEFA]/25 outline-2 outline-[#A8DEFA] z-10 text-[#F5FAFF]'
+                                ? 'bg-[#38BDF8]/25 outline-2 outline-[#38BDF8] z-10 text-[#F5FAFF]'
                                 : isHeader
                                 ? 'bg-white/[0.06] text-[#F5FAFF] font-semibold'
                                 : 'bg-transparent hover:bg-white/[0.04] text-[#F5FAFF]'
@@ -888,7 +888,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
         <div className="w-72 bg-[#0B1420]/50 backdrop-blur-2xl p-4 flex flex-col gap-4 overflow-y-auto shrink-0 select-none custom-scrollbar">
           <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <h3 className="text-xs font-bold text-[#F5FAFF] uppercase tracking-wider flex items-center gap-2">
-              <Sliders className="w-3.5 h-3.5 text-[#A8DEFA]" />
+              <Sliders className="w-3.5 h-3.5 text-[#38BDF8]" />
               <span>Sheet Properties</span>
             </h3>
           </div>
@@ -935,7 +935,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
             <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5 text-xs">
               <div className="flex justify-between">
                 <span className="text-[#A7B8CA]">Coordinate:</span>
-                <span className="font-mono text-[#A8DEFA] font-bold">{activeCoord}</span>
+                <span className="font-mono text-[#38BDF8] font-bold">{activeCoord}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#A7B8CA]">Raw Value:</span>
@@ -949,16 +949,16 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           <div className="pt-2 border-t border-white/10 space-y-2 mt-auto">
             <button
               onClick={addRow}
-              className="w-full py-2 px-3 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              className="w-full py-2 px-3 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#F5FAFF] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5 text-[#A8DEFA]" />
+              <Plus className="w-3.5 h-3.5 text-[#38BDF8]" />
               <span>Add New Row</span>
             </button>
             <button
               onClick={addColumn}
-              className="w-full py-2 px-3 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              className="w-full py-2 px-3 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#F5FAFF] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5 text-[#A8DEFA]" />
+              <Plus className="w-3.5 h-3.5 text-[#38BDF8]" />
               <span>Add New Column</span>
             </button>
           </div>
@@ -978,7 +978,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
                 onClick={() => !isEditing && setActiveSheetName(name)}
                 className={`group flex items-center gap-1.5 px-3 py-1 rounded-t-xl text-xs font-semibold cursor-pointer border-t-2 transition-all ${
                   isActive
-                    ? 'bg-[#070B13]/80 text-[#A8DEFA] border-[#A8DEFA] shadow-md shadow-[#A8DEFA]/10'
+                    ? 'bg-[#070B13]/80 text-[#38BDF8] border-[#38BDF8] shadow-md shadow-[#38BDF8]/10'
                     : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#A7B8CA] hover:text-[#F5FAFF] border-transparent'
                 }`}
               >
@@ -990,7 +990,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
                     onBlur={handleCommitRename}
                     onKeyDown={(e) => e.key === 'Enter' && handleCommitRename()}
                     autoFocus
-                    className="glass-input text-[#F5FAFF] px-1 py-0.5 rounded outline-none border-[#A8DEFA] w-24 text-xs"
+                    className="glass-input text-[#F5FAFF] px-1 py-0.5 rounded outline-none border-[#38BDF8] w-24 text-xs"
                   />
                 ) : (
                   <span onDoubleClick={() => handleStartRename(name)}>{name}</span>
@@ -1038,7 +1038,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           {/* Add Sheet Button */}
           <button
             onClick={handleAddSheet}
-            className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-white/10 text-[#A7B8CA] hover:text-[#A8DEFA] transition-colors cursor-pointer"
+            className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-white/10 text-[#A7B8CA] hover:text-[#38BDF8] transition-colors cursor-pointer"
             title="Add New Worksheet"
           >
             <Plus className="w-4 h-4" />
@@ -1056,7 +1056,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           <div className="glass-panel border-white/15 rounded-2xl max-w-2xl w-full p-5 shadow-2xl flex flex-col gap-4 text-[#F5FAFF]">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-[#A8DEFA]" />
+                <BarChart2 className="w-5 h-5 text-[#38BDF8]" />
                 <h3 className="text-sm font-bold text-[#F5FAFF]">Data Visualization &amp; Chart Generator</h3>
               </div>
               <button
@@ -1100,7 +1100,7 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
             <div className="h-64 bg-[#070B13]/60 rounded-xl p-4 flex items-center justify-center border border-white/10">
               {(() => {
                 const { categories, series } = getChartData();
-                const colors = ['#06b6d4', '#10b981', '#7CC4ED', '#f59e0b', '#ec4899'];
+                const colors = ['#06b6d4', '#10b981', '#FF3366', '#f59e0b', '#ec4899'];
                 const firstSeries = series[0] || { label: 'Values', values: categories.map(() => 10) };
                 const maxVal = Math.max(...firstSeries.values.map(Math.abs), 1);
 

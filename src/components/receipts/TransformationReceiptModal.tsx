@@ -167,7 +167,7 @@ export const TransformationReceiptModal: React.FC<TransformationReceiptModalProp
                   <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
                     <div className="flex items-center justify-between text-xs font-bold text-[#F5FAFF]">
                       <span>Source Document</span>
-                      <span className="px-2 py-0.5 rounded bg-[#A8DEFA]/20 border border-[#A8DEFA]/30 font-mono text-[10px] text-[#A8DEFA]">
+                      <span className="px-2 py-0.5 rounded bg-[#38BDF8]/20 border border-[#38BDF8]/30 font-mono text-[10px] text-[#38BDF8]">
                         {selectedReceipt.source.format.toUpperCase()}
                       </span>
                     </div>
@@ -211,7 +211,7 @@ export const TransformationReceiptModal: React.FC<TransformationReceiptModalProp
                 {/* Toolchain & Signature */}
                 <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-[#F5FAFF]">
-                    <Cpu className="w-4 h-4 text-[#A8DEFA]" />
+                    <Cpu className="w-4 h-4 text-[#38BDF8]" />
                     <span>Processing Engine &amp; Cryptographic Signature</span>
                   </div>
 

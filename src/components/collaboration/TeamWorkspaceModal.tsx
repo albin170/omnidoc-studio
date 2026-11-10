@@ -75,13 +75,13 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 flex items-center justify-center text-[#A8DEFA]">
+            <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8]">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-[#F5FAFF]">Team Workspace &amp; Collaboration</h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30">
                   TENANT ISOLATED
                 </span>
               </div>
@@ -101,7 +101,7 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
           <button
             onClick={() => setActiveTab('members')}
             className={`py-3 font-semibold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${activeTab === 'members'
-                ? 'border-[#A8DEFA] text-[#A8DEFA]'
+                ? 'border-[#38BDF8] text-[#38BDF8]'
                 : 'border-transparent text-[#A7B8CA] hover:text-white'
               }`}
           >
@@ -111,7 +111,7 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
           <button
             onClick={() => setActiveTab('comments')}
             className={`py-3 font-semibold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${activeTab === 'comments'
-                ? 'border-[#A8DEFA] text-[#A8DEFA]'
+                ? 'border-[#38BDF8] text-[#38BDF8]'
                 : 'border-transparent text-[#A7B8CA] hover:text-white'
               }`}
           >
@@ -139,7 +139,7 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
 
               {/* Invite Form */}
               {showInviteForm && (
-                <form onSubmit={handleInvite} className="p-4 rounded-xl bg-white/[0.03] border border-[#A8DEFA]/30 space-y-3">
+                <form onSubmit={handleInvite} className="p-4 rounded-xl bg-white/[0.03] border border-[#38BDF8]/30 space-y-3">
                   <div className="text-xs font-bold text-[#F5FAFF]">Invite Team Collaborator</div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <input
@@ -147,14 +147,14 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
                       placeholder="Full Name"
                       value={inviteName}
                       onChange={(e) => setInviteName(e.target.value)}
-                      className="px-3 py-1.5 text-xs bg-white/[0.04] border border-white/15 rounded-lg text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 focus:outline-none focus:border-[#A8DEFA]"
+                      className="px-3 py-1.5 text-xs bg-white/[0.04] border border-white/15 rounded-lg text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 focus:outline-none focus:border-[#38BDF8]"
                     />
                     <input
                       type="email"
                       placeholder="Corporate Email"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
-                      className="px-3 py-1.5 text-xs bg-white/[0.04] border border-white/15 rounded-lg text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 focus:outline-none focus:border-[#A8DEFA]"
+                      className="px-3 py-1.5 text-xs bg-white/[0.04] border border-white/15 rounded-lg text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 focus:outline-none focus:border-[#38BDF8]"
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -194,7 +194,7 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
                     className="p-3 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#A8DEFA] to-[#A8DEFA] flex items-center justify-center text-white font-bold text-xs shadow-sm shadow-[#A8DEFA]/20">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#38BDF8] to-[#38BDF8] flex items-center justify-center text-white font-bold text-xs shadow-sm shadow-[#38BDF8]/20">
                         {m.avatarInitials}
                       </div>
                       <div>
@@ -225,11 +225,11 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
                   placeholder="Add a review comment or legal verification note..."
                   value={newCommentText}
                   onChange={(e) => setNewCommentText(e.target.value)}
-                  className="flex-1 px-3.5 py-2 text-xs bg-white/[0.04] border border-white/15 rounded-xl text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 focus:outline-none focus:border-[#A8DEFA]"
+                  className="flex-1 px-3.5 py-2 text-xs bg-white/[0.04] border border-white/15 rounded-xl text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 focus:outline-none focus:border-[#38BDF8]"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl glass-btn-primary text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-md shadow-[#A8DEFA]/20"
+                  className="px-4 py-2 rounded-xl glass-btn-primary text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-md shadow-[#38BDF8]/20"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Post</span>
@@ -274,7 +274,7 @@ export const TeamWorkspaceModal: React.FC<TeamWorkspaceModalProps> = ({
         {/* Footer */}
         <div className="px-6 py-3 border-t border-white/10 bg-white/[0.02] flex items-center justify-between text-[11px] text-[#A7B8CA]">
           <div className="flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-[#A8DEFA]" />
+            <Lock className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span>Strict tenant isolation enforced across enterprise databases.</span>
           </div>
           <button

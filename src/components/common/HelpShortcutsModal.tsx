@@ -39,7 +39,7 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
             <div>
               <h2 className="text-base font-extrabold text-[#F5FAFF] leading-tight flex items-center gap-2">
                 <span>OmniDoc Studio Help &amp; Shortcuts</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30 font-bold">
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30 font-bold">
                   v2.0
                 </span>
               </h2>
@@ -62,7 +62,7 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
           {/* Shortcuts Grid */}
           <div>
             <div className="font-bold text-[#F5FAFF] mb-3 flex items-center gap-2 text-sm">
-              <Keyboard className="w-4 h-4 text-[#A8DEFA]" />
+              <Keyboard className="w-4 h-4 text-[#38BDF8]" />
               <span>Keyboard Shortcuts</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -87,7 +87,7 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
               {features.map((f, idx) => (
                 <div key={idx} className="p-3.5 rounded-2xl glass-card border-white/10 space-y-1">
                   <div className="font-bold text-[#F5FAFF] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
                     <span>{f.title}</span>
                   </div>
                   <p className="text-[11px] text-[#A7B8CA] leading-relaxed">
@@ -104,7 +104,7 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
           <span className="text-[#A7B8CA]">Need more assistance? Drop feedback in Settings.</span>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl glass-btn-primary font-bold cursor-pointer transition-all shadow-md shadow-[#A8DEFA]/20"
+            className="px-5 py-2 rounded-xl glass-btn-primary font-bold cursor-pointer transition-all shadow-md shadow-[#38BDF8]/20"
           >
             Got it
           </button>

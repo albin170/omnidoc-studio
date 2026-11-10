@@ -279,7 +279,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       >
         {/* Search Input Bar */}
         <div className="p-4 sm:p-5 border-b border-white/10 flex items-center gap-3">
-          <Search className="w-5 h-5 text-[#A8DEFA] shrink-0" />
+          <Search className="w-5 h-5 text-[#38BDF8] shrink-0" />
           <input
             type="text"
             value={query}
@@ -303,7 +303,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
           {filtered.length === 0 ? (
             <div className="py-12 text-center text-[#A7B8CA]">
-              <Search className="w-8 h-8 mx-auto mb-2 opacity-40 text-[#A8DEFA]" />
+              <Search className="w-8 h-8 mx-auto mb-2 opacity-40 text-[#38BDF8]" />
               <p className="text-sm font-semibold text-[#F5FAFF]">No results found for "{query}"</p>
               <p className="text-xs text-[#A7B8CA] mt-1">Try searching "pdf", "convert", "word", or "background"</p>
             </div>
@@ -319,13 +319,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`w-full flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-gradient-to-r from-[#A8DEFA]/30 to-[#A8DEFA]/20 border border-[#A8DEFA]/50 text-[#F5FAFF] shadow-lg shadow-[#A8DEFA]/20 lg-glow-ice'
+                      ? 'bg-gradient-to-r from-[#38BDF8]/30 to-[#38BDF8]/20 border border-[#38BDF8]/50 text-[#F5FAFF] shadow-lg shadow-[#38BDF8]/20 lg-glow-ice'
                       : 'hover:bg-white/[0.05] text-[#A7B8CA] border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                      isSelected ? 'bg-[#A8DEFA]/30 text-[#F5FAFF]' : 'glass-card text-[#A8DEFA]'
+                      isSelected ? 'bg-[#38BDF8]/30 text-[#F5FAFF]' : 'glass-card text-[#38BDF8]'
                     }`}>
                       <Icon className="w-4 h-4" />
                     </div>
@@ -356,7 +356,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         {cmd.shortcut}
                       </kbd>
                     )}
-                    <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-[#A8DEFA]' : 'text-[#A7B8CA]'}`} />
+                    <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-[#38BDF8]' : 'text-[#A7B8CA]'}`} />
                   </div>
                 </div>
               );
@@ -378,7 +378,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             </span>
           </div>
 
-          <span className="hidden sm:inline text-[#A8DEFA] font-semibold">
+          <span className="hidden sm:inline text-[#38BDF8] font-semibold">
             Press Ctrl + K anywhere
           </span>
         </div>

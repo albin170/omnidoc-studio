@@ -199,7 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         {/* Brand Header & Toggle */}
         <div className="shrink-0">
-          <div className="pt-1 pb-3 px-1.5 flex items-center justify-between border-b border-[rgba(180,225,255,0.18)] mb-2">
+          <div className="pt-1 pb-3 px-1.5 flex items-center justify-between border-b border-[rgba(255, 255, 255,0.18)] mb-2">
             <div
               className="flex items-center gap-2.5 cursor-pointer min-w-0"
               onClick={() => handleSelectTab('dashboard')}
@@ -207,7 +207,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <div className="relative shrink-0">
                 <OmniDocLogo size={isCollapsed ? 32 : 36} />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#A8DEFA] shadow-[0_0_6px_rgba(168,222,250,0.5)]" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF3366] shadow-[0_0_6px_rgba(255,51,102,0.7)]" />
               </div>
               {!isCollapsed && (
                 <div className="flex flex-col text-left min-w-0">
@@ -215,12 +215,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <span className="font-extrabold text-sm text-[#F5FAFF] tracking-tight truncate font-display">
                       OmniDoc
                     </span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30 font-mono font-bold">
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-gradient-to-r from-[#FF3366]/20 to-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30 font-mono font-bold">
                       PRO
                     </span>
                   </div>
                   <span className="text-[10px] text-[#A7B8CA] font-medium tracking-wide">
-                    Glass Workspace
+                    Liquid Glass Workspace
                   </span>
                 </div>
               )}
@@ -249,12 +249,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {onOpenCommandPalette && (
             <button
               onClick={onOpenCommandPalette}
-              className={`w-full flex items-center mb-2 rounded-xl lg-input text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-[#A8DEFA]/40 text-xs transition-all cursor-pointer ${isCollapsed ? 'justify-center p-2' : 'justify-between px-3 py-2'
+              className={`w-full flex items-center mb-2 rounded-xl lg-input text-[#A7B8CA] hover:text-[#F5FAFF] hover:border-[#38BDF8]/40 text-xs transition-all cursor-pointer ${isCollapsed ? 'justify-center p-2' : 'justify-between px-3 py-2'
                 }`}
               title="Open Command Palette (Ctrl+K)"
             >
               <div className="flex items-center gap-2">
-                <Search className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                <Search className="w-3.5 h-3.5 text-[#38BDF8]" />
                 {!isCollapsed && <span className="font-semibold text-[11px]">Quick Search</span>}
               </div>
               {!isCollapsed && (
@@ -285,15 +285,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   title={item.label}
                   className={`group w-full flex items-center rounded-xl text-xs font-medium transition-all cursor-pointer relative ${isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2'
                     } ${isActive
-                      ? 'bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 text-[#F5FAFF] font-bold shadow-[0_0_12px_rgba(168,222,250,0.1)]'
-                      : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05] border border-transparent hover:border-[rgba(180,225,255,0.12)]'
+                      ? 'bg-gradient-to-r from-[#FF3366]/15 to-[#38BDF8]/15 border border-[#38BDF8]/40 text-[#F5FAFF] font-bold shadow-[0_0_15px_rgba(56,189,248,0.2)]'
+                      : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05] border border-transparent hover:border-white/10'
                     }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     {isActive && (
-                      <span className="absolute left-1 w-1 h-3.5 bg-[#A8DEFA] rounded-full shadow-[0_0_6px_rgba(168,222,250,0.4)]" />
+                      <span className="absolute left-1 w-1 h-3.5 bg-gradient-to-b from-[#FF3366] to-[#38BDF8] rounded-full shadow-[0_0_8px_rgba(255,51,102,0.6)]" />
                     )}
-                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#A8DEFA]' : 'text-[#A7B8CA] group-hover:text-[#D9F3FF]'
+                    <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-[#38BDF8]' : 'text-[#A7B8CA] group-hover:text-[#FF3366]'
                       }`} />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
                   </div>
@@ -306,7 +306,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   )}
 
                   {!isCollapsed && item.badge && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-[#A8DEFA]/20 border border-[#A8DEFA]/30 text-[#F5FAFF] text-[9px] font-mono font-bold">
+                    <span className="px-1.5 py-0.5 rounded-full bg-[#FF3366]/20 border border-[#FF3366]/30 text-[#F5FAFF] text-[9px] font-mono font-bold">
                       {item.badge}
                     </span>
                   )}
@@ -318,7 +318,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Intelligence & Automation Quick Actions */}
         {!isCollapsed && (
-          <div className="pt-2 pb-1 space-y-1.5 border-t border-[rgba(180,225,255,0.22)] shrink-0">
+          <div className="pt-2 pb-1 space-y-1.5 border-t border-white/10 shrink-0">
             <div className="text-[9px] font-extrabold text-[#73869A] uppercase tracking-widest px-1 font-display">
               Intelligence &amp; Labs
             </div>
@@ -326,30 +326,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {onOpenAi && (
                 <button
                   onClick={onOpenAi}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#A8DEFA]/10 hover:bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/25 transition-all cursor-pointer"
                   title="AI Document Assistant"
                 >
-                  <Sparkles className="w-3.5 h-3.5 mb-0.5 text-[#A8DEFA]" />
+                  <Sparkles className="w-3.5 h-3.5 mb-0.5 text-[#38BDF8]" />
                   <span className="text-[9px] font-bold">AI Help</span>
                 </button>
               )}
               {onOpenDiff && (
                 <button
                   onClick={onOpenDiff}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#7CC4ED]/10 hover:bg-[#7CC4ED]/20 text-[#7CC4ED] border border-[#7CC4ED]/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#FF3366]/10 hover:bg-[#FF3366]/20 text-[#FF3366] border border-[#FF3366]/25 transition-all cursor-pointer"
                   title="Document Comparison (Diff)"
                 >
-                  <GitCompare className="w-3.5 h-3.5 mb-0.5 text-[#7CC4ED]" />
+                  <GitCompare className="w-3.5 h-3.5 mb-0.5 text-[#FF3366]" />
                   <span className="text-[9px] font-bold">Compare</span>
                 </button>
               )}
               {onOpenBatch && (
                 <button
                   onClick={onOpenBatch}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#D9F3FF]/10 hover:bg-[#D9F3FF]/20 text-[#D9F3FF] border border-[#D9F3FF]/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#2563EB]/10 hover:bg-[#2563EB]/20 text-[#38BDF8] border border-[#2563EB]/25 transition-all cursor-pointer"
                   title="Batch Convert & ZIP"
                 >
-                  <Layers className="w-3.5 h-3.5 mb-0.5 text-[#D9F3FF]" />
+                  <Layers className="w-3.5 h-3.5 mb-0.5 text-[#38BDF8]" />
                   <span className="text-[9px] font-bold">Batch ZIP</span>
                 </button>
               )}
@@ -376,20 +376,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {onOpenReceipts && (
                 <button
                   onClick={onOpenReceipts}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#A8DEFA]/10 hover:bg-[#A8DEFA]/20 text-[#D9F3FF] border border-[#A8DEFA]/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-gradient-to-tr from-[#FF3366]/10 to-[#38BDF8]/10 hover:bg-white/10 text-[#38BDF8] border border-white/15 transition-all cursor-pointer"
                   title="Transformation Receipts & Certs"
                 >
-                  <Boxes className="w-3.5 h-3.5 mb-0.5 text-[#A8DEFA]" />
+                  <Boxes className="w-3.5 h-3.5 mb-0.5 text-[#FF3366]" />
                   <span className="text-[9px] font-bold">Receipts</span>
                 </button>
               )}
               {onOpenPrivacy && (
                 <button
                   onClick={onOpenPrivacy}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-rose-400/10 hover:bg-rose-400/20 text-rose-300 border border-rose-400/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#FF3366]/15 hover:bg-[#FF3366]/25 text-[#FF3366] border border-[#FF3366]/30 transition-all cursor-pointer"
                   title="Privacy Guardian & Verified Redaction"
                 >
-                  <ShieldAlert className="w-3.5 h-3.5 mb-0.5 text-rose-400" />
+                  <ShieldAlert className="w-3.5 h-3.5 mb-0.5 text-[#FF3366]" />
                   <span className="text-[9px] font-bold">Privacy</span>
                 </button>
               )}
@@ -418,10 +418,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Bottom Profile & User Panel Trigger */}
-        <div className="pt-2 space-y-2 border-t border-[rgba(180,225,255,0.22)] shrink-0">
+        <div className="pt-2 space-y-2 border-t border-white/10 shrink-0">
           <div
             onClick={onOpenUserPanel || (() => handleSelectTab('settings'))}
-            className={`p-2 rounded-[22px] lg-secondary hover:border-[#A8DEFA]/40 flex items-center justify-between cursor-pointer transition-all ${isCollapsed ? 'justify-center p-1.5' : ''
+            className={`p-2 rounded-[22px] lg-secondary hover:border-[#38BDF8]/40 flex items-center justify-between cursor-pointer transition-all ${isCollapsed ? 'justify-center p-1.5' : ''
               }`}
             title="Open User & Billing Panel"
           >
@@ -431,10 +431,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <img
                     src={avatarUrl}
                     alt={userName}
-                    className="w-7 h-7 rounded-full object-cover ring-1 ring-[#A8DEFA]/40"
+                    className="w-7 h-7 rounded-full object-cover ring-1 ring-[#38BDF8]/40"
                   />
                 ) : (
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#7CC4ED] to-[#A8DEFA] flex items-center justify-center text-[#070B13] font-black text-xs ring-1 ring-white/20">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#FF3366] via-[#E11D48] to-[#38BDF8] flex items-center justify-center text-white font-black text-xs ring-1 ring-white/20">
                     {userInitial}
                   </div>
                 )}
@@ -443,8 +443,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {!isCollapsed && (
                 <div className="text-left min-w-0">
                   <div className="text-xs font-bold text-[#F5FAFF] leading-tight truncate">{userName}</div>
-                  <div className="text-[10px] text-[#A8DEFA] font-semibold leading-tight flex items-center gap-1 mt-0.5">
-                    <Zap className="w-2.5 h-2.5 text-amber-400" />
+                  <div className="text-[10px] text-[#38BDF8] font-semibold leading-tight flex items-center gap-1 mt-0.5">
+                    <Zap className="w-2.5 h-2.5 text-[#FF3366]" />
                     <span>Pro Workspace</span>
                   </div>
                 </div>
@@ -458,10 +458,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-1.5">
               <button
                 onClick={onOpenHelp}
-                className="flex-1 py-1.5 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#A7B8CA] hover:text-[#F5FAFF] text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-[rgba(180,225,255,0.12)]"
+                className="flex-1 py-1.5 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#A7B8CA] hover:text-[#F5FAFF] text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-[rgba(255, 255, 255,0.12)]"
                 title="Keyboard Shortcuts & Guide"
               >
-                <HelpCircle className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                <HelpCircle className="w-3.5 h-3.5 text-[#38BDF8]" />
                 <span>Guide (?)</span>
               </button>
               <button

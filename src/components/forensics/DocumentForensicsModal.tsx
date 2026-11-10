@@ -100,7 +100,7 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
       case 'WARNING':
         return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">WARNING</span>;
       default:
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30">INFO</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30">INFO</span>;
     }
   };
 
@@ -258,7 +258,7 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
               {/* Metadata Exposure */}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-[#A8DEFA]" />
+                  <Layers className="w-4 h-4 text-[#38BDF8]" />
                   <span>Metadata Leakage Audit</span>
                 </h3>
 

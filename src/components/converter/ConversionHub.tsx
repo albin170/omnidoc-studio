@@ -279,7 +279,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
             <h1 className="text-xl sm:text-2xl font-extrabold text-[#F5FAFF] tracking-tight">
               Conversion Studio
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30 lg-glow-ice">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30 lg-glow-ice">
               Client-Side Native
             </span>
           </div>
@@ -291,10 +291,10 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
         <div className="flex items-center gap-3 self-end sm:self-auto">
           <button
             onClick={() => setShowMatrixModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-card hover:border-[#A8DEFA]/50 text-[#A8DEFA] text-xs font-semibold cursor-pointer transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-card hover:border-[#38BDF8]/50 text-[#38BDF8] text-xs font-semibold cursor-pointer transition-all"
             title="View full conversion matrix"
           >
-            <Grid className="w-3.5 h-3.5 text-[#A8DEFA]" />
+            <Grid className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span>Matrix</span>
           </button>
 
@@ -327,13 +327,13 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
           onClick={() => fileInputRef.current?.click()}
           className={`lg:col-span-4 rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all relative overflow-hidden border-2 border-dashed ${
             isDragOverDropzone
-              ? 'border-[#A8DEFA] bg-[#A8DEFA]/15 scale-[1.02] shadow-2xl shadow-[#A8DEFA]/20'
-              : 'border-white/15 glass-panel hover:border-[#A8DEFA]/50'
+              ? 'border-[#38BDF8] bg-[#38BDF8]/15 scale-[1.02] shadow-2xl shadow-[#38BDF8]/20'
+              : 'border-white/15 lg-liquid-6 hover:border-[#38BDF8]/50'
           }`}
         >
-          {/* Glowing upload cloud icon */}
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#A8DEFA]/20 to-[#A8DEFA]/20 border border-white/20 flex items-center justify-center text-[#A8DEFA] mb-4 shadow-xl group-hover:scale-110 transition-transform animate-float">
-            <UploadCloud className="w-8 h-8 text-[#A8DEFA]" />
+          {/* Glowing upload cloud icon — Red & Blue liquid glow */}
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FF3366]/25 to-[#38BDF8]/25 border border-white/20 flex items-center justify-center text-[#38BDF8] mb-4 shadow-xl group-hover:scale-110 transition-transform animate-float lg-glow-dual">
+            <UploadCloud className="w-8 h-8 text-[#38BDF8]" />
           </div>
 
           <h3 className="text-sm sm:text-base font-bold text-[#F5FAFF]">
@@ -346,7 +346,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
               e.stopPropagation();
               fileInputRef.current?.click();
             }}
-            className="px-5 py-2 rounded-full bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] hover:from-[#D9F3FF] hover:to-[#7CC4ED] text-white text-xs font-bold shadow-lg shadow-[#A8DEFA]/25 transition-all hover:scale-105 active:scale-95"
+            className="px-5 py-2 rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FF3366] hover:from-[#FF6688] hover:to-[#FF3366] text-white text-xs font-bold shadow-lg shadow-[#38BDF8]/25 transition-all hover:scale-105 active:scale-95"
           >
             Choose Files
           </button>
@@ -389,10 +389,10 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                   setSelectedSourceFmt(selectedTargetFmt);
                   setSelectedTargetFmt(temp);
                 }}
-                className="w-8 h-8 rounded-full glass-card hover:border-[#A8DEFA]/50 flex items-center justify-center text-[#A7B8CA] hover:text-[#F5FAFF] transition-all cursor-pointer"
+                className="w-8 h-8 rounded-full glass-card hover:border-[#38BDF8]/50 flex items-center justify-center text-[#A7B8CA] hover:text-[#F5FAFF] transition-all cursor-pointer"
                 title="Swap formats"
               >
-                <ArrowLeftRight className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                <ArrowLeftRight className="w-3.5 h-3.5 text-[#38BDF8]" />
               </button>
 
               {/* To format card */}
@@ -421,7 +421,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
           {/* Large Convert Now Button (Reference Style) */}
           <button
             onClick={handleQuickConvertNow}
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#A8DEFA] to-[#A8DEFA] hover:from-[#D9F3FF] hover:to-[#5CE0F0] text-[#070B13] font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-xl shadow-[#A8DEFA]/20 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#38BDF8] to-[#38BDF8] hover:from-[#FF6688] hover:to-[#5CE0F0] text-[#070B13] font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-xl shadow-[#38BDF8]/20 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
           >
             <span>Convert Now</span>
             <ArrowRight className="w-4 h-4 text-[#070B13]" />
@@ -437,7 +437,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                 const el = document.getElementById('full-queue-table');
                 el?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="text-xs text-[#A8DEFA] hover:text-[#A8DEFA] font-semibold flex items-center gap-1 transition-colors"
+              className="text-xs text-[#38BDF8] hover:text-[#38BDF8] font-semibold flex items-center gap-1 transition-colors"
             >
               <span>View all</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -453,7 +453,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                     <span className="font-semibold text-[#F5FAFF] truncate max-w-[150px]">
                       {job.sourceFile.name}
                     </span>
-                    <span className="text-[10px] text-[#A8DEFA] font-bold">
+                    <span className="text-[10px] text-[#38BDF8] font-bold">
                       {job.status === 'processing'
                         ? `Converting... ${job.progress}%`
                         : job.status === 'completed'
@@ -471,7 +471,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                       className={`h-full rounded-full transition-all duration-300 ${
                         job.status === 'completed'
                           ? 'bg-emerald-400 w-full'
-                          : 'bg-gradient-to-r from-[#A8DEFA] to-[#A8DEFA]'
+                          : 'bg-gradient-to-r from-[#38BDF8] to-[#38BDF8]'
                       }`}
                       style={{ width: `${job.status === 'completed' ? 100 : job.progress}%` }}
                     />
@@ -484,10 +484,10 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                 <div className="p-2.5 rounded-xl glass-input space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-[#F5FAFF] truncate max-w-[160px]">Annual_Report.pdf</span>
-                    <span className="text-[10px] text-[#A8DEFA] font-bold">Converting... 68%</span>
+                    <span className="text-[10px] text-[#38BDF8] font-bold">Converting... 68%</span>
                   </div>
                   <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#A8DEFA] to-[#A8DEFA] rounded-full w-[68%] animate-shimmer" />
+                    <div className="h-full bg-gradient-to-r from-[#38BDF8] to-[#38BDF8] rounded-full w-[68%] animate-shimmer" />
                   </div>
                 </div>
 
@@ -515,7 +515,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
             {completedCount > 0 && (
               <button
                 onClick={handleDownloadAllZip}
-                className="text-[#A8DEFA] font-bold hover:underline"
+                className="text-[#38BDF8] font-bold hover:underline"
               >
                 Download All ({completedCount})
               </button>
@@ -558,7 +558,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                 <div className="flex items-center gap-3">
                   <div
                     className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs text-white"
-                    style={{ backgroundColor: FORMAT_REGISTRY[job.sourceFormat]?.color || '#A8DEFA' }}
+                    style={{ backgroundColor: FORMAT_REGISTRY[job.sourceFormat]?.color || '#38BDF8' }}
                   >
                     {job.sourceFormat.toUpperCase()}
                   </div>
@@ -646,7 +646,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
           <div className="glass-panel border-white/15 rounded-3xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl text-[#F5FAFF]">
             <div className="p-5 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <Grid className="w-5 h-5 text-[#A8DEFA]" />
+                <Grid className="w-5 h-5 text-[#38BDF8]" />
                 <div>
                   <h3 className="text-base font-bold text-[#F5FAFF]">Universal Conversion Compatibility Matrix</h3>
                   <p className="text-xs text-[#A7B8CA]">Native browser conversion matrix with zero server bottlenecks.</p>
@@ -686,7 +686,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                             {meta.allowedConversions.map((tgt) => (
                               <span
                                 key={tgt}
-                                className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-mono font-semibold text-[#A8DEFA]"
+                                className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-mono font-semibold text-[#38BDF8]"
                               >
                                 .{tgt.toUpperCase()}
                               </span>
@@ -727,7 +727,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => saveAs(previewBlob.url, previewBlob.name)}
-                  className="px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-md shadow-[#A8DEFA]/20"
+                  className="px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-md shadow-[#38BDF8]/20"
                 >
                   Download
                 </button>
@@ -750,7 +750,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                 <iframe src={previewBlob.url} className="w-full h-[65vh] rounded-xl border border-white/10" title="PDF preview" />
               ) : (
                 <div className="text-center p-8 text-[#A7B8CA] space-y-2">
-                  <FileCode className="w-10 h-10 mx-auto text-[#A8DEFA] opacity-60" />
+                  <FileCode className="w-10 h-10 mx-auto text-[#38BDF8] opacity-60" />
                   <p className="text-sm text-[#F5FAFF] font-semibold">Preview generated for this file format.</p>
                   <p className="text-xs text-[#A7B8CA] mt-1">Download to view and edit in your native application.</p>
                 </div>

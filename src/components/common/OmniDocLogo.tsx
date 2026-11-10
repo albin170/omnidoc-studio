@@ -26,19 +26,19 @@ export const OmniDocLogo: React.FC<OmniDocLogoProps> = ({
       >
         <defs>
           <linearGradient id="omniGrad1" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#7CC4ED" />
-            <stop offset="0.5" stopColor="#A8DEFA" />
-            <stop offset="1" stopColor="#D9F3FF" />
+            <stop stopColor="#FF3366" />
+            <stop offset="0.45" stopColor="#E11D48" />
+            <stop offset="1" stopColor="#38BDF8" />
           </linearGradient>
 
           <linearGradient id="omniGrad2" x1="12" y1="4" x2="36" y2="40" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#7CC4ED" />
-            <stop offset="1" stopColor="#A8DEFA" />
+            <stop stopColor="#FF2E5B" />
+            <stop offset="1" stopColor="#2563EB" />
           </linearGradient>
 
           <linearGradient id="omniGrad3" x1="4" y1="20" x2="38" y2="44" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#A8DEFA" />
-            <stop offset="1" stopColor="#D9F3FF" />
+            <stop stopColor="#38BDF8" />
+            <stop offset="1" stopColor="#60A5FA" />
           </linearGradient>
 
           <filter id="omniGlow" x="0" y="0" width="48" height="48" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
@@ -106,7 +106,7 @@ export const OmniDocLogo: React.FC<OmniDocLogoProps> = ({
             <span className={`font-extrabold text-base tracking-tight font-display ${textColor}`}>
               OmniDoc
             </span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#A8DEFA]/10 text-[#A8DEFA] font-bold border border-[#A8DEFA]/20">
+            <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#38BDF8]/10 text-[#38BDF8] font-bold border border-[#38BDF8]/20">
               STUDIO
             </span>
           </div>

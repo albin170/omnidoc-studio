@@ -145,7 +145,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
       case 'forensics':
         return <Activity className="w-4 h-4 text-amber-400" />;
       case 'dna':
-        return <Dna className="w-4 h-4 text-[#A8DEFA]" />;
+        return <Dna className="w-4 h-4 text-[#38BDF8]" />;
       case 'convert':
         return <Zap className="w-4 h-4 text-indigo-400" />;
       case 'verify':
@@ -166,9 +166,9 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
       {/* Studio Header Toolbar matching reference */}
       <div className="h-16 px-6 border-b border-white/10 bg-[#0B1420]/85 backdrop-blur-2xl flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#A8DEFA] to-[#A8DEFA] flex items-center justify-center p-0.5 shadow-md shadow-[#A8DEFA]/20">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#38BDF8] to-[#38BDF8] flex items-center justify-center p-0.5 shadow-md shadow-[#38BDF8]/20">
             <div className="w-full h-full bg-[#070B13] rounded-[10px] flex items-center justify-center">
-              <Layers className="w-4 h-4 text-[#A8DEFA]" />
+              <Layers className="w-4 h-4 text-[#38BDF8]" />
             </div>
           </div>
           <div>
@@ -176,7 +176,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               <h1 className="font-extrabold text-sm md:text-base text-[#F5FAFF] tracking-tight">
                 Workflow Studio
               </h1>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30">
                 DAG PIPELINE
               </span>
             </div>
@@ -211,9 +211,9 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isExecuting}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-bold transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card hover:border-[#38BDF8]/50 text-[#F5FAFF] text-xs font-bold transition-all cursor-pointer"
           >
-            <Upload className="w-3.5 h-3.5 text-[#A8DEFA]" />
+            <Upload className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span>{selectedFile ? selectedFile.name.slice(0, 16) + '...' : 'Select File'}</span>
           </button>
 
@@ -238,7 +238,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
             className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer ${
               isExecuting
                 ? 'glass-card opacity-50 text-[#A7B8CA] cursor-not-allowed'
-                : 'bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] hover:brightness-110 text-white shadow-[#A8DEFA]/30 lg-glow-ice'
+                : 'bg-gradient-to-r from-[#38BDF8] to-[#FF3366] hover:brightness-110 text-white shadow-[#38BDF8]/30 lg-glow-ice'
             }`}
           >
             {isExecuting ? (
@@ -270,17 +270,17 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
         </div>
 
         {/* Animated Connector Arrow */}
-        <div className="flex items-center text-[#A8DEFA] animate-pulse">
+        <div className="flex items-center text-[#38BDF8] animate-pulse">
           <ArrowRight className="w-5 h-5" />
         </div>
 
         {/* Node 2: Process Document */}
-        <div className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/40 shadow-xl shadow-[#A8DEFA]/10 min-w-[180px] lg-glow-ice">
-          <div className="w-10 h-10 rounded-xl bg-[#A8DEFA]/30 border border-[#A8DEFA]/50 flex items-center justify-center text-white">
-            <Zap className="w-5 h-5 text-[#A8DEFA]" />
+        <div className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#38BDF8]/15 border border-[#38BDF8]/40 shadow-xl shadow-[#38BDF8]/10 min-w-[180px] lg-glow-ice">
+          <div className="w-10 h-10 rounded-xl bg-[#38BDF8]/30 border border-[#38BDF8]/50 flex items-center justify-center text-white">
+            <Zap className="w-5 h-5 text-[#38BDF8]" />
           </div>
           <div>
-            <span className="text-[10px] text-[#A8DEFA] font-medium block">ENGINE</span>
+            <span className="text-[10px] text-[#38BDF8] font-medium block">ENGINE</span>
             <span className="text-xs font-bold text-[#F5FAFF]">Process Document</span>
           </div>
         </div>
@@ -326,7 +326,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
                       toNode.status === 'error'
                         ? '#ef4444'
                         : isConnectedCompleted
-                        ? '#7CC4ED'
+                        ? '#FF3366'
                         : '#334155'
                     }
                     strokeWidth={isConnectedCompleted ? 2.5 : 1.5}
@@ -343,8 +343,8 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               let badgeColor = 'bg-slate-800 text-slate-400';
 
               if (node.status === 'running') {
-                borderClass = 'border-[#A8DEFA] shadow-lg shadow-[#A8DEFA]/20 ring-2 ring-[#A8DEFA]/30 animate-pulse';
-                badgeColor = 'bg-[#A8DEFA]/20 text-[#A8DEFA]';
+                borderClass = 'border-[#38BDF8] shadow-lg shadow-[#38BDF8]/20 ring-2 ring-[#38BDF8]/30 animate-pulse';
+                badgeColor = 'bg-[#38BDF8]/20 text-[#38BDF8]';
               } else if (node.status === 'completed') {
                 borderClass = 'border-emerald-500/60 bg-slate-900/90 shadow-md shadow-emerald-500/10';
                 badgeColor = 'bg-emerald-500/20 text-emerald-400';
@@ -364,7 +364,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
                     width: '180px',
                   }}
                   className={`z-10 p-3.5 rounded-2xl bg-slate-900 border transition-all cursor-pointer ${borderClass} ${
-                    isSelected ? 'ring-2 ring-[#A8DEFA]' : ''
+                    isSelected ? 'ring-2 ring-[#38BDF8]' : ''
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -378,7 +378,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
                     </div>
 
                     {node.status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                    {node.status === 'running' && <RotateCcw className="w-3.5 h-3.5 text-[#A8DEFA] animate-spin" />}
+                    {node.status === 'running' && <RotateCcw className="w-3.5 h-3.5 text-[#38BDF8] animate-spin" />}
                     {node.status === 'error' && <XCircle className="w-3.5 h-3.5 text-red-400" />}
                   </div>
 
@@ -407,7 +407,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               <span>Pipeline Stage Inspector</span>
             </h2>
             {selectedNode && (
-              <span className="text-[11px] font-mono text-[#A8DEFA] font-bold">
+              <span className="text-[11px] font-mono text-[#38BDF8] font-bold">
                 {selectedNode.type}
               </span>
             )}
@@ -462,7 +462,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
 
             {/* Execution Result Summary Card */}
             {executionResult && (
-              <div className="p-4 rounded-2xl lg-secondary border border-[rgba(180,225,255,0.22)] space-y-3">
+              <div className="p-4 rounded-2xl lg-secondary border border-[rgba(255, 255, 255,0.22)] space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-extrabold text-white">Execution Result</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${executionResult.success ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
@@ -529,7 +529,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               onClick={() => setBottomTab('log')}
               className={`py-2 px-1 border-b-2 transition-all cursor-pointer ${
                 bottomTab === 'log'
-                  ? 'border-[#A8DEFA] text-[#F5FAFF]'
+                  ? 'border-[#38BDF8] text-[#F5FAFF]'
                   : 'border-transparent text-[#A7B8CA] hover:text-[#F5FAFF]'
               }`}
             >
@@ -539,7 +539,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               onClick={() => setBottomTab('results')}
               className={`py-2 px-1 border-b-2 transition-all cursor-pointer ${
                 bottomTab === 'results'
-                  ? 'border-[#A8DEFA] text-[#F5FAFF]'
+                  ? 'border-[#38BDF8] text-[#F5FAFF]'
                   : 'border-transparent text-[#A7B8CA] hover:text-[#F5FAFF]'
               }`}
             >
@@ -549,7 +549,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               onClick={() => setBottomTab('history')}
               className={`py-2 px-1 border-b-2 transition-all cursor-pointer ${
                 bottomTab === 'history'
-                  ? 'border-[#A8DEFA] text-[#F5FAFF]'
+                  ? 'border-[#38BDF8] text-[#F5FAFF]'
                   : 'border-transparent text-[#A7B8CA] hover:text-[#F5FAFF]'
               }`}
             >
@@ -587,7 +587,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
                   return (
                     <div key={index} className="flex items-start gap-2">
                       <span className="text-[#A7B8CA]/70">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                      <span className="text-[#A8DEFA] font-semibold">{log.nodeId}:</span>
+                      <span className="text-[#38BDF8] font-semibold">{log.nodeId}:</span>
                       <span className={color}>{log.message}</span>
                     </div>
                   );
@@ -600,11 +600,11 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
             <div className="space-y-2 text-[#F5FAFF] font-sans">
               <div className="flex items-center gap-4 text-xs">
                 <span className="text-[#A7B8CA]">Target Format:</span>
-                <span className="font-bold font-mono uppercase text-[#A8DEFA]">{targetFormat}</span>
+                <span className="font-bold font-mono uppercase text-[#38BDF8]">{targetFormat}</span>
                 <span className="text-[#A7B8CA]">Fidelity Score:</span>
                 <span className="font-bold font-mono text-emerald-400">99.4%</span>
                 <span className="text-[#A7B8CA]">Verified Signatures:</span>
-                <span className="font-bold font-mono text-[#A8DEFA]">SHA-256 Validated</span>
+                <span className="font-bold font-mono text-[#38BDF8]">SHA-256 Validated</span>
               </div>
               {executionResult?.convertedBlob && (
                 <div className="pt-2">

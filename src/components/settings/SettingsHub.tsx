@@ -122,9 +122,9 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#070B13] text-[#F5FAFF] select-none">
       {/* Top Header */}
-      <div className="h-14 border-b border-[rgba(180,225,255,0.12)] lg-topbar px-6 flex items-center justify-between shrink-0">
+      <div className="h-14 border-b border-[rgba(255, 255, 255,0.12)] lg-topbar px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-[#A8DEFA]/15 text-[#A8DEFA] border border-[#A8DEFA]/30">
+          <div className="p-2 rounded-xl bg-[#38BDF8]/15 text-[#38BDF8] border border-[#38BDF8]/30">
             <Settings className="w-4 h-4" />
           </div>
           <div>
@@ -144,7 +144,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
       {/* Main Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Navigation */}
-        <div className="w-56 border-r border-[rgba(180,225,255,0.12)] bg-[#0B1420]/60 backdrop-blur-xl p-4 space-y-1.5 shrink-0">
+        <div className="w-56 border-r border-[rgba(255, 255, 255,0.12)] bg-[#0B1420]/60 backdrop-blur-xl p-4 space-y-1.5 shrink-0">
           {[
             { id: 'general', label: 'General & Editor', icon: Sparkles },
             { id: 'storage', label: 'Storage & Backup', icon: HardDrive },
@@ -177,7 +177,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
             <div className="space-y-6">
               <div className="p-5 rounded-2xl lg-secondary space-y-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2 font-display">
-                  <Sparkles className="w-4 h-4 text-[#A8DEFA]" />
+                  <Sparkles className="w-4 h-4 text-[#38BDF8]" />
                   <span>Editor Preferences</span>
                 </h3>
 
@@ -190,7 +190,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                     type="checkbox"
                     checked={autoSaveEnabled}
                     onChange={(e) => setAutoSaveEnabled(e.target.checked)}
-                    className="w-4 h-4 accent-[#A8DEFA] cursor-pointer"
+                    className="w-4 h-4 accent-[#38BDF8] cursor-pointer"
                   />
                 </div>
 
@@ -202,7 +202,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                   <select
                     value={defaultQuality}
                     onChange={(e) => setDefaultQuality(e.target.value)}
-                    className="bg-[#0B1420] border border-[rgba(180,225,255,0.18)] text-[#F5FAFF] text-xs rounded-lg px-2.5 py-1 outline-none cursor-pointer"
+                    className="bg-[#0B1420] border border-[rgba(255, 255, 255,0.18)] text-[#F5FAFF] text-xs rounded-lg px-2.5 py-1 outline-none cursor-pointer"
                   >
                     <option value="maximum">Maximum (Lossless)</option>
                     <option value="high">High (Balanced)</option>
@@ -218,7 +218,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                   <select
                     value={pdfRenderDpi}
                     onChange={(e) => setPdfRenderDpi(e.target.value)}
-                    className="bg-[#0B1420] border border-[rgba(180,225,255,0.18)] text-[#F5FAFF] text-xs rounded-lg px-2.5 py-1 outline-none cursor-pointer"
+                    className="bg-[#0B1420] border border-[rgba(255, 255, 255,0.18)] text-[#F5FAFF] text-xs rounded-lg px-2.5 py-1 outline-none cursor-pointer"
                   >
                     <option value="96">96 DPI (Fastest)</option>
                     <option value="150">150 DPI (Crisp)</option>
@@ -233,21 +233,21 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
             <div className="space-y-6">
               <div className="p-5 rounded-2xl lg-secondary space-y-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2 font-display">
-                  <HardDrive className="w-4 h-4 text-[#A8DEFA]" />
+                  <HardDrive className="w-4 h-4 text-[#38BDF8]" />
                   <span>Storage Architecture &amp; Local Persistence</span>
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-white/[0.03] border border-[rgba(180,225,255,0.14)]">
+                  <div className="p-4 rounded-xl bg-white/[0.03] border border-[rgba(255, 255, 255,0.14)]">
                     <div className="text-[11px] text-[#A7B8CA]">Browser Sandbox Consumption</div>
                     <div className="text-lg font-bold text-white mt-1">{formatFileSize(totalStorageBytes)}</div>
                     <div className="text-[10px] text-emerald-400 mt-1">IndexedDB / Local Storage Sandbox</div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-white/[0.03] border border-[rgba(180,225,255,0.14)]">
+                  <div className="p-4 rounded-xl bg-white/[0.03] border border-[rgba(255, 255, 255,0.14)]">
                     <div className="text-[11px] text-[#A7B8CA]">Saved Project Artifacts</div>
                     <div className="text-lg font-bold text-white mt-1">{totalProjectsCount} items</div>
-                    <div className="text-[10px] text-[#A8DEFA] mt-1">Available offline instantly</div>
+                    <div className="text-[10px] text-[#38BDF8] mt-1">Available offline instantly</div>
                   </div>
                 </div>
 
@@ -262,7 +262,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                   </button>
 
                   <label className="lg-btn-secondary flex items-center gap-2 text-xs cursor-pointer">
-                    <Upload className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                    <Upload className="w-3.5 h-3.5 text-[#38BDF8]" />
                     <span>Restore from Backup</span>
                     <input
                       type="file"
@@ -289,7 +289,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
               <div className="p-5 rounded-2xl lg-secondary space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2 font-display">
-                    <Server className="w-4 h-4 text-[#A8DEFA]" />
+                    <Server className="w-4 h-4 text-[#38BDF8]" />
                     <span>Backend API Configuration</span>
                   </h3>
                   {apiStatus === 'success' && (
@@ -329,7 +329,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                             : 'http://localhost:8000/api/v1';
                           setApiUrl(liveUrl);
                         }}
-                        className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[#A8DEFA] text-xs font-medium border border-[rgba(180,225,255,0.14)]"
+                        className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[#38BDF8] text-xs font-medium border border-[rgba(255, 255, 255,0.14)]"
                       >
                         Reset to Production Default
                       </button>
@@ -352,7 +352,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
             <div className="space-y-6">
               <div className="p-5 rounded-2xl lg-secondary space-y-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2 font-display">
-                  <Cpu className="w-4 h-4 text-[#A8DEFA]" />
+                  <Cpu className="w-4 h-4 text-[#38BDF8]" />
                   <span>Processing Engine Configuration</span>
                 </h3>
 
@@ -371,7 +371,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                     <div className="text-xs font-semibold text-[#F5FAFF]">Available Hardware Concurrency</div>
                     <div className="text-[11px] text-[#A7B8CA]">Detected logical CPU cores for parallel document transforms</div>
                   </div>
-                  <div className="text-xs font-mono font-bold text-[#A8DEFA] bg-[#0B1420] px-2.5 py-1 rounded-lg border border-[rgba(180,225,255,0.14)]">
+                  <div className="text-xs font-mono font-bold text-[#38BDF8] bg-[#0B1420] px-2.5 py-1 rounded-lg border border-[rgba(255, 255, 255,0.14)]">
                     {workerThreads} Cores
                   </div>
                 </div>
@@ -381,7 +381,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                     <div className="text-xs font-semibold text-[#F5FAFF]">Client OCR Engine (Tesseract.js)</div>
                     <div className="text-[11px] text-[#A7B8CA]">Executes character recognition directly in Web Worker sandbox</div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-md bg-[#A8DEFA]/15 text-[#A8DEFA] text-xs font-bold border border-[#A8DEFA]/30">
+                  <span className="px-2.5 py-1 rounded-md bg-[#38BDF8]/15 text-[#38BDF8] text-xs font-bold border border-[#38BDF8]/30">
                     WASM WORKER
                   </span>
                 </div>
@@ -398,7 +398,7 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                 </h3>
 
                 <div className="space-y-3 text-xs text-[#A7B8CA]">
-                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.03] border border-[rgba(180,225,255,0.12)]">
+                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.03] border border-[rgba(255, 255, 255,0.12)]">
                     <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                     <div>
                       <div className="font-bold text-[#F5FAFF]">100% Client-Side Processing Architecture</div>
@@ -408,8 +408,8 @@ export const SettingsHub: React.FC<SettingsHubProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.03] border border-[rgba(180,225,255,0.12)]">
-                    <Database className="w-5 h-5 text-[#A8DEFA] shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.03] border border-[rgba(255, 255, 255,0.12)]">
+                    <Database className="w-5 h-5 text-[#38BDF8] shrink-0 mt-0.5" />
                     <div>
                       <div className="font-bold text-[#F5FAFF]">Data Retention Policy</div>
                       <div className="text-[#A7B8CA] mt-0.5">

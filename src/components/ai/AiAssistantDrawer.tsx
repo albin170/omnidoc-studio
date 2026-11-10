@@ -147,13 +147,13 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
       {/* Top Header */}
       <div className="h-16 px-5 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-900/95 backdrop-blur-md">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-[#A8DEFA]/10 text-[#A8DEFA] border border-[#A8DEFA]/20">
+          <div className="p-2 rounded-xl bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
             <h2 className="text-sm font-extrabold text-white flex items-center gap-1.5">
               Document Assistant
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-semibold border border-[#A8DEFA]/30">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#38BDF8]/20 text-[#38BDF8] font-semibold border border-[#38BDF8]/30">
                 LOCAL PRIVACY
               </span>
             </h2>
@@ -208,7 +208,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
           onClick={() => handleQuickAction('Table')}
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 shrink-0 font-medium border border-slate-700 cursor-pointer"
         >
-          <Table className="w-3.5 h-3.5 text-[#A8DEFA]" />
+          <Table className="w-3.5 h-3.5 text-[#38BDF8]" />
           <span>To Table</span>
         </button>
       </div>
@@ -252,7 +252,7 @@ export const AiAssistantDrawer: React.FC<AiAssistantDrawerProps> = ({
                       key={cIdx}
                       className="p-2 rounded-lg bg-slate-900 border border-slate-800/80 text-[11px] text-slate-300 font-mono"
                     >
-                      <span className="text-[#A8DEFA] font-bold block mb-0.5">
+                      <span className="text-[#38BDF8] font-bold block mb-0.5">
                         [{c.sectionLabel || `Passage ${cIdx + 1}`}]
                       </span>
                       <span className="italic text-slate-400">&quot;{c.snippet}&quot;</span>

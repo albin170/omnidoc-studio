@@ -38,7 +38,7 @@ export const TemplatesHub: React.FC<TemplatesHubProps> = ({
       <div className="glass-panel p-6 rounded-3xl border border-white/12 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#A8DEFA]" />
+            <Sparkles className="w-5 h-5 text-[#38BDF8]" />
             <h1 className="text-xl md:text-2xl font-bold text-[#F5FAFF] tracking-tight">
               Starter Templates Gallery
             </h1>
@@ -50,13 +50,13 @@ export const TemplatesHub: React.FC<TemplatesHubProps> = ({
 
         {/* Search */}
         <div className="w-full md:w-64 relative">
-          <Search className="w-4 h-4 text-[#A8DEFA] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#38BDF8] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search templates..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full glass-input rounded-xl pl-9 pr-3 py-2 text-xs text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 outline-none focus:border-[#A8DEFA]"
+            className="w-full glass-input rounded-xl pl-9 pr-3 py-2 text-xs text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 outline-none focus:border-[#38BDF8]"
           />
         </div>
       </div>
@@ -69,7 +69,7 @@ export const TemplatesHub: React.FC<TemplatesHubProps> = ({
             onClick={() => setSelectedCategory(cat)}
             className={`px-4 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               selectedCategory === cat
-                ? 'glass-btn-primary shadow-md shadow-[#A8DEFA]/20 lg-glow-ice'
+                ? 'glass-btn-primary shadow-md shadow-[#38BDF8]/20 lg-glow-ice'
                 : 'glass-card text-[#A7B8CA] hover:text-[#F5FAFF] border-white/10'
             }`}
           >
@@ -84,7 +84,7 @@ export const TemplatesHub: React.FC<TemplatesHubProps> = ({
           <div
             key={tpl.id}
             onClick={() => onSelectTemplate(tpl)}
-            className="glass-card border-white/10 hover:border-[#A8DEFA]/50 rounded-2xl overflow-hidden transition-all hover:-translate-y-1 cursor-pointer group shadow-xl flex flex-col justify-between"
+            className="glass-card border-white/10 hover:border-[#38BDF8]/50 rounded-2xl overflow-hidden transition-all hover:-translate-y-1 cursor-pointer group shadow-xl flex flex-col justify-between"
           >
             <div>
               {/* Card Header Gradient Banner */}
@@ -102,10 +102,10 @@ export const TemplatesHub: React.FC<TemplatesHubProps> = ({
 
               {/* Body */}
               <div className="p-5 space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#A8DEFA]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#38BDF8]">
                   {tpl.category}
                 </span>
-                <h3 className="text-base font-bold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors">
+                <h3 className="text-base font-bold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors">
                   {tpl.title}
                 </h3>
                 <p className="text-xs text-[#A7B8CA] leading-relaxed">
@@ -115,7 +115,7 @@ export const TemplatesHub: React.FC<TemplatesHubProps> = ({
             </div>
 
             <div className="p-5 pt-0">
-              <button className="w-full py-2 rounded-xl glass-card group-hover:border-[#A8DEFA]/50 text-[#A7B8CA] group-hover:text-[#F5FAFF] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+              <button className="w-full py-2 rounded-xl glass-card group-hover:border-[#38BDF8]/50 text-[#A7B8CA] group-hover:text-[#F5FAFF] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>Load Template</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
