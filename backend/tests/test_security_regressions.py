@@ -551,3 +551,248 @@ async def test_native_docx_and_pptx_parsing():
     )
     assert twin_pptx.metadata.page_count == 1
     assert any("OmniDoc Keynote 2026" in p.text for p in twin_pptx.paragraphs)
+
+
+@pytest.mark.asyncio
+async def test_stripe_webhook_verified_processing_and_idempotency(client: AsyncClient, db_session: AsyncSession, monkeypatch):
+    import time
+    import hmac
+    import hashlib
+    import json
+    from app.core.config import settings
+    from app.models.organization import Organization
+    from app.models.workflow import IdempotencyRecordModel
+    from app.services.billing_service import billing_service
+
+    test_webhook_secret = "whsec_test_secret_key_12345"
+    monkeypatch.setattr(settings, "STRIPE_WEBHOOK_SECRET", test_webhook_secret)
+    monkeypatch.setattr(billing_service, "webhook_secret", test_webhook_secret)
+
+    org = Organization(name="Stripe Webhook Org", slug="stripe-wh-org", plan_tier="free")
+    db_session.add(org)
+    await db_session.commit()
+
+    event_id = f"evt_test_{int(time.time())}"
+    event_payload = {
+        "id": event_id,
+        "type": "customer.subscription.updated",
+        "data": {
+            "object": {
+                "id": "sub_test_12345",
+                "metadata": {
+                    "org_id": org.id,
+                    "plan_slug": "pro",
+                    "billing_interval": "monthly"
+                },
+                "current_period_start": int(time.time()),
+                "current_period_end": int(time.time()) + 30 * 86400
+            }
+        }
+    }
+    payload_bytes = json.dumps(event_payload).encode("utf-8")
+    ts = str(int(time.time()))
+    signed_payload = f"{ts}.".encode("utf-8") + payload_bytes
+    sig = hmac.new(test_webhook_secret.encode("utf-8"), signed_payload, hashlib.sha256).hexdigest()
+    sig_header = f"t={ts},v1={sig}"
+
+    # 1. First webhook delivery succeeds and records idempotency
+    res1 = await client.post(
+        "/api/v1/billing/webhook",
+        content=payload_bytes,
+        headers={"Stripe-Signature": sig_header, "Content-Type": "application/json"}
+    )
+    assert res1.status_code == 200
+    assert res1.json()["status"] == "success"
+
+    # Verify idempotency record in database
+    rec = await db_session.get(IdempotencyRecordModel, f"stripe_{event_id}")
+    assert rec is not None
+    assert "processed" in rec.result_json
+
+    # 2. Duplicate webhook delivery returns idempotent skip without failing
+    res2 = await client.post(
+        "/api/v1/billing/webhook",
+        content=payload_bytes,
+        headers={"Stripe-Signature": sig_header, "Content-Type": "application/json"}
+    )
+    assert res2.status_code == 200
+    assert res2.json()["status"] == "idempotent_skip"
+
+
+@pytest.mark.asyncio
+async def test_token_without_token_version_claim_rejected_on_versioned_user(client: AsyncClient, db_session: AsyncSession):
+    import time
+    from app.core.security import get_password_hash
+    from app.models.organization import Organization
+    from jose import jwt
+    from app.core.config import settings
+    import uuid
+
+    org = Organization(name="No Version Org", slug=f"nv-org-{uuid.uuid4().hex[:6]}", plan_tier="free")
+    db_session.add(org)
+    await db_session.flush()
+
+    user = User(
+        email="no.token.version@test.com",
+        hashed_password=get_password_hash("Password123!"),
+        full_name="Versioned User",
+        role="user",
+        org_id=org.id,
+        is_active=True,
+        token_version=2
+    )
+    db_session.add(user)
+    await db_session.commit()
+
+    # Craft a JWT without token_version claim
+    legacy_payload = {
+        "sub": user.id,
+        "org_id": user.org_id,
+        "role": user.role,
+        "exp": int(time.time()) + 3600
+    }
+    legacy_token = jwt.encode(legacy_payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+    # Calling /api/v1/users/me with legacy token MUST be rejected with 401
+    res = await client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {legacy_token}"})
+    assert res.status_code == 401
+    assert "invalidated" in res.json()["detail"].lower() or "revoked" in res.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_admin_view_as_user_with_incremented_token_version(client: AsyncClient, db_session: AsyncSession):
+    from app.core.security import get_password_hash, create_access_token
+    from app.models.organization import Organization
+    import uuid
+
+    org = Organization(name="Impersonate Org", slug=f"imp-org-{uuid.uuid4().hex[:6]}", plan_tier="free")
+    db_session.add(org)
+    await db_session.flush()
+
+    admin = User(
+        email="super.imp@test.com",
+        hashed_password=get_password_hash("AdminPass123!"),
+        full_name="Super Impersonator",
+        role="superadmin",
+        org_id=org.id,
+        is_active=True
+    )
+    target = User(
+        email="target.ver2@test.com",
+        hashed_password=get_password_hash("TargetPass123!"),
+        full_name="Target Ver 2",
+        role="user",
+        org_id=org.id,
+        is_active=True,
+        token_version=5
+    )
+    db_session.add_all([admin, target])
+    await db_session.commit()
+
+    admin_token = create_access_token({"sub": admin.id, "email": admin.email, "role": "superadmin"})
+
+    start_res = await client.post(
+        "/api/v1/admin/view-sessions",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"target_user_id": target.id, "duration_minutes": 30, "reason": "Debugging customer issue"}
+    )
+    assert start_res.status_code == 200
+    scoped_jwt = start_res.json()["scoped_token"]
+
+    view_res = await client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {scoped_jwt}"})
+    assert view_res.status_code == 200
+    assert view_res.json()["email"] == target.email
+
+
+@pytest.mark.asyncio
+async def test_forgot_password_fails_closed_in_production_when_smtp_fails(client: AsyncClient, db_session: AsyncSession, monkeypatch):
+    from app.core.config import settings
+    from app.core.security import get_password_hash
+    from app.models.organization import Organization
+    from app.services.email_service import email_service
+    import uuid
+
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+
+    # Mock Redis rate limiter for production mode
+    class DummyRedisPipeline:
+        def zremrangebyscore(self, *a, **kw): return self
+        def zcard(self, *a, **kw): return self
+        def zadd(self, *a, **kw): return self
+        def expire(self, *a, **kw): return self
+        async def execute(self): return [0, 1, True, True]
+
+    class DummyRedis:
+        def pipeline(self): return DummyRedisPipeline()
+
+    monkeypatch.setattr("app.core.rate_limit._redis_client", DummyRedis())
+    monkeypatch.setattr("app.core.rate_limit._get_redis_client", lambda: DummyRedis())
+
+    org = Organization(name="Prod Email Org", slug=f"pe-org-{uuid.uuid4().hex[:6]}", plan_tier="free")
+    db_session.add(org)
+    await db_session.flush()
+
+    user = User(
+        email="prod.user.reset@test.com",
+        hashed_password=get_password_hash("Pass123!"),
+        full_name="Prod User",
+        role="user",
+        org_id=org.id,
+        is_active=True
+    )
+    db_session.add(user)
+    await db_session.commit()
+
+    async def mock_fail_email(*args, **kwargs):
+        return False
+    monkeypatch.setattr(email_service, "send_password_reset_email", mock_fail_email)
+
+    res = await client.post("/api/v1/auth/forgot-password", json={"email": user.email})
+    assert res.status_code == 503
+    assert "email service" in res.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_deterministic_entitlement_overrides_order(db_session: AsyncSession):
+    from app.core.security import get_password_hash
+    from app.models.organization import Organization
+    from app.models.subscription_management import UserEntitlementOverrideModel
+    from app.services.entitlement_service import calculate_user_entitlements
+    import uuid
+    from datetime import datetime, timezone, timedelta
+
+    org = Organization(name="Override Org", slug=f"ov-org-{uuid.uuid4().hex[:6]}", plan_tier="free")
+    db_session.add(org)
+    await db_session.flush()
+
+    user = User(
+        email="override.order@test.com",
+        hashed_password=get_password_hash("Pass123!"),
+        full_name="Override User",
+        role="user",
+        org_id=org.id,
+        is_active=True
+    )
+    db_session.add(user)
+    await db_session.commit()
+
+    t1 = datetime.now(timezone.utc) - timedelta(minutes=10)
+    t2 = datetime.now(timezone.utc)
+
+    ov1 = UserEntitlementOverrideModel(
+        user_id=user.id,
+        feature_key="pdf_tools",
+        custom_storage_quota_bytes=500 * 1024 * 1024,
+        created_at=t1
+    )
+    ov2 = UserEntitlementOverrideModel(
+        user_id=user.id,
+        feature_key="ocr_engine",
+        custom_storage_quota_bytes=1000 * 1024 * 1024,
+        created_at=t2
+    )
+    db_session.add_all([ov1, ov2])
+    await db_session.commit()
+
+    entitlements = await calculate_user_entitlements(user, db_session)
+    assert entitlements.storage_quota_bytes == 1000 * 1024 * 1024
