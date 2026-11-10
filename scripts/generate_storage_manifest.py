@@ -85,3 +85,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     generate_manifest(args.source_dir, args.output)
+

@@ -84,3 +84,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     verify_checksums(args.manifest)
+

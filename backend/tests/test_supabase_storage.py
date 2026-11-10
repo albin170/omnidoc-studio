@@ -62,3 +62,4 @@ def test_storage_vault_dispatches_to_supabase_when_enabled(monkeypatch):
         success = vault.delete_file("org-abc", "org-abc/doc-1/file.txt")
         assert success is True
         mock_from.remove.assert_called_once_with(["org-abc/doc-1/file.txt"])
+

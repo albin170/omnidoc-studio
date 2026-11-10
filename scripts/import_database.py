@@ -105,3 +105,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     asyncio.run(import_db(args.database_url, args.input))
+

@@ -98,3 +98,4 @@ async def test_complete_auth_lifecycle_and_idor_protection(client: AsyncClient):
     # 11. Legitimate delete by User 1 succeeds
     legit_del = await client.delete(f"/api/v1/documents/{doc1_id}", headers=headers1)
     assert legit_del.status_code == 200
+

@@ -142,3 +142,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     asyncio.run(restore_archive(args.archive, args.database_url, args.supabase_url, args.service_key, args.bucket))
+

@@ -143,3 +143,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     asyncio.run(backup(args.database_url, args.supabase_url, args.service_key, args.bucket, args.backup_dir))
+
