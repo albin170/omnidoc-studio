@@ -80,3 +80,4 @@ export SUPABASE_SERVICE_ROLE_KEY="your_service_role_key"
    ```
 3. Update Vercel Frontend:
    Set `VITE_API_URL=https://YOUR_SERVICE_URL/api/v1` in Vercel project environment variables.
+

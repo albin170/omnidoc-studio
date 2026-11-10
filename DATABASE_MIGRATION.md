@@ -43,3 +43,4 @@ Reconciliation validates:
 - Users: passwords hashed with bcrypt (`$2b$12$...`), active status, consent timestamps.
 - Organizations: multi-tenant slugs, plan tiers.
 - Foreign Key Constraints: `ON DELETE CASCADE` on tenant documents and user tokens.
+

@@ -51,3 +51,4 @@ python scripts/restore_production.py \
 - **Default Retention:** 7 daily backups locally / offsite.
 - **Off-Site Storage Recommendation:** Sync `backups/` directory to an AWS S3 Glacier or Google Cloud Storage bucket with lifecycle rules.
 - **Cost Disclaimer:** Cloud storage beyond free tiers (e.g. GCS Standard > 5GB, Supabase Storage > 1GB) will incur provider fees. OmniDoc Studio's free community architecture operates within the 1GB Supabase Storage free allowance.
+

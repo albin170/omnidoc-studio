@@ -57,3 +57,4 @@ signed_url = storage_vault.generate_signed_download_url(
 )
 ```
 Generates a signed URL bound to `SECRET_KEY` that expires automatically and audits every retrieval.
+

@@ -63,3 +63,4 @@ If a database migration introduced an incompatible column or constraint:
      -d '{"email": "production_test_user@omnidoc.io", "password": "StrongPassword2026!"}'
    ```
 3. Verify document list and download endpoints.
+
