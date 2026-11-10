@@ -30,7 +30,7 @@ spec:
         - name: SECRET_KEY
           value: "omnidoc_prod_sec_key_d92f8a1103c8479e2bc91e7041a384f5_supabase_ready"
         - name: DATABASE_URL
-          value: "postgresql+asyncpg://postgres:OmniDoc_Db_2026_SecureKey!@db.kflqymlcrtqepwjeulpb.supabase.co:5432/postgres"
+          value: "postgresql+asyncpg://postgres.kflqymlcrtqepwjeulpb:OmniDoc_Db_2026_SecureKey!@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"
         - name: STORAGE_PROVIDER
           value: "supabase"
         - name: SUPABASE_URL
@@ -45,3 +45,4 @@ spec:
           value: "false"
         - name: TRUST_PROXY_HEADERS
           value: "true"
+

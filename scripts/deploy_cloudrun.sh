@@ -52,3 +52,4 @@ echo "Deployment SUCCESS!"
 echo "Cloud Run Service URL: $SERVICE_URL"
 echo "Set VITE_API_URL=$SERVICE_URL in Vercel to connect frontend."
 echo "=========================================================="
+

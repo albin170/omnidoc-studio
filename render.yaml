@@ -16,7 +16,7 @@ services:
       - key: CORS_ORIGINS
         value: "https://omnidoc-studio-jet.vercel.app,http://localhost:5173"
       - key: DATABASE_URL
-        value: "postgresql+asyncpg://postgres:OmniDoc_Db_2026_SecureKey!@db.kflqymlcrtqepwjeulpb.supabase.co:5432/postgres"
+        value: "postgresql+asyncpg://postgres.kflqymlcrtqepwjeulpb:OmniDoc_Db_2026_SecureKey!@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"
       - key: STORAGE_PROVIDER
         value: "supabase"
       - key: SUPABASE_URL

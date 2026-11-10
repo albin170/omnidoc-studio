@@ -55,3 +55,4 @@ Write-Host "Deployment SUCCESS!" -ForegroundColor Green
 Write-Host "Cloud Run Service URL: $serviceUrl" -ForegroundColor Green
 Write-Host "Set VITE_API_URL=$serviceUrl in Vercel to connect frontend."
 Write-Host "==========================================================" -ForegroundColor Green
+

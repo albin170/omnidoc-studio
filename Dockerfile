@@ -23,3 +23,4 @@ EXPOSE 8080
 
 # Run Alembic migrations on startup, then launch Uvicorn on Cloud Run's $PORT
 CMD sh -c "python -m alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"
+
