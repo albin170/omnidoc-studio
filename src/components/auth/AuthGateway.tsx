@@ -336,10 +336,10 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
               <div className="mt-1 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-[10px] space-y-1.5">
                 <div className="flex items-center gap-1.5 font-semibold text-amber-300">
                   <AlertCircle className="w-3 h-3 shrink-0" />
-                  <span>Cannot reach {customApiUrl.includes('onrender.com') ? 'Render server' : 'custom endpoint'}</span>
+                  <span>Cannot reach {customApiUrl.includes('run.app') ? 'Cloud Run backend' : 'backend service'}</span>
                 </div>
                 <p className="text-amber-200/80 leading-tight">
-                  Your live full-stack FastAPI engine is active directly on Vercel.
+                  Your production backend engine is hosted on Google Cloud Run.
                 </p>
                 <button
                   type="button"
