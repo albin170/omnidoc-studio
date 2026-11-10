@@ -172,7 +172,7 @@ async def get_current_user(
             target_id=user.id,
             ip_address=client_ip,
             details_json=json.dumps({"method": request.method, "path": request.url.path, "view_session_id": str(view_session.id)}),
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
         )
         db.add(access_audit)
     else:

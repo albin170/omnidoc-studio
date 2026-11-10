@@ -95,7 +95,7 @@ async def change_password(
         target_type="user",
         target_id=current_user.id,
         details_json=json.dumps({"token_version": current_user.token_version}),
-        timestamp=datetime.now(timezone.utc)
+        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
     )
     db.add(audit)
     await db.commit()

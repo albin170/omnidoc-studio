@@ -432,7 +432,7 @@ async def logout(
             target_type="user",
             target_id=current_user.id,
             details_json=json.dumps({"jti": jti}),
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
         )
         db.add(audit)
 

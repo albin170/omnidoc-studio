@@ -172,7 +172,7 @@ async def upload_document(
             target_type="document",
             target_id=doc_id,
             details_json=json.dumps({"filename": filename, "file_size": file_size}),
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None)
         )
         db.add(audit)
 
@@ -288,7 +288,7 @@ async def download_document_file(
         target_type="document",
         target_id=doc.id,
         details_json=json.dumps({"filename": doc.filename}),
-        timestamp=datetime.now(timezone.utc)
+        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
     )
     db.add(audit)
     await db.commit()
@@ -327,7 +327,7 @@ async def delete_document(
         target_type="document",
         target_id=doc.id,
         details_json=json.dumps({"filename": doc.filename, "file_size": doc.file_size}),
-        timestamp=datetime.now(timezone.utc)
+        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
     )
     db.add(audit)
 

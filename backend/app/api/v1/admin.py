@@ -202,7 +202,7 @@ async def record_admin_audit(
         target_type=target_type,
         target_id=target_id,
         details_json=json.dumps(details),
-        timestamp=datetime.now(timezone.utc)
+        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
     )
     db.add(audit)
 

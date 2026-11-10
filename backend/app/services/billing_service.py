@@ -268,7 +268,7 @@ class BillingService:
                         target_type="organization",
                         target_id=org.id,
                         details_json=json.dumps({"plan_slug": plan_slug, "billing_interval": billing_interval, "event_id": event_id}),
-                        timestamp=datetime.now(timezone.utc)
+                        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
                     )
                     db.add(audit)
 
@@ -288,7 +288,7 @@ class BillingService:
                         target_type="subscription",
                         target_id=sub.id,
                         details_json=json.dumps({"event_id": event_id, "external_subscription_id": sub_id}),
-                        timestamp=datetime.now(timezone.utc)
+                        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
                     )
                     db.add(audit)
 
@@ -305,7 +305,7 @@ class BillingService:
                         target_type="subscription",
                         target_id=sub.id,
                         details_json=json.dumps({"event_id": event_id, "external_subscription_id": sub_id}),
-                        timestamp=datetime.now(timezone.utc)
+                        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
                     )
                     db.add(audit)
 
