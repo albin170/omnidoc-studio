@@ -108,10 +108,11 @@ app.include_router(plans.router, prefix=settings.API_V1_STR)
 app.include_router(user_portal.router, prefix=settings.API_V1_STR)
 app.include_router(billing.router, prefix=settings.API_V1_STR)
 
+@app.get("/health", tags=["Health"])
 @app.get("/healthz", tags=["Health"]) 
 async def healthz():
     """Basic liveness check."""
-    return {"status": "ok"}
+    return {"status": "ok", "service": "omnidoc-backend"}
 
 @app.get(f"{settings.API_V1_STR}/ready", tags=["Health"]) 
 async def ready():

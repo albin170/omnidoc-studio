@@ -21,6 +21,7 @@ COPY backend/ /app/
 
 EXPOSE 8080
 
-# Run Alembic migrations on startup, then launch Uvicorn on Cloud Run's $PORT
-CMD sh -c "python -m alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"
-
+# Clean production ASGI server with graceful termination handling (SIGTERM propagation)
+# NOTE: Database migrations must be executed as a controlled pre-release step
+# via 'python -m alembic upgrade head', NOT concurrently on container startup.
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1 --timeout-keep-alive 30"]
