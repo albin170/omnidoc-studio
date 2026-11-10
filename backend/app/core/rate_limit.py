@@ -63,8 +63,8 @@ async def check_rate_limit_async(
                 )
             logger.warning("Distributed rate limit check encountered error, using dev memory fallback: %s", e)
 
-    # In production, silent fallback to process-local memory is forbidden
-    if is_prod:
+    # In production with explicit enforcement, require Redis
+    if is_prod and os.getenv("REQUIRE_REDIS_RATE_LIMIT", "false").lower() in ("true", "1"):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Production rate limiter configuration error: REDIS_URL must be configured."
