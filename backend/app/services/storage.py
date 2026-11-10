@@ -76,6 +76,22 @@ class SupabaseStorageAdapter:
         content: bytes,
         content_type: Optional[str] = None
     ) -> str:
+        if not org_id or ".." in org_id or "/" in org_id or "\\" in org_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Security violation: Path traversal detected in org_id"
+            )
+        if not document_id or ".." in document_id or "/" in document_id or "\\" in document_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Security violation: Path traversal detected in document_id"
+            )
+        if not filename or ".." in filename or "/" in filename or "\\" in filename:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Security violation: Path traversal detected in filename"
+            )
+
         client = self._get_client()
         clean_doc_id = os.path.basename(document_id).replace("..", "")
         clean_filename = os.path.basename(filename).replace("..", "")
@@ -454,34 +470,15 @@ class StorageVaultService:
 
     def generate_signed_download_url(self, org_id: str, document_id: str, filename: str, expires_seconds: int = 900) -> str:
         """
-        Generates a direct or API-proxied signed download URL with cryptographic tamper resistance.
+        Generates an API-proxied signed download URL with cryptographic HMAC-SHA256 tamper resistance.
+        Downloads are verified, audited, and streamed directly from the active storage provider.
         """
-        clean_doc_id = os.path.basename(document_id)
-        clean_filename = os.path.basename(filename)
-
-        if self.is_supabase_enabled:
-            target_key = f"{org_id}/{clean_doc_id}/{clean_filename}"
-            return self.supabase_adapter.create_signed_url(org_id, target_key, expires_seconds)
-
-        if self.is_s3_enabled:
-            s3 = self._get_s3_client()
-            bucket = settings.S3_BUCKET_NAME
-            s3_key = f"{org_id}/{clean_doc_id}/{clean_filename}"
-            try:
-                return s3.generate_presigned_url(
-                    "get_object",
-                    Params={"Bucket": bucket, "Key": s3_key},
-                    ExpiresIn=expires_seconds
-                )
-            except Exception as e:
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail=f"Presigned S3 download URL generation failed: {e}"
-                )
-
-        target_path = self._resolve_file_path(org_id, document_id, filename)
-        if not os.path.exists(target_path):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Target document not found")
+        if ".." in org_id or "/" in org_id or "\\" in org_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Security violation: Path traversal detected")
+        if ".." in document_id or "/" in document_id or "\\" in document_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Security violation: Path traversal detected")
+        if ".." in filename or "/" in filename or "\\" in filename:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Security violation: Path traversal detected")
 
         # Cryptographically signed download URL (HMAC-SHA256)
         expires_at = int(time.time()) + expires_seconds
