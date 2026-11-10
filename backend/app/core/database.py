@@ -8,6 +8,7 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 is_sqlite = "sqlite" in settings.DATABASE_URL.lower()
+is_vercel = bool(os.getenv("VERCEL"))
 
 engine_kwargs = {
     "echo": False,
@@ -16,6 +17,10 @@ engine_kwargs = {
 
 if is_sqlite:
     engine_kwargs["connect_args"] = {"check_same_thread": False}
+elif is_vercel:
+    from sqlalchemy.pool import NullPool
+    # On serverless runtimes, NullPool avoids connection state corruption across container freezes
+    engine_kwargs["poolclass"] = NullPool
 else:
     engine_kwargs["pool_size"] = getattr(settings, "DATABASE_POOL_SIZE", 10)
     engine_kwargs["max_overflow"] = getattr(settings, "DATABASE_MAX_OVERFLOW", 20)
@@ -41,23 +46,27 @@ async def ensure_db_ready():
     global _db_initialized
     if _db_initialized:
         return
+    _db_initialized = True
     import app.models  # ensure models are registered with Base metadata
     
-    # In development, testing, or sqlite-based runtime (e.g. Vercel serverless), auto-sync tables
+    # In development, testing, or sqlite-based runtime, auto-sync tables
     if settings.ENVIRONMENT.lower() not in ("production", "prod") or "sqlite" in settings.DATABASE_URL:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
             
-    # Always ensure default SaaS plans, features, and initial admin/user accounts are present
-    async with AsyncSessionLocal() as session:
-        from app.services.seed_data import seed_initial_plans_and_features
-        await seed_initial_plans_and_features(session)
-        await session.commit()
-    _db_initialized = True
+        async with AsyncSessionLocal() as session:
+            from app.services.seed_data import seed_initial_plans_and_features
+            await seed_initial_plans_and_features(session)
+            await session.commit()
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    await ensure_db_ready()
+    if not _db_initialized and (settings.ENVIRONMENT.lower() not in ("production", "prod") or "sqlite" in settings.DATABASE_URL):
+        await ensure_db_ready()
     async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
         try:
             yield session
             await session.commit()

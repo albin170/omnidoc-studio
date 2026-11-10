@@ -31,11 +31,12 @@ logger = logging.getLogger("omnidoc")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure database readiness without suppressing initialization errors
-    from app.core.database import ensure_db_ready
-    await ensure_db_ready()
+    if not settings.is_vercel:
+        from app.core.database import ensure_db_ready
+        await ensure_db_ready()
     yield
-    await engine.dispose()
+    if not settings.is_vercel:
+        await engine.dispose()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
