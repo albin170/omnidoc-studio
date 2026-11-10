@@ -148,38 +148,38 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#070B13]/60 text-[#F5FAFF]">
       {/* Top Header */}
-      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      <div className="h-14 border-b border-white/10 bg-[#0B1420]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <ScanText className="w-5 h-5 text-[#42D6E8]" />
-            <h2 className="text-sm font-bold text-[#F4F5FF] tracking-tight">OCR Document Scanner</h2>
+            <ScanText className="w-5 h-5 text-[#A8DEFA]" />
+            <h2 className="text-sm font-bold text-[#F5FAFF] tracking-tight">OCR Document Scanner</h2>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#42D6E8]/20 text-[#42D6E8] font-semibold border border-[#42D6E8]/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-semibold border border-[#A8DEFA]/30">
             TESSERACT AI · PDF &amp; IMAGES
           </span>
         </div>
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 text-xs text-[#9BA3BD]">
+          <div className="flex items-center gap-2 text-xs text-[#A7B8CA]">
             <span>Language:</span>
             <select
               value={selectedLanguage}
               onChange={(e) => setSelectedLanguage(e.target.value)}
-              className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] cursor-pointer font-semibold outline-none"
+              className="glass-input rounded-xl px-2.5 py-1 text-[#F5FAFF] cursor-pointer font-semibold outline-none"
             >
-              <option value="eng" className="bg-[#11152A] text-white">English</option>
-              <option value="spa" className="bg-[#11152A] text-white">Spanish (Español)</option>
-              <option value="fra" className="bg-[#11152A] text-white">French (Français)</option>
-              <option value="deu" className="bg-[#11152A] text-white">German (Deutsch)</option>
-              <option value="ita" className="bg-[#11152A] text-white">Italian (Italiano)</option>
+              <option value="eng" className="bg-[#0B1420] text-white">English</option>
+              <option value="spa" className="bg-[#0B1420] text-white">Spanish (Español)</option>
+              <option value="fra" className="bg-[#0B1420] text-white">French (Français)</option>
+              <option value="deu" className="bg-[#0B1420] text-white">German (Deutsch)</option>
+              <option value="ita" className="bg-[#0B1420] text-white">Italian (Italiano)</option>
             </select>
           </div>
 
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
-            <Upload className="w-3.5 h-3.5 text-[#42D6E8]" />
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all">
+            <Upload className="w-3.5 h-3.5 text-[#A8DEFA]" />
             <span>Select PDF / Image</span>
             <input
               type="file"
@@ -192,7 +192,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
           <button
             onClick={handleRunOcr}
             disabled={!sourceFile || isRecognizing}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary disabled:opacity-40 text-xs font-semibold shadow-lg shadow-[#8B7CFF]/20 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary disabled:opacity-40 text-xs font-semibold shadow-lg shadow-[#A8DEFA]/20 cursor-pointer"
           >
             {isRecognizing ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -208,7 +208,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
       <div className="flex-1 p-6 md:p-8 flex flex-col md:flex-row gap-6 items-stretch justify-center max-w-7xl mx-auto w-full overflow-hidden select-none">
         {/* Left Card: Upload Document */}
         <label
-          className="w-full md:w-1/2 rounded-3xl glass-panel border border-white/15 p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#8B7CFF]/50 transition-all group min-h-[380px] shadow-2xl relative overflow-hidden"
+          className="w-full md:w-1/2 rounded-3xl glass-panel border border-white/15 p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#A8DEFA]/50 transition-all group min-h-[380px] shadow-2xl relative overflow-hidden"
         >
           <input
             type="file"
@@ -232,21 +232,21 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
                 />
               )}
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs text-[#F4F5FF] font-semibold truncate max-w-xs">{sourceFile.name}</span>
+                <span className="text-xs text-[#F5FAFF] font-semibold truncate max-w-xs">{sourceFile.name}</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
                   Ready
                 </span>
               </div>
-              <span className="text-[11px] text-[#8B7CFF] font-semibold underline mt-1">Change File</span>
+              <span className="text-[11px] text-[#A8DEFA] font-semibold underline mt-1">Change File</span>
             </div>
           ) : (
             <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-2xl bg-[#42D6E8]/10 border border-[#42D6E8]/30 flex items-center justify-center text-[#42D6E8] shadow-lg shadow-[#42D6E8]/15 group-hover:scale-105 transition-all mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-[#A8DEFA]/10 border border-[#A8DEFA]/30 flex items-center justify-center text-[#A8DEFA] shadow-lg shadow-[#A8DEFA]/15 group-hover:scale-105 transition-all mb-4">
                 <Upload className="w-8 h-8" />
               </div>
-              <h3 className="text-base font-bold text-[#F4F5FF]">Upload Document</h3>
-              <p className="text-xs text-[#9BA3BD] mt-1">or drag and drop</p>
-              <span className="text-[11px] text-[#9BA3BD]/70 mt-6 font-medium">Supports: JPG, PNG, PDF</span>
+              <h3 className="text-base font-bold text-[#F5FAFF]">Upload Document</h3>
+              <p className="text-xs text-[#A7B8CA] mt-1">or drag and drop</p>
+              <span className="text-[11px] text-[#A7B8CA]/70 mt-6 font-medium">Supports: JPG, PNG, PDF</span>
             </div>
           )}
         </label>
@@ -256,8 +256,8 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
           <div className="flex flex-col flex-1 min-h-0">
             <div className="pb-3 border-b border-white/10 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-[#F4F5FF] tracking-tight">Extracted Text</h3>
-                <p className="text-xs text-[#9BA3BD] mt-0.5">
+                <h3 className="text-sm font-bold text-[#F5FAFF] tracking-tight">Extracted Text</h3>
+                <p className="text-xs text-[#A7B8CA] mt-0.5">
                   Turn images into editable text with advanced OCR technology...
                 </p>
               </div>
@@ -271,7 +271,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
                       sourceFile?.name.replace(/\.[^/.]+$/, '') || 'OCR Document'
                     )
                   }
-                  className="p-1.5 rounded-xl glass-card text-[#8B7CFF] hover:border-[#8B7CFF]/50 text-xs flex items-center gap-1 cursor-pointer transition-all"
+                  className="p-1.5 rounded-xl glass-card text-[#A8DEFA] hover:border-[#A8DEFA]/50 text-xs flex items-center gap-1 cursor-pointer transition-all"
                   title="Open in Word Studio"
                 >
                   <PenTool className="w-3.5 h-3.5" />
@@ -286,7 +286,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
                 value={editableText}
                 onChange={(e) => setEditableText(e.target.value)}
                 placeholder="OCR extracted text will appear here..."
-                className="w-full flex-1 bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-[#F4F5FF] font-sans text-xs md:text-sm leading-relaxed outline-none focus:border-[#8B7CFF]/50 resize-none custom-scrollbar"
+                className="w-full flex-1 bg-white/[0.03] border border-white/10 rounded-2xl p-4 text-[#F5FAFF] font-sans text-xs md:text-sm leading-relaxed outline-none focus:border-[#A8DEFA]/50 resize-none custom-scrollbar"
               />
             </div>
           </div>
@@ -301,7 +301,7 @@ export const OcrStudio: React.FC<OcrStudioProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] hover:brightness-110 text-white text-xs font-semibold shadow-lg shadow-[#8B7CFF]/30 cursor-pointer transition-all"
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] hover:brightness-110 text-white text-xs font-semibold shadow-lg shadow-[#A8DEFA]/30 cursor-pointer transition-all"
               >
                 <Copy className="w-3.5 h-3.5" />
                 <span>{copied ? 'Copied' : 'Copy Text'}</span>

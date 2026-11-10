@@ -100,13 +100,13 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
       case 'WARNING':
         return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">WARNING</span>;
       default:
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30">INFO</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30">INFO</span>;
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#080B18]/80 backdrop-blur-xl animate-fadeIn">
-      <div className="w-full max-w-4xl max-h-[90vh] glass-panel border-white/15 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#F4F5FF] select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070B13]/80 backdrop-blur-xl animate-fadeIn">
+      <div className="w-full max-w-4xl max-h-[90vh] glass-panel border-white/15 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#F5FAFF] select-none">
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -115,14 +115,14 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-extrabold text-base text-[#F4F5FF] tracking-tight">
+                <h2 className="font-extrabold text-base text-[#F5FAFF] tracking-tight">
                   Document Forensics &amp; Threat Lab
                 </h2>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                   DEEP SCAN
                 </span>
               </div>
-              <p className="text-xs text-[#9BA3BD]">
+              <p className="text-xs text-[#A7B8CA]">
                 Inspect binary headers, weaponized macros, MIME-spoofing, and metadata leakage
               </p>
             </div>
@@ -130,7 +130,7 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[#9BA3BD] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-[#A7B8CA] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -150,13 +150,13 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isScanning}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-[#080B18] font-extrabold text-xs transition-colors cursor-pointer shadow-md shadow-amber-500/20"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-[#070B13] font-extrabold text-xs transition-colors cursor-pointer shadow-md shadow-amber-500/20"
               >
                 <Upload className="w-4 h-4" />
                 <span>Upload Document to Inspect</span>
               </button>
 
-              <span className="text-xs text-[#9BA3BD] font-medium">
+              <span className="text-xs text-[#A7B8CA] font-medium">
                 {file ? file.name : 'No document selected'}
               </span>
             </div>
@@ -166,7 +166,7 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
                 {getRiskBadge(report.overallRisk)}
                 <button
                   onClick={handleExportJson}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F4F5FF] border border-white/15 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F5FAFF] border border-white/15 transition-colors cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Export JSON</span>
@@ -176,7 +176,7 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
           </div>
 
           {isScanning && (
-            <div className="py-12 flex flex-col items-center justify-center gap-3 text-[#9BA3BD]">
+            <div className="py-12 flex flex-col items-center justify-center gap-3 text-[#A7B8CA]">
               <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
               <p className="text-xs font-medium">Executing deep binary forensics analysis...</p>
             </div>
@@ -187,28 +187,28 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
               {/* File Diagnostics Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <div className="text-[11px] text-[#9BA3BD]">Declared vs Actual</div>
-                  <div className="font-mono text-xs font-bold text-[#F4F5FF] mt-1">
+                  <div className="text-[11px] text-[#A7B8CA]">Declared vs Actual</div>
+                  <div className="font-mono text-xs font-bold text-[#F5FAFF] mt-1">
                     .{report.declaredExtension} → {report.actualFormat?.toUpperCase() || 'UNKNOWN'}
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <div className="text-[11px] text-[#9BA3BD]">File Size</div>
-                  <div className="font-mono text-xs font-bold text-[#F4F5FF] mt-1">
+                  <div className="text-[11px] text-[#A7B8CA]">File Size</div>
+                  <div className="font-mono text-xs font-bold text-[#F5FAFF] mt-1">
                     {(report.fileSizeBytes / 1024).toFixed(1)} KB
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <div className="text-[11px] text-[#9BA3BD]">Embedded Resources</div>
-                  <div className="font-mono text-xs font-bold text-[#F4F5FF] mt-1">
+                  <div className="text-[11px] text-[#A7B8CA]">Embedded Resources</div>
+                  <div className="font-mono text-xs font-bold text-[#F5FAFF] mt-1">
                     {report.embeddedResourcesCount} items
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10">
-                  <div className="text-[11px] text-[#9BA3BD]">SHA-256 Checksum</div>
+                  <div className="text-[11px] text-[#A7B8CA]">SHA-256 Checksum</div>
                   <div className="font-mono text-[10px] text-amber-300 mt-1 truncate" title={report.sha256}>
                     {report.sha256.slice(0, 16)}...
                   </div>
@@ -217,7 +217,7 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
 
               {/* Findings & Vulnerabilities */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-2">
+                <h3 className="text-xs font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-2">
                   <FileSearch className="w-4 h-4 text-amber-400" />
                   <span>Structural &amp; Security Findings ({report.findings.length})</span>
                 </h3>
@@ -236,16 +236,16 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {getSeverityPill(finding.level)}
-                            <span className="font-mono text-xs font-bold text-[#F4F5FF]">
+                            <span className="font-mono text-xs font-bold text-[#F5FAFF]">
                               {finding.rule}
                             </span>
                           </div>
                         </div>
 
-                        <p className="text-xs text-[#9BA3BD]">{finding.description}</p>
+                        <p className="text-xs text-[#A7B8CA]">{finding.description}</p>
 
                         {finding.technicalDetails && (
-                          <div className="p-2 rounded bg-black/40 font-mono text-[10px] text-[#9BA3BD] select-text overflow-x-auto border border-white/5">
+                          <div className="p-2 rounded bg-black/40 font-mono text-[10px] text-[#A7B8CA] select-text overflow-x-auto border border-white/5">
                             {finding.technicalDetails}
                           </div>
                         )}
@@ -257,21 +257,21 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
 
               {/* Metadata Exposure */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-[#8B7CFF]" />
+                <h3 className="text-xs font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-[#A8DEFA]" />
                   <span>Metadata Leakage Audit</span>
                 </h3>
 
                 {Object.keys(report.metadataSummary).length === 0 ? (
-                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-[#9BA3BD]">
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-[#A7B8CA]">
                     No exposed author, corporate, or toolchain metadata identified.
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     {Object.entries(report.metadataSummary).map(([key, val]) => (
                       <div key={key} className="p-2.5 rounded-lg bg-white/[0.03] border border-white/10 flex justify-between">
-                        <span className="text-[#9BA3BD] capitalize">{key}:</span>
-                        <span className="font-medium text-[#F4F5FF] truncate ml-2">{val}</span>
+                        <span className="text-[#A7B8CA] capitalize">{key}:</span>
+                        <span className="font-medium text-[#F5FAFF] truncate ml-2">{val}</span>
                       </div>
                     ))}
                   </div>
@@ -281,10 +281,10 @@ export const DocumentForensicsModal: React.FC<DocumentForensicsModalProps> = ({
           )}
 
           {!isScanning && !report && (
-            <div className="py-16 text-center text-[#9BA3BD] text-xs space-y-2">
-              <Binary className="w-10 h-10 mx-auto text-[#9BA3BD]/40 mb-2" />
-              <p className="font-bold text-[#F4F5FF]">Select a document above to begin forensic threat screening.</p>
-              <p className="text-[#9BA3BD]">Supports PDF, DOCX, XLSX, PPTX, and binary document packages.</p>
+            <div className="py-16 text-center text-[#A7B8CA] text-xs space-y-2">
+              <Binary className="w-10 h-10 mx-auto text-[#A7B8CA]/40 mb-2" />
+              <p className="font-bold text-[#F5FAFF]">Select a document above to begin forensic threat screening.</p>
+              <p className="text-[#A7B8CA]">Supports PDF, DOCX, XLSX, PPTX, and binary document packages.</p>
             </div>
           )}
         </div>

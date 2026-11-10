@@ -1,49 +1,31 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   FileText,
   PenTool,
-  Presentation,
   Table,
-  Image as ImageIcon,
-  ScanText,
   RefreshCw,
   ArrowRight,
-  CheckCircle2,
   UploadCloud,
   ChevronRight,
   Search,
   Bell,
   Sparkles,
-  HardDrive,
-  FileCode,
-  ShieldCheck,
-  FolderOpen,
-  ChevronDown,
-  Plus,
-  Trash2,
-  Clock,
-  Cpu,
+  MoreVertical,
   Boxes,
-  Binary,
-  GitCommit,
-  Activity,
-  Users,
-  Code2,
-  Server,
   Crown,
   Moon,
-  MoreVertical,
-  ExternalLink,
-  Zap,
   Folder,
   LayoutTemplate,
   History,
   Settings as SettingsIcon,
-  HelpCircle,
-  LogOut
+  LogOut,
+  Plus,
+  Database,
+  CloudCheck,
+  HardDrive
 } from 'lucide-react';
 import { ConversionHistoryItem, FileFormat, StoredProject, WorkspaceTab } from '../../types';
-import { detectFileFormat, formatFileSize, FORMAT_REGISTRY } from '../../services/formatDetector';
+import { detectFileFormat, formatFileSize } from '../../services/formatDetector';
 
 interface DashboardProps {
   onOpenFileInEditor: (file: File, format: FileFormat, targetTab?: WorkspaceTab) => void;
@@ -74,25 +56,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onSendToConverter,
   setActiveTab,
   recentProjects,
-  conversionHistory = [],
-  queueCount = 0,
   onLoadProject,
-  onDeleteProject,
   userName = 'Alex',
   avatarUrl,
   onOpenSettings,
   onOpenUserPanel,
   onOpenCommandPalette,
-  onOpenForensics,
-  onOpenLineage,
-  onOpenReceipts,
-  onOpenWhatIf,
-  onOpenCollab,
-  onOpenDeveloper,
-  userRole = 'user',
   onLogout,
 }) => {
-  const [isAdminView, setIsAdminView] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -127,50 +98,52 @@ export const Dashboard: React.FC<DashboardProps> = ({
     await handleFiles(e.dataTransfer.files);
   };
 
-  // Real or high-fidelity sample recent documents for immediate visual polish
-  const displayDocuments = recentProjects.length > 0 ? recentProjects.slice(0, 4) : [
-    {
-      id: 'doc-sample-1',
-      title: 'Project_Report.pdf',
-      type: 'pdf',
-      sizeBytes: 2400000,
-      updatedAt: Date.now() - 2 * 60 * 1000,
-      createdAt: Date.now() - 2 * 60 * 1000,
-      data: null
-    },
-    {
-      id: 'doc-sample-2',
-      title: 'Business_Plan.docx',
-      type: 'docx',
-      sizeBytes: 1100000,
-      updatedAt: Date.now() - 5 * 60 * 1000,
-      createdAt: Date.now() - 5 * 60 * 1000,
-      data: null
-    },
-    {
-      id: 'doc-sample-3',
-      title: 'Data_Analysis.xlsx',
-      type: 'sheets',
-      sizeBytes: 850000,
-      updatedAt: Date.now() - 10 * 60 * 1000,
-      createdAt: Date.now() - 10 * 60 * 1000,
-      data: null
-    }
-  ];
+  // Only display real recent projects, no fake sample documents
+  const displayDocuments = recentProjects.length > 0 ? recentProjects.slice(0, 4) : [];
 
-  // Storage metric: default 68% or computed based on actual files
-  const totalStorageBytes = recentProjects.reduce((acc, p) => acc + (p.sizeBytes || 0), 0);
-  const storagePercentage = 68;
+  // Fetch actual storage usage from backend
+  const [storageUsed, setStorageUsed] = useState<number | null>(null);
+  const [storageTotal, setStorageTotal] = useState<number | null>(null);
+  const [storageLoading, setStorageLoading] = useState<boolean>(true);
+  const [storageSource, setStorageSource] = useState<'cloud' | 'local'>('local');
+
+  useEffect(() => {
+    const fetchStorage = async () => {
+      try {
+        const resp = await fetch('/api/v1/user/portal', { credentials: 'include' });
+        if (!resp.ok) throw new Error('Portal API offline');
+        const data = await resp.json();
+        if (typeof data.storage_used_bytes === 'number') {
+          setStorageUsed(data.storage_used_bytes);
+          setStorageTotal(data.storage_quota_bytes || (100 * 1024 * 1024 * 1024));
+          setStorageSource('cloud');
+        }
+      } catch {
+        // Fallback to local storage computation
+        const localBytes = recentProjects.reduce((acc, p) => acc + (p.sizeBytes || 0), 0);
+        setStorageUsed(localBytes);
+        setStorageTotal(50 * 1024 * 1024); // 50MB browser sandbox limit
+        setStorageSource('local');
+      } finally {
+        setStorageLoading(false);
+      }
+    };
+    fetchStorage();
+  }, [recentProjects]);
+
+  const usedBytes = storageUsed ?? recentProjects.reduce((acc, p) => acc + (p.sizeBytes || 0), 0);
+  const quotaBytes = storageTotal ?? (50 * 1024 * 1024);
+  const storagePercentage = Math.min(100, Math.round((usedBytes / Math.max(quotaBytes, 1)) * 100));
   const storageRadius = 38;
   const storageCircumference = 2 * Math.PI * storageRadius;
-  const storageStrokeOffset = storageCircumference - (storageCircumference * storagePercentage) / 100;
+  const storageStrokeOffset = storageCircumference - (storageCircumference * (storagePercentage || 1)) / 100;
 
   return (
     <div
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 text-[#F4F5FF] custom-scrollbar bg-transparent relative"
+      className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 text-[#F5FAFF] custom-scrollbar bg-transparent relative select-none"
     >
       {/* Hidden File Input for Quick Drag & Drop */}
       <input
@@ -183,26 +156,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Global Drag Overlay */}
       {isDragging && (
-        <div className="fixed inset-0 z-50 bg-[#080B18]/85 backdrop-blur-xl border-2 border-dashed border-[#8B7CFF] flex flex-col items-center justify-center pointer-events-none animate-in fade-in">
-          <UploadCloud className="w-16 h-16 text-[#8B7CFF] animate-bounce mb-3" />
-          <h2 className="text-xl font-bold text-[#F4F5FF]">Drop Documents Here</h2>
-          <p className="text-sm text-[#9BA3BD] mt-1">OmniDoc will automatically detect format and launch the right studio.</p>
+        <div className="fixed inset-0 z-50 bg-[#070B13]/85 backdrop-blur-xl border-2 border-dashed border-[#A8DEFA] flex flex-col items-center justify-center pointer-events-none animate-fade-in">
+          <UploadCloud className="w-16 h-16 text-[#A8DEFA] animate-bounce mb-3" />
+          <h2 className="text-xl font-bold text-[#F5FAFF] font-display">Drop Documents Here</h2>
+          <p className="text-sm text-[#A7B8CA] mt-1">OmniDoc will automatically detect format and launch the right studio.</p>
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* 1. TOP HEADER BAR: Search, Notifications, Theme & Upgrade Pill (Reference) */}
+      {/* 1. TOP HEADER BAR: Search, Notifications, Theme & Upgrade Pill */}
       {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.08]">
-        {/* Search Input Bar (Reference Pill Style) */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-[rgba(180,225,255,0.12)]">
+        {/* Search Input Bar (Liquid Glass Pill Style) */}
         <div
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-3 px-4 py-2 rounded-full glass-input hover:border-[#8B7CFF]/50 text-xs cursor-pointer transition-all w-full sm:w-80 text-[#9BA3BD] hover:text-[#F4F5FF] group shadow-inner"
+          className="flex items-center gap-3 px-4 py-2 rounded-full lg-input hover:border-[#A8DEFA]/50 text-xs cursor-pointer transition-all w-full sm:w-80 text-[#A7B8CA] hover:text-[#F5FAFF] group shadow-inner"
           title="Press Ctrl+K to search anything"
         >
-          <Search className="w-4 h-4 text-[#9BA3BD] group-hover:text-[#42D6E8] transition-colors shrink-0" />
-          <span className="flex-1 font-medium text-[13px] text-[#9BA3BD]/80">Search anything...</span>
-          <kbd className="px-2 py-0.5 rounded-md bg-white/10 border border-white/10 text-[10px] font-mono font-bold text-[#F4F5FF]">
+          <Search className="w-4 h-4 text-[#A7B8CA] group-hover:text-[#A8DEFA] transition-colors shrink-0" />
+          <span className="flex-1 font-medium text-[13px] text-[#A7B8CA]/90">Search workspace...</span>
+          <kbd className="px-2 py-0.5 rounded-md bg-white/10 border border-white/10 text-[10px] font-mono font-bold text-[#F5FAFF]">
             Ctrl + K
           </kbd>
         </div>
@@ -212,28 +185,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {/* Notification Bell */}
           <button
             onClick={() => setActiveTab('projects')}
-            className="w-10 h-10 rounded-full glass-card hover:border-[#8B7CFF]/50 flex items-center justify-center text-[#9BA3BD] hover:text-[#F4F5FF] transition-all relative cursor-pointer"
-            title="Notifications & Activity"
+            className="w-10 h-10 rounded-full lg-secondary flex items-center justify-center text-[#A7B8CA] hover:text-[#F5FAFF] transition-all relative cursor-pointer"
+            title="Projects & Notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#42D6E8] ring-2 ring-[#080B18] animate-pulse" />
+            {recentProjects.length > 0 && (
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#A8DEFA] ring-2 ring-[#070B13] animate-pulse" />
+            )}
           </button>
 
-          {/* Moon Theme Toggle */}
+          {/* Theme Indicator */}
           <button
-            className="w-10 h-10 rounded-full glass-card hover:border-[#8B7CFF]/50 flex items-center justify-center text-[#9BA3BD] hover:text-[#F4F5FF] transition-all cursor-pointer"
-            title="Theme: Dark Aurora Active"
+            className="w-10 h-10 rounded-full lg-secondary flex items-center justify-center text-[#A7B8CA] hover:text-[#F5FAFF] transition-all cursor-pointer"
+            title="Theme: Floating Liquid Glass"
           >
-            <Moon className="w-4 h-4" />
+            <Moon className="w-4 h-4 text-[#A8DEFA]" />
           </button>
 
-          {/* Upgrade Gradient Button (Matching Reference) */}
+          {/* Upgrade Liquid Glass Button */}
           <button
             onClick={() => setActiveTab('pricing')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] hover:from-[#9C8FFF] hover:to-[#7579F3] text-white text-xs font-bold shadow-lg shadow-[#8B7CFF]/30 transition-all cursor-pointer hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] hover:from-[#D9F3FF] hover:to-[#A8DEFA] text-[#070B13] text-xs font-extrabold shadow-[0_4px_20px_rgba(168,222,250,0.3)] transition-all cursor-pointer hover:scale-105 active:scale-95"
             title="Upgrade to Pro Plan"
           >
-            <Crown className="w-3.5 h-3.5 text-amber-300" />
+            <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
             <span>Upgrade</span>
           </button>
 
@@ -244,10 +219,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
             title="Account Profile"
           >
             {avatarUrl ? (
-              <img src={avatarUrl} alt={userName} className="w-9 h-9 rounded-full object-cover ring-2 ring-[#8B7CFF]/50 shadow-md" />
+              <img src={avatarUrl} alt={userName} className="w-9 h-9 rounded-full object-cover ring-2 ring-[#A8DEFA]/50 shadow-md" />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#8B7CFF] to-[#42D6E8] flex items-center justify-center text-[#080B18] font-black text-sm ring-2 ring-white/20 shadow-md">
-                {userName[0].toUpperCase()}
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#7CC4ED] to-[#A8DEFA] flex items-center justify-center text-[#070B13] font-black text-sm ring-2 ring-white/20 shadow-md">
+                {userName ? userName[0].toUpperCase() : 'A'}
               </div>
             )}
           </div>
@@ -256,7 +231,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {onLogout && (
             <button
               onClick={onLogout}
-              className="w-9 h-9 rounded-full glass-card hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-300 flex items-center justify-center text-[#9BA3BD] transition-all cursor-pointer shadow-sm ml-1"
+              className="w-9 h-9 rounded-full lg-secondary hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-300 flex items-center justify-center text-[#A7B8CA] transition-all cursor-pointer shadow-sm ml-1"
               title="Sign Out of OmniDoc Studio"
             >
               <LogOut className="w-4 h-4 text-rose-400" />
@@ -266,106 +241,128 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. HERO WELCOME SECTION WITH FLOATING 3D DOCUMENT (Reference)              */}
+      {/* 2. HERO WELCOME SECTION WITH FLOATING LIQUID GLASS MATERIAL               */}
       {/* ========================================================================= */}
-      <div className="relative rounded-3xl p-6 md:p-8 overflow-hidden glass-panel border border-white/10 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
-        {/* Subtle Aurora Ambient Glow within Hero */}
-        <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-[#8B7CFF]/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-20 w-80 h-80 rounded-full bg-[#42D6E8]/20 blur-3xl pointer-events-none" />
+      <div className="relative rounded-[28px] p-6 md:p-8 overflow-hidden lg-primary border border-[rgba(180,225,255,0.22)] shadow-[0_20px_50px_rgba(0,0,0,0.45)] flex flex-col md:flex-row items-center justify-between gap-6">
+        {/* Subtle Ambient Ice-Blue Reflections */}
+        <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-[#A8DEFA]/15 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-20 w-80 h-80 rounded-full bg-[#7CC4ED]/12 blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 max-w-xl space-y-2 text-center md:text-left">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#F4F5FF] tracking-tight">
+        <div className="relative z-10 max-w-xl space-y-3 text-center md:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#A8DEFA]/10 border border-[#A8DEFA]/25 text-[#A8DEFA] text-xs font-semibold">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Liquid Glass Spatial Workspace</span>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#F5FAFF] tracking-tight font-display">
             Welcome back, {userName}!
           </h1>
-          <p className="text-xs sm:text-sm text-[#9BA3BD] font-medium leading-relaxed">
-            Your all-in-one document studio for a more productive workflow.
+          <p className="text-xs sm:text-sm text-[#A7B8CA] font-medium leading-relaxed">
+            Universal document workspace engineered for high-precision authoring, conversion, and intelligence.
           </p>
+
+          <div className="flex flex-wrap items-center gap-3 pt-2 justify-center md:justify-start">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="lg-btn-primary flex items-center gap-2"
+            >
+              <UploadCloud className="w-4 h-4" />
+              <span>Upload Document</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('templates')}
+              className="lg-btn-secondary flex items-center gap-2"
+            >
+              <LayoutTemplate className="w-4 h-4 text-[#A8DEFA]" />
+              <span>Browse Templates</span>
+            </button>
+          </div>
         </div>
 
-        {/* 3D Floating Translucent Document Graphic (Matching Reference Image) */}
-        <div className="relative shrink-0 w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center animate-float">
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#8B7CFF]/30 to-[#42D6E8]/30 rounded-3xl blur-2xl opacity-70" />
+        {/* 3D Floating Translucent Document Graphic */}
+        <div className="relative shrink-0 w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center animate-float-gentle">
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#A8DEFA]/25 to-[#7CC4ED]/20 rounded-3xl blur-2xl opacity-60" />
 
-          <div className="relative w-28 h-36 sm:w-32 sm:h-40 rounded-2xl glass-panel border border-white/20 shadow-2xl p-3 flex flex-col justify-between transform -rotate-3 transition-transform hover:rotate-0">
+          <div className="relative w-28 h-36 sm:w-32 sm:h-40 rounded-2xl lg-secondary border border-[rgba(180,225,255,0.3)] shadow-2xl p-3 flex flex-col justify-between transform -rotate-3 transition-transform hover:rotate-0">
             {/* Document Lines */}
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 pb-1 border-b border-white/10">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#42D6E8]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#8B7CFF]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#A8DEFA]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#7CC4ED]" />
               </div>
-              <div className="w-16 h-2 rounded bg-gradient-to-r from-[#8B7CFF] to-[#42D6E8]" />
+              <div className="w-16 h-2 rounded bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED]" />
               <div className="w-20 h-1.5 rounded bg-white/25" />
               <div className="w-14 h-1.5 rounded bg-white/15" />
               <div className="w-18 h-1.5 rounded bg-white/20" />
             </div>
 
             {/* Glowing Bottom Ribbon */}
-            <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[9px] text-[#42D6E8] font-mono font-bold">
+            <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[9px] text-[#A8DEFA] font-mono font-bold">
               <span>OMNI.DOC</span>
-              <Sparkles className="w-3 h-3 text-[#8B7CFF]" />
+              <Sparkles className="w-3 h-3 text-[#A8DEFA]" />
             </div>
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. FOUR PROMINENT QUICK ACTION CARDS (Reference Image Grid)                 */}
+      {/* 3. FOUR PROMINENT QUICK ACTION CARDS                                      */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Convert Files */}
         <div
           onClick={() => setActiveTab('converter')}
-          className="glass-card glass-card-hover rounded-2xl p-5 cursor-pointer border border-white/10 hover:border-[#42D6E8]/60 transition-all group relative overflow-hidden"
+          className="lg-secondary rounded-2xl p-5 cursor-pointer hover:border-[#A8DEFA]/60 group relative overflow-hidden"
         >
-          <div className="w-11 h-11 rounded-xl bg-[#42D6E8]/15 border border-[#42D6E8]/30 flex items-center justify-center text-[#42D6E8] mb-4 group-hover:scale-110 group-hover:glow-cyan transition-all">
+          <div className="w-11 h-11 rounded-xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 flex items-center justify-center text-[#A8DEFA] mb-4 group-hover:scale-110 lg-glow-ice transition-all">
             <RefreshCw className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-bold text-[#F4F5FF] group-hover:text-[#42D6E8] transition-colors">
+          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors font-display">
             Convert Files
           </h3>
-          <p className="text-xs text-[#9BA3BD] mt-1">Multiple formats</p>
+          <p className="text-xs text-[#A7B8CA] mt-1">Universal batch conversion</p>
         </div>
 
         {/* Card 2: Edit PDF */}
         <div
           onClick={() => setActiveTab('pdf')}
-          className="glass-card glass-card-hover rounded-2xl p-5 cursor-pointer border border-white/10 hover:border-[#8B7CFF]/60 transition-all group relative overflow-hidden"
+          className="lg-secondary rounded-2xl p-5 cursor-pointer hover:border-[#A8DEFA]/60 group relative overflow-hidden"
         >
-          <div className="w-11 h-11 rounded-xl bg-[#8B7CFF]/15 border border-[#8B7CFF]/30 flex items-center justify-center text-[#8B7CFF] mb-4 group-hover:scale-110 group-hover:glow-purple transition-all">
+          <div className="w-11 h-11 rounded-xl bg-[#7CC4ED]/15 border border-[#7CC4ED]/30 flex items-center justify-center text-[#7CC4ED] mb-4 group-hover:scale-110 lg-glow-ice transition-all">
             <PenTool className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-bold text-[#F4F5FF] group-hover:text-[#8B7CFF] transition-colors">
+          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors font-display">
             Edit PDF
           </h3>
-          <p className="text-xs text-[#9BA3BD] mt-1">Annotate &amp; Edit</p>
+          <p className="text-xs text-[#A7B8CA] mt-1">Annotate &amp; Sign PDF</p>
         </div>
 
         {/* Card 3: Work with Excel */}
         <div
           onClick={() => setActiveTab('sheets')}
-          className="glass-card glass-card-hover rounded-2xl p-5 cursor-pointer border border-white/10 hover:border-emerald-400/60 transition-all group relative overflow-hidden"
+          className="lg-secondary rounded-2xl p-5 cursor-pointer hover:border-emerald-400/60 group relative overflow-hidden"
         >
           <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-110 transition-all">
             <Table className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-bold text-[#F4F5FF] group-hover:text-emerald-300 transition-colors">
+          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-emerald-300 transition-colors font-display">
             Work with Excel
           </h3>
-          <p className="text-xs text-[#9BA3BD] mt-1">Analyze &amp; Calculate</p>
+          <p className="text-xs text-[#A7B8CA] mt-1">Analyze &amp; Calculate</p>
         </div>
 
         {/* Card 4: Create Workflow */}
         <div
           onClick={() => setActiveTab('workflow')}
-          className="glass-card glass-card-hover rounded-2xl p-5 cursor-pointer border border-white/10 hover:border-indigo-400/60 transition-all group relative overflow-hidden"
+          className="lg-secondary rounded-2xl p-5 cursor-pointer hover:border-[#A8DEFA]/60 group relative overflow-hidden"
         >
-          <div className="w-11 h-11 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-4 group-hover:scale-110 transition-all">
+          <div className="w-11 h-11 rounded-xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 flex items-center justify-center text-[#A8DEFA] mb-4 group-hover:scale-110 transition-all">
             <Boxes className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-bold text-[#F4F5FF] group-hover:text-indigo-300 transition-colors">
+          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#D9F3FF] transition-colors font-display">
             Create Workflow
           </h3>
-          <p className="text-xs text-[#9BA3BD] mt-1">Automate Tasks</p>
+          <p className="text-xs text-[#A7B8CA] mt-1">Automated Document Pipelines</p>
         </div>
       </div>
 
@@ -373,95 +370,122 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 4. LOWER 3-SECTION GRID: Recent Documents, Storage Overview & Quick Access */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left Column (5 cols): Recent Documents (Matching Reference Card) */}
-        <div className="lg:col-span-5 glass-card rounded-2xl p-5 border border-white/10 flex flex-col justify-between space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
-            <h2 className="text-sm font-bold text-[#F4F5FF]">Recent Documents</h2>
+        {/* Left Column (5 cols): Recent Documents */}
+        <div className="lg:col-span-5 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-[rgba(180,225,255,0.1)]">
+            <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Recent Documents</h2>
             <button
               onClick={() => setActiveTab('projects')}
-              className="text-xs text-[#8B7CFF] hover:text-[#42D6E8] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-xs text-[#A8DEFA] hover:text-[#D9F3FF] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
             >
               <span>View all</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="space-y-2.5">
-            {displayDocuments.map((doc) => {
-              const isPdf = doc.title.endsWith('.pdf') || doc.type === 'pdf';
-              const isDocx = doc.title.endsWith('.docx') || doc.type === 'docx';
-              const isXlsx = doc.title.endsWith('.xlsx') || doc.type === 'sheets';
+          {displayDocuments.length === 0 ? (
+            /* Honest, Elegant Empty State */
+            <div className="py-8 flex flex-col items-center justify-center text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-[rgba(180,225,255,0.14)] flex items-center justify-center text-[#A7B8CA]">
+                <Folder className="w-6 h-6 text-[#A8DEFA]/60" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-[#F5FAFF]">No saved documents yet</p>
+                <p className="text-[11px] text-[#73869A] max-w-xs">
+                  Create a new document or drop a file anywhere to get started.
+                </p>
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="lg-btn-secondary text-xs flex items-center gap-1.5 py-1.5 px-3"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#A8DEFA]" />
+                <span>Upload First File</span>
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {displayDocuments.map((doc) => {
+                const isPdf = doc.title.endsWith('.pdf') || doc.type === 'pdf';
+                const isDocx = doc.title.endsWith('.docx') || doc.type === 'docx';
 
-              const iconBg = isPdf
-                ? 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-                : isDocx
-                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-                  : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+                const iconBg = isPdf
+                  ? 'bg-rose-500/15 text-rose-400 border-rose-500/25'
+                  : isDocx
+                    ? 'bg-sky-500/15 text-sky-400 border-sky-500/25'
+                    : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25';
 
-              return (
-                <div
-                  key={doc.id}
-                  onClick={() => {
-                    const found = recentProjects.find((p) => p.id === doc.id);
-                    if (found) onLoadProject(found);
-                    else setActiveTab(isPdf ? 'pdf' : isDocx ? 'docx' : 'sheets');
-                  }}
-                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/[0.06] transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${iconBg}`}>
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-semibold text-[#F4F5FF] group-hover:text-[#42D6E8] transition-colors truncate">
-                        {doc.title}
-                      </div>
-                      <div className="text-[11px] text-[#9BA3BD]">
-                        {formatFileSize(doc.sizeBytes || 1200000)} • 2 min ago
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveTab('projects');
+                return (
+                  <div
+                    key={doc.id}
+                    onClick={() => {
+                      const found = recentProjects.find((p) => p.id === doc.id);
+                      if (found) onLoadProject(found);
+                      else setActiveTab(isPdf ? 'pdf' : isDocx ? 'docx' : 'sheets');
                     }}
-                    className="p-1 rounded-lg text-[#9BA3BD] hover:text-white hover:bg-white/10 transition-colors"
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
                   >
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${iconBg}`}>
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors truncate">
+                          {doc.title}
+                        </div>
+                        <div className="text-[11px] text-[#A7B8CA]">
+                          {formatFileSize(doc.sizeBytes || 0)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab('projects');
+                      }}
+                      className="p-1 rounded-lg text-[#A7B8CA] hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Center Column (3.5 cols): Storage Overview Radial Chart (Matching Reference) */}
-        <div className="lg:col-span-3.5 glass-card rounded-2xl p-5 border border-white/10 flex flex-col justify-between space-y-4">
-          <div className="pb-2 border-b border-white/[0.08]">
-            <h2 className="text-sm font-bold text-[#F4F5FF]">Storage Overview</h2>
+        {/* Center Column (3.5 cols): Storage Overview Radial Chart */}
+        <div className="lg:col-span-3.5 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-4">
+          <div className="pb-2 border-b border-[rgba(180,225,255,0.1)] flex items-center justify-between">
+            <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Storage Usage</h2>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 ${
+              storageSource === 'cloud'
+                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                : 'bg-[#A8DEFA]/15 text-[#A8DEFA] border border-[#A8DEFA]/30'
+            }`}>
+              {storageSource === 'cloud' ? <Database className="w-2.5 h-2.5" /> : <HardDrive className="w-2.5 h-2.5" />}
+              <span>{storageSource === 'cloud' ? 'Cloud Vault' : 'Browser Sandbox'}</span>
+            </span>
           </div>
 
           <div className="flex items-center justify-center gap-4 py-3">
             {/* Circular Gauge Ring */}
             <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
               <svg className="w-full h-full transform -rotate-90">
-                {/* Background Ring */}
                 <circle
                   cx="48"
                   cy="48"
                   r={storageRadius}
-                  stroke="rgba(255, 255, 255, 0.1)"
+                  stroke="rgba(255, 255, 255, 0.08)"
                   strokeWidth="8"
                   fill="transparent"
                 />
-                {/* Progress Ring with Purple to Cyan Gradient */}
                 <circle
                   cx="48"
                   cy="48"
                   r={storageRadius}
-                  stroke="url(#storageGrad)"
+                  stroke="url(#storageIceGrad)"
                   strokeWidth="8"
                   fill="transparent"
                   strokeDasharray={storageCircumference}
@@ -470,93 +494,95 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   className="transition-all duration-1000 ease-out"
                 />
                 <defs>
-                  <linearGradient id="storageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#8B7CFF" />
-                    <stop offset="100%" stopColor="#42D6E8" />
+                  <linearGradient id="storageIceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#7CC4ED" />
+                    <stop offset="100%" stopColor="#A8DEFA" />
                   </linearGradient>
                 </defs>
               </svg>
-              <span className="absolute font-extrabold text-base text-[#F4F5FF]">
-                {storagePercentage}%
+              <span className="absolute font-extrabold text-base text-[#F5FAFF] font-display">
+                {storageLoading ? '...' : `${storagePercentage}%`}
               </span>
             </div>
 
-            {/* Storage Legend */}
+            {/* Storage Legend with honest numbers */}
             <div>
-              <div className="text-xs font-bold text-[#F4F5FF]">
-                {storagePercentage} GB / 100 GB
+              <div className="text-xs font-bold text-[#F5FAFF]">
+                {formatFileSize(usedBytes)}
               </div>
-              <div className="text-[11px] text-[#9BA3BD] mt-0.5">Used Storage</div>
+              <div className="text-[11px] text-[#A7B8CA] mt-0.5">
+                of {formatFileSize(quotaBytes)} quota
+              </div>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-[#9BA3BD]">
-            <span>Cloud Sync: Active</span>
-            <span className="text-emerald-400 font-semibold">Healthy</span>
+          <div className="pt-2 border-t border-[rgba(180,225,255,0.1)] flex items-center justify-between text-[11px] text-[#A7B8CA]">
+            <span>{storageSource === 'cloud' ? 'Supabase Storage' : 'Local IndexedDB'}</span>
+            <span className="text-emerald-400 font-semibold">Active</span>
           </div>
         </div>
 
-        {/* Right Column (3.5 cols): Quick Access (Matching Reference Vertical List) */}
-        <div className="lg:col-span-3.5 glass-card rounded-2xl p-5 border border-white/10 flex flex-col justify-between space-y-3">
-          <div className="pb-2 border-b border-white/[0.08]">
-            <h2 className="text-sm font-bold text-[#F4F5FF]">Quick Access</h2>
+        {/* Right Column (3.5 cols): Quick Access */}
+        <div className="lg:col-span-3.5 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-3">
+          <div className="pb-2 border-b border-[rgba(180,225,255,0.1)]">
+            <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Quick Access</h2>
           </div>
 
           <div className="space-y-2">
             {/* My Projects */}
             <div
               onClick={() => setActiveTab('projects')}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-white/10 transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#42D6E8]/15 text-[#42D6E8] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#A8DEFA]/15 text-[#A8DEFA] flex items-center justify-center shrink-0">
                 <Folder className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F4F5FF] group-hover:text-[#42D6E8] transition-colors flex-1">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors flex-1">
                 My Projects
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#9BA3BD] group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform" />
             </div>
 
             {/* Templates */}
             <div
               onClick={() => setActiveTab('templates')}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-white/10 transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#8B7CFF]/15 text-[#8B7CFF] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#7CC4ED]/15 text-[#7CC4ED] flex items-center justify-center shrink-0">
                 <LayoutTemplate className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F4F5FF] group-hover:text-[#8B7CFF] transition-colors flex-1">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors flex-1">
                 Templates
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#9BA3BD] group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform" />
             </div>
 
             {/* Activity Log */}
             <div
               onClick={() => setActiveTab('projects')}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-white/10 transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#D9F3FF]/15 text-[#D9F3FF] flex items-center justify-center shrink-0">
                 <History className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F4F5FF] group-hover:text-indigo-300 transition-colors flex-1">
-                Activity Log
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#D9F3FF] transition-colors flex-1">
+                Conversion History
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#9BA3BD] group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform" />
             </div>
 
             {/* Settings */}
             <div
               onClick={onOpenSettings || (() => setActiveTab('settings'))}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-white/10 transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(180,225,255,0.12)] transition-all cursor-pointer group"
             >
               <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
                 <SettingsIcon className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F4F5FF] group-hover:text-emerald-300 transition-colors flex-1">
-                Settings
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-emerald-300 transition-colors flex-1">
+                Settings &amp; Keys
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#9BA3BD] group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
         </div>

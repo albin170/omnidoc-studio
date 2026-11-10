@@ -286,21 +286,33 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
     }
   };
 
+  if (userSession.role !== 'admin') {
+    return (
+      <div className="w-full h-full flex items-center justify-center p-6 bg-[#070B13] text-[#F5FAFF]">
+        <div className="p-8 rounded-[28px] lg-primary max-w-md text-center space-y-4">
+          <ShieldAlert className="w-12 h-12 text-amber-400 mx-auto" />
+          <h2 className="text-xl font-bold font-display">Administrative Access Required</h2>
+          <p className="text-xs text-[#A7B8CA]">Your account is not authorized to access the governance console.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-full overflow-y-auto p-6 md:p-8 bg-[#080B18] text-[#F4F5FF] select-none">
+    <div className="w-full h-full overflow-y-auto p-6 md:p-8 bg-[#070B13] text-[#F5FAFF] select-none">
       {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-6 border-b border-white/10 gap-4">
         <div>
           <div className="flex items-center gap-2.5">
             <ShieldAlert className="w-6 h-6 text-amber-400" />
-            <h1 className="text-2xl font-black tracking-tight text-[#F4F5FF]">
+            <h1 className="text-2xl font-black tracking-tight text-[#F5FAFF]">
               Administrator Governance Console
             </h1>
             <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30">
               ADMIN ROLE VERIFIED
             </span>
           </div>
-          <p className="text-xs text-[#9BA3BD] mt-1">
+          <p className="text-xs text-[#A7B8CA] mt-1">
             Logged in as <span className="text-white font-bold">{userSession.userEmail}</span>. Full backend governance, telemetry, and per-user entitlement control.
           </p>
         </div>
@@ -321,7 +333,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
               className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black shadow-sm'
-                  : 'text-[#9BA3BD] hover:text-white'
+                  : 'text-[#A7B8CA] hover:text-white'
               }`}
             >
               {tab.label}
@@ -334,10 +346,10 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       {activeTab === 'dashboard' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#F4F5FF]">Real Database Platform Telemetry</h2>
+            <h2 className="text-lg font-bold text-[#F5FAFF]">Real Database Platform Telemetry</h2>
             <button
               onClick={refreshTelemetry}
-              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-[#F4F5FF] flex items-center gap-1.5 border border-white/10 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-[#F5FAFF] flex items-center gap-1.5 border border-white/10 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoadingTelemetry ? 'animate-spin' : ''}`} />
               <span>Refresh Stats</span>
@@ -346,43 +358,43 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
           {/* Metric Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-[#11152A]/80 border border-white/10 space-y-1">
-              <span className="text-[11px] font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-[#42D6E8]" /> Total Registered Users
+            <div className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-1">
+              <span className="text-[11px] font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-[#A8DEFA]" /> Total Registered Users
               </span>
-              <div className="text-2xl font-black text-[#F4F5FF]">{telemetry?.total_users ?? 0}</div>
+              <div className="text-2xl font-black text-[#F5FAFF]">{telemetry?.total_users ?? 0}</div>
               <p className="text-[10px] text-emerald-400 font-medium">
                 {telemetry?.active_users ?? 0} active ({telemetry?.suspended_users ?? 0} suspended)
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#11152A]/80 border border-white/10 space-y-1">
-              <span className="text-[11px] font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-1.5">
+            <div className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-1">
+              <span className="text-[11px] font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-1.5">
                 <DollarSign className="w-3.5 h-3.5 text-emerald-400" /> Monthly Revenue (MRR)
               </span>
-              <div className="text-2xl font-black text-[#F4F5FF]">
+              <div className="text-2xl font-black text-[#F5FAFF]">
                 ${((telemetry?.monthly_recurring_revenue_cents ?? 0) / 100).toFixed(2)}
               </div>
-              <p className="text-[10px] text-[#9BA3BD]">
+              <p className="text-[10px] text-[#A7B8CA]">
                 {telemetry?.active_subscriptions ?? 0} active paid subscriptions
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#11152A]/80 border border-white/10 space-y-1">
-              <span className="text-[11px] font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-[#8B7CFF]" /> Documents Vault
+            <div className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-1">
+              <span className="text-[11px] font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-[#A8DEFA]" /> Documents Vault
               </span>
-              <div className="text-2xl font-black text-[#F4F5FF]">{telemetry?.total_documents ?? 0}</div>
-              <p className="text-[10px] text-[#9BA3BD]">
+              <div className="text-2xl font-black text-[#F5FAFF]">{telemetry?.total_documents ?? 0}</div>
+              <p className="text-[10px] text-[#A7B8CA]">
                 {formatFileSize(telemetry?.total_storage_bytes ?? 0)} stored across tenants
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#11152A]/80 border border-white/10 space-y-1">
-              <span className="text-[11px] font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5 text-purple-400" /> Autonomous Jobs
+            <div className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-1">
+              <span className="text-[11px] font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-[#A8DEFA]" /> Autonomous Jobs
               </span>
-              <div className="text-2xl font-black text-[#F4F5FF]">{telemetry?.total_jobs ?? 0}</div>
+              <div className="text-2xl font-black text-[#F5FAFF]">{telemetry?.total_jobs ?? 0}</div>
               <p className="text-[10px] text-red-400">
                 {telemetry?.failed_jobs ?? 0} failed / aborted executions
               </p>
@@ -391,29 +403,29 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
           {/* Activity Feeds */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-5 rounded-2xl bg-[#11152A]/60 border border-white/10 space-y-3">
-              <h3 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#42D6E8]" /> Recent Registrations
+            <div className="p-5 rounded-2xl bg-[#0B1420]/60 border border-white/10 space-y-3">
+              <h3 className="text-xs font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#A8DEFA]" /> Recent Registrations
               </h3>
               <div className="space-y-2">
                 {telemetry?.recent_registrations?.length > 0 ? (
                   telemetry.recent_registrations.map((u: any) => (
                     <div key={u.id} className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs">
                       <div>
-                        <span className="font-bold text-[#F4F5FF] block">{u.full_name}</span>
-                        <span className="text-[11px] text-[#9BA3BD]">{u.email}</span>
+                        <span className="font-bold text-[#F5FAFF] block">{u.full_name}</span>
+                        <span className="text-[11px] text-[#A7B8CA]">{u.email}</span>
                       </div>
                       <span className="text-[10px] text-white/40">{new Date(u.created_at).toLocaleDateString()}</span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-[#9BA3BD]">No recent user registrations recorded.</p>
+                  <p className="text-xs text-[#A7B8CA]">No recent user registrations recorded.</p>
                 )}
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#11152A]/60 border border-white/10 space-y-3">
-              <h3 className="text-xs font-bold text-[#9BA3BD] uppercase tracking-wider flex items-center gap-2">
+            <div className="p-5 rounded-2xl bg-[#0B1420]/60 border border-white/10 space-y-3">
+              <h3 className="text-xs font-bold text-[#A7B8CA] uppercase tracking-wider flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-amber-400" /> Recent Administrative Actions
               </h3>
               <div className="space-y-2">
@@ -422,13 +434,13 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                     <div key={a.id} className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs">
                       <div>
                         <span className="font-mono text-amber-300 font-bold block">{a.action}</span>
-                        <span className="text-[10px] text-[#9BA3BD]">{a.target}</span>
+                        <span className="text-[10px] text-[#A7B8CA]">{a.target}</span>
                       </div>
                       <span className="text-[10px] text-white/40">{new Date(a.timestamp).toLocaleTimeString()}</span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-[#9BA3BD]">No recent audit events.</p>
+                  <p className="text-xs text-[#A7B8CA]">No recent audit events.</p>
                 )}
               </div>
             </div>
@@ -442,7 +454,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#9BA3BD]" />
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#A7B8CA]" />
                 <input
                   type="text"
                   value={userSearch}
@@ -471,10 +483,10 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
           {/* User Table & Detail Pane Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className={`${selectedUser ? 'lg:col-span-7' : 'lg:col-span-12'} p-5 rounded-2xl bg-[#11152A]/80 border border-white/10 overflow-x-auto`}>
-              <table className="w-full text-left text-xs text-[#F4F5FF]">
+            <div className={`${selectedUser ? 'lg:col-span-7' : 'lg:col-span-12'} p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 overflow-x-auto`}>
+              <table className="w-full text-left text-xs text-[#F5FAFF]">
                 <thead>
-                  <tr className="border-b border-white/10 text-[10px] uppercase font-bold text-[#9BA3BD]">
+                  <tr className="border-b border-white/10 text-[10px] uppercase font-bold text-[#A7B8CA]">
                     <th className="pb-3">User &amp; Organization</th>
                     <th className="pb-3">Role</th>
                     <th className="pb-3" title="Organization-level base subscription plan">Org Plan</th>
@@ -492,7 +504,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                     >
                       <td className="py-3">
                         <span className="font-bold block text-white">{u.full_name}</span>
-                        <span className="text-[11px] text-[#9BA3BD]">{u.email}</span>
+                        <span className="text-[11px] text-[#A7B8CA]">{u.email}</span>
                       </td>
                       <td className="py-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono ${
@@ -502,7 +514,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                         </span>
                       </td>
                       <td className="py-3">
-                        <span className="font-bold text-[#42D6E8] uppercase text-[11px] font-mono">
+                        <span className="font-bold text-[#A8DEFA] uppercase text-[11px] font-mono">
                           {u.plan_tier}
                         </span>
                       </td>
@@ -526,7 +538,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                         </button>
                         <button
                           onClick={() => handleStartViewAsUser(u)}
-                          className="px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-[11px] font-bold cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-[#A8DEFA]/20 hover:bg-[#A8DEFA]/30 text-[#A8DEFA] text-[11px] font-bold cursor-pointer"
                         >
                           View As
                         </button>
@@ -554,14 +566,14 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
             {/* Selected User Feature Control & Overrides Panel (Phase 5 Requirement) */}
             {selectedUser && (
-              <div className="lg:col-span-5 p-6 rounded-2xl bg-[#11152A] border border-amber-500/30 shadow-2xl space-y-5">
+              <div className="lg:col-span-5 p-6 rounded-2xl bg-[#0B1420] border border-amber-500/30 shadow-2xl space-y-5">
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
                   <div>
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <Sliders className="w-4 h-4 text-amber-400" />
                       <span>Individual Feature Overrides</span>
                     </h3>
-                    <p className="text-[11px] text-[#9BA3BD]">
+                    <p className="text-[11px] text-[#A7B8CA]">
                       Configuring overrides for <span className="text-amber-300 font-bold">{selectedUser.email}</span>
                     </p>
                     <p className="text-[10px] text-amber-300/80 mt-1 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
@@ -578,7 +590,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
                 <div className="space-y-4 text-xs">
                   <div>
-                    <label className="text-[11px] text-[#9BA3BD] font-bold uppercase block mb-1.5">
+                    <label className="text-[11px] text-[#A7B8CA] font-bold uppercase block mb-1.5">
                       Custom Storage Quota (MB)
                     </label>
                     <input
@@ -591,7 +603,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                   </div>
 
                   <div>
-                    <span className="text-[11px] text-[#9BA3BD] font-bold uppercase block mb-2">
+                    <span className="text-[11px] text-[#A7B8CA] font-bold uppercase block mb-2">
                       Feature Permissions Overrides:
                     </span>
                     <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -646,7 +658,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                   </div>
 
                   <div>
-                    <label className="text-[11px] text-[#9BA3BD] font-bold uppercase block mb-1">
+                    <label className="text-[11px] text-[#A7B8CA] font-bold uppercase block mb-1">
                       Administrative Audit Note
                     </label>
                     <input
@@ -679,7 +691,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-white">Configurable Subscription Plans</h2>
-              <p className="text-xs text-[#9BA3BD]">Administrators can edit prices, storage quotas, and feature allocations for published plans.</p>
+              <p className="text-xs text-[#A7B8CA]">Administrators can edit prices, storage quotas, and feature allocations for published plans.</p>
             </div>
             <button
               onClick={refreshPlansAndFeatures}
@@ -692,27 +704,27 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {plans.map((p) => (
-              <div key={p.id} className="p-5 rounded-2xl bg-[#11152A]/80 border border-white/10 space-y-4">
+              <div key={p.id} className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-black text-white text-base">{p.name}</h3>
-                  <span className="font-mono text-xs text-[#42D6E8] uppercase">{p.slug}</span>
+                  <span className="font-mono text-xs text-[#A8DEFA] uppercase">{p.slug}</span>
                 </div>
                 <div className="text-2xl font-black text-white">
                   ${(p.monthly_price_cents / 100).toFixed(2)}
-                  <span className="text-xs text-[#9BA3BD] font-normal"> / mo</span>
+                  <span className="text-xs text-[#A7B8CA] font-normal"> / mo</span>
                 </div>
-                <p className="text-xs text-[#9BA3BD]">{p.description}</p>
+                <p className="text-xs text-[#A7B8CA]">{p.description}</p>
                 <div className="text-xs space-y-1.5 border-t border-white/10 pt-3">
                   <div className="flex justify-between">
-                    <span className="text-[#9BA3BD]">Storage:</span>
+                    <span className="text-[#A7B8CA]">Storage:</span>
                     <span className="font-bold">{formatFileSize(p.storage_quota_bytes)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#9BA3BD]">Monthly Docs:</span>
+                    <span className="text-[#A7B8CA]">Monthly Docs:</span>
                     <span className="font-bold">{p.monthly_processing_quota}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#9BA3BD]">API Access:</span>
+                    <span className="text-[#A7B8CA]">API Access:</span>
                     <span className="font-bold">{p.has_api_access ? 'Yes' : 'No'}</span>
                   </div>
                 </div>
@@ -728,15 +740,15 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
           <h2 className="text-lg font-bold text-white">Centralized Feature Registry</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {features.map((feat) => (
-              <div key={feat.id} className="p-4 rounded-2xl bg-[#11152A]/70 border border-white/10 space-y-2">
+              <div key={feat.id} className="p-4 rounded-2xl bg-[#0B1420]/70 border border-white/10 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white text-sm">{feat.name}</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-300 font-bold">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#A8DEFA]/20 text-[#A8DEFA] font-bold">
                     {feat.category}
                   </span>
                 </div>
-                <p className="text-xs text-[#9BA3BD]">{feat.description}</p>
-                <div className="pt-2 text-[10px] font-mono text-[#42D6E8]">
+                <p className="text-xs text-[#A7B8CA]">{feat.description}</p>
+                <div className="pt-2 text-[10px] font-mono text-[#A8DEFA]">
                   Key: {feat.feature_key}
                 </div>
               </div>
@@ -747,10 +759,10 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
 
       {/* TAB 5: UI CONFIGURATION */}
       {activeTab === 'ui' && (
-        <div className="max-w-2xl p-6 rounded-2xl bg-[#11152A]/80 border border-white/10 space-y-5">
+        <div className="max-w-2xl p-6 rounded-2xl bg-[#0B1420]/80 border border-white/10 space-y-5">
           <h2 className="text-lg font-bold text-white">Admin UI Management &amp; Banners</h2>
           <div>
-            <label className="text-xs font-bold text-[#F4F5FF] block mb-1.5">Global Announcement Banner</label>
+            <label className="text-xs font-bold text-[#F5FAFF] block mb-1.5">Global Announcement Banner</label>
             <input
               type="text"
               value={uiConfig.announcement_banner || ''}
@@ -788,10 +800,10 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       {activeTab === 'audit' && (
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-white">Immutable Administrative Audit Log</h2>
-          <div className="p-5 rounded-2xl bg-[#11152A]/80 border border-white/10 overflow-x-auto">
-            <table className="w-full text-left text-xs text-[#F4F5FF]">
+          <div className="p-5 rounded-2xl bg-[#0B1420]/80 border border-white/10 overflow-x-auto">
+            <table className="w-full text-left text-xs text-[#F5FAFF]">
               <thead>
-                <tr className="border-b border-white/10 text-[10px] uppercase font-bold text-[#9BA3BD]">
+                <tr className="border-b border-white/10 text-[10px] uppercase font-bold text-[#A7B8CA]">
                   <th className="pb-3">Timestamp</th>
                   <th className="pb-3">Action</th>
                   <th className="pb-3">Target</th>
@@ -818,7 +830,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
       {/* CREATE USER MODAL */}
       {isCreateUserOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-md p-6 rounded-3xl bg-[#11152A] border border-white/10 shadow-2xl space-y-4">
+          <div className="w-full max-w-md p-6 rounded-3xl bg-[#0B1420] border border-white/10 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <h3 className="text-base font-bold text-white">Provision New User Account</h3>
               <button onClick={() => setIsCreateUserOpen(false)} className="text-white/50 hover:text-white">
@@ -827,7 +839,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
             </div>
             <form onSubmit={handleCreateUser} className="space-y-3 text-xs">
               <div>
-                <label className="text-[11px] font-bold text-[#9BA3BD] block mb-1">Full Name</label>
+                <label className="text-[11px] font-bold text-[#A7B8CA] block mb-1">Full Name</label>
                 <input
                   type="text"
                   value={newUserName}
@@ -838,7 +850,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 />
               </div>
               <div>
-                <label className="text-[11px] font-bold text-[#9BA3BD] block mb-1">Email Address</label>
+                <label className="text-[11px] font-bold text-[#A7B8CA] block mb-1">Email Address</label>
                 <input
                   type="email"
                   value={newUserEmail}
@@ -849,7 +861,7 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                 />
               </div>
               <div>
-                <label className="text-[11px] font-bold text-[#9BA3BD] block mb-1">Temporary Password</label>
+                <label className="text-[11px] font-bold text-[#A7B8CA] block mb-1">Temporary Password</label>
                 <input
                   type="password"
                   value={newUserPassword}
@@ -861,11 +873,11 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[11px] font-bold text-[#9BA3BD] block mb-1">Role</label>
+                  <label className="text-[11px] font-bold text-[#A7B8CA] block mb-1">Role</label>
                   <select
                     value={newUserRole}
                     onChange={(e) => setNewUserRole(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#11152A] border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0B1420] border border-white/10 text-white focus:outline-none focus:border-amber-400"
                   >
                     <option value="user">User</option>
                     <option value="staff">Staff</option>
@@ -873,11 +885,11 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-[#9BA3BD] block mb-1">Plan Tier</label>
+                  <label className="text-[11px] font-bold text-[#A7B8CA] block mb-1">Plan Tier</label>
                   <select
                     value={newUserPlan}
                     onChange={(e) => setNewUserPlan(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl bg-[#11152A] border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0B1420] border border-white/10 text-white focus:outline-none focus:border-amber-400"
                   >
                     <option value="free">Free</option>
                     <option value="starter">Starter</option>

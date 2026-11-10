@@ -75,25 +75,25 @@ export const PricingPage: React.FC<PricingPageProps> = ({
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto p-6 md:p-10 bg-[#080B18] text-[#F4F5FF]">
+    <div className="w-full h-full overflow-y-auto p-6 md:p-10 bg-[#070B13] text-[#F5FAFF]">
       {/* Header */}
       <div className="max-w-5xl mx-auto text-center space-y-4 mb-10">
         {onBackToDashboard && (
           <button
             onClick={onBackToDashboard}
-            className="inline-flex items-center gap-1.5 text-xs text-[#9BA3BD] hover:text-[#F4F5FF] mb-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10"
+            className="inline-flex items-center gap-1.5 text-xs text-[#A7B8CA] hover:text-[#F5FAFF] mb-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10"
           >
             ← Return to Dashboard
           </button>
         )}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8B7CFF]/15 border border-[#8B7CFF]/30 text-[#8B7CFF] text-xs font-bold">
-          <Sparkles className="w-3.5 h-3.5 text-[#42D6E8]" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 text-[#A8DEFA] text-xs font-bold">
+          <Sparkles className="w-3.5 h-3.5 text-[#A8DEFA]" />
           <span>Transparent Enterprise Pricing</span>
         </div>
-        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-[#F4F5FF]">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-[#F5FAFF]">
           Scale Document Intelligence with Complete Confidence
         </h1>
-        <p className="text-sm md:text-base text-[#9BA3BD] max-w-2xl mx-auto">
+        <p className="text-sm md:text-base text-[#A7B8CA] max-w-2xl mx-auto">
           Choose the right capacity for your organization. All tiers include cryptographic verification and zero-leak PDF sanitization.
         </p>
 
@@ -104,8 +104,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({
               onClick={() => setBillingCycle('monthly')}
               className={`px-4 py-1.5 rounded-xl transition-all cursor-pointer ${
                 billingCycle === 'monthly'
-                  ? 'bg-gradient-to-r from-[#8B7CFF] to-[#7363f8] text-white shadow-sm'
-                  : 'text-[#9BA3BD] hover:text-white'
+                  ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7363f8] text-white shadow-sm'
+                  : 'text-[#A7B8CA] hover:text-white'
               }`}
             >
               Monthly Billing
@@ -114,8 +114,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({
               onClick={() => setBillingCycle('annual')}
               className={`px-4 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                 billingCycle === 'annual'
-                  ? 'bg-gradient-to-r from-[#8B7CFF] to-[#7363f8] text-white shadow-sm'
-                  : 'text-[#9BA3BD] hover:text-white'
+                  ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7363f8] text-white shadow-sm'
+                  : 'text-[#A7B8CA] hover:text-white'
               }`}
             >
               <span>Annual Billing</span>
@@ -130,8 +130,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({
       {/* Loading & Error States */}
       {isLoading && (
         <div className="max-w-md mx-auto py-16 text-center space-y-3">
-          <div className="w-8 h-8 border-2 border-[#8B7CFF] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-[#9BA3BD]">Fetching official subscription plans from backend...</p>
+          <div className="w-8 h-8 border-2 border-[#A8DEFA] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs text-[#A7B8CA]">Fetching official subscription plans from backend...</p>
         </div>
       )}
 
@@ -139,10 +139,10 @@ export const PricingPage: React.FC<PricingPageProps> = ({
         <div className="max-w-md mx-auto p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-3 my-12">
           <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
           <h3 className="text-sm font-bold text-white">Live Pricing Unavailable</h3>
-          <p className="text-xs text-[#9BA3BD]">{loadError}</p>
+          <p className="text-xs text-[#A7B8CA]">{loadError}</p>
           <button
             onClick={fetchPlans}
-            className="px-4 py-2 rounded-xl bg-[#8B7CFF] hover:bg-[#7869ec] text-white font-bold text-xs transition-colors"
+            className="px-4 py-2 rounded-xl bg-[#A8DEFA] hover:bg-[#7869ec] text-white font-bold text-xs transition-colors"
           >
             Retry Loading Plans
           </button>
@@ -163,73 +163,73 @@ export const PricingPage: React.FC<PricingPageProps> = ({
               key={plan.slug}
               className={`relative rounded-3xl p-6 flex flex-col justify-between transition-all duration-300 border ${
                 isPopular
-                  ? 'bg-gradient-to-b from-[#8B7CFF]/15 via-[#11152A] to-[#11152A] border-[#8B7CFF]/50 shadow-2xl shadow-[#8B7CFF]/20'
-                  : 'bg-[#11152A]/70 border-white/10 hover:border-white/20'
+                  ? 'bg-gradient-to-b from-[#A8DEFA]/15 via-[#0B1420] to-[#0B1420] border-[#A8DEFA]/50 shadow-2xl shadow-[#A8DEFA]/20'
+                  : 'bg-[#0B1420]/70 border-white/10 hover:border-white/20'
               }`}
             >
               {isPopular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-gradient-to-r from-[#8B7CFF] to-[#42D6E8] text-white text-[10px] font-black tracking-wide uppercase shadow">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-gradient-to-r from-[#A8DEFA] to-[#A8DEFA] text-white text-[10px] font-black tracking-wide uppercase shadow">
                   Most Popular
                 </div>
               )}
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-black text-[#F4F5FF]">{plan.name}</h3>
+                  <h3 className="text-lg font-black text-[#F5FAFF]">{plan.name}</h3>
                   {isCurrent && (
                     <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
                       CURRENT
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#9BA3BD] min-h-[36px]">{plan.description}</p>
+                <p className="text-xs text-[#A7B8CA] min-h-[36px]">{plan.description}</p>
 
                 {/* Price */}
                 <div className="my-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-[#F4F5FF] tracking-tight">{priceDisplay}</span>
-                    <span className="text-xs text-[#9BA3BD]">/ month</span>
+                    <span className="text-4xl font-extrabold text-[#F5FAFF] tracking-tight">{priceDisplay}</span>
+                    <span className="text-xs text-[#A7B8CA]">/ month</span>
                   </div>
                   {billingCycle === 'annual' && priceCents > 0 && (
-                    <p className="text-[11px] text-[#42D6E8] mt-1">Billed annually (${(plan.annual_price_cents / 100).toFixed(0)}/yr)</p>
+                    <p className="text-[11px] text-[#A8DEFA] mt-1">Billed annually (${(plan.annual_price_cents / 100).toFixed(0)}/yr)</p>
                   )}
                 </div>
 
                 {/* Quotas Specs */}
-                <div className="space-y-2.5 py-4 border-y border-white/10 text-xs text-[#F4F5FF]">
+                <div className="space-y-2.5 py-4 border-y border-white/10 text-xs text-[#F5FAFF]">
                   <div className="flex items-center justify-between">
-                    <span className="text-[#9BA3BD] flex items-center gap-1.5">
-                      <HardDrive className="w-3.5 h-3.5 text-[#42D6E8]" /> Storage:
+                    <span className="text-[#A7B8CA] flex items-center gap-1.5">
+                      <HardDrive className="w-3.5 h-3.5 text-[#A8DEFA]" /> Storage:
                     </span>
                     <span className="font-bold">{formatStorage(plan.storage_quota_bytes)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[#9BA3BD] flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-[#8B7CFF]" /> Monthly Docs:
+                    <span className="text-[#A7B8CA] flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-[#A8DEFA]" /> Monthly Docs:
                     </span>
                     <span className="font-bold">{plan.monthly_processing_quota === -1 ? 'Unlimited' : plan.monthly_processing_quota}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[#9BA3BD] flex items-center gap-1.5">
+                    <span className="text-[#A7B8CA] flex items-center gap-1.5">
                       <Zap className="w-3.5 h-3.5 text-amber-400" /> OCR Pages:
                     </span>
                     <span className="font-bold">{plan.ocr_quota === -1 ? 'Unlimited' : plan.ocr_quota}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[#9BA3BD] flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-purple-400" /> AI Operations:
+                    <span className="text-[#A7B8CA] flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#A8DEFA]" /> AI Operations:
                     </span>
                     <span className="font-bold">{plan.ai_processing_quota === -1 ? 'Unlimited' : plan.ai_processing_quota}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[#9BA3BD]">Support:</span>
+                    <span className="text-[#A7B8CA]">Support:</span>
                     <span className="font-bold">{plan.support_level}</span>
                   </div>
                 </div>
 
                 {/* Features Checkmarks */}
                 <div className="pt-4 space-y-2 text-xs">
-                  <span className="text-[11px] font-bold text-[#9BA3BD] uppercase tracking-wider block mb-2">
+                  <span className="text-[11px] font-bold text-[#A7B8CA] uppercase tracking-wider block mb-2">
                     Included Capabilities:
                   </span>
                   {[
@@ -250,7 +250,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                         ) : (
                           <X className="w-3.5 h-3.5 text-white/20 shrink-0" />
                         )}
-                        <span className={hasFeat ? 'text-[#F4F5FF]' : 'text-white/30'}>
+                        <span className={hasFeat ? 'text-[#F5FAFF]' : 'text-white/30'}>
                           {feat.label}
                         </span>
                       </div>
@@ -269,7 +269,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                     isCurrent
                       ? 'bg-white/10 text-white/50 cursor-default'
                       : isPopular
-                      ? 'glass-btn-primary text-white shadow-lg shadow-[#8B7CFF]/30'
+                      ? 'glass-btn-primary text-white shadow-lg shadow-[#A8DEFA]/30'
                       : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
                   }`}
                 >
@@ -290,8 +290,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({
       )}
 
       {/* Compliance Notice */}
-      <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-xs text-[#9BA3BD] flex items-center gap-3">
-        <ShieldCheck className="w-5 h-5 text-[#42D6E8] shrink-0" />
+      <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-xs text-[#A7B8CA] flex items-center gap-3">
+        <ShieldCheck className="w-5 h-5 text-[#A8DEFA] shrink-0" />
         <span>
           Enterprise subscriptions are governed by server-side quota enforcement and verifiable tenant isolation. Payment transactions are audited via cryptographic event logs.
         </span>

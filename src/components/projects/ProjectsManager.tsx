@@ -48,7 +48,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
       case 'sheets':
         return <Table className="w-4 h-4 text-emerald-400" />;
       case 'image':
-        return <ImageIcon className="w-4 h-4 text-purple-400" />;
+        return <ImageIcon className="w-4 h-4 text-[#A8DEFA]" />;
       default:
         return <FileCode className="w-4 h-4 text-indigo-400" />;
     }
@@ -78,17 +78,17 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 text-[#F4F5FF] custom-scrollbar">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 text-[#F5FAFF] custom-scrollbar">
       {/* Top Banner */}
       <div className="glass-panel p-6 rounded-3xl border border-white/12 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <FolderArchive className="w-5 h-5 text-[#8B7CFF]" />
-            <h1 className="text-xl md:text-2xl font-bold text-[#F4F5FF] tracking-tight">
+            <FolderArchive className="w-5 h-5 text-[#A8DEFA]" />
+            <h1 className="text-xl md:text-2xl font-bold text-[#F5FAFF] tracking-tight">
               Projects, History &amp; Privacy
             </h1>
           </div>
-          <p className="text-xs md:text-sm text-[#9BA3BD] mt-1">
+          <p className="text-xs md:text-sm text-[#A7B8CA] mt-1">
             Manage your local projects, review past conversion tasks, and control device storage and data retention.
           </p>
         </div>
@@ -99,8 +99,8 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
             onClick={() => setActiveSubTab('projects')}
             className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
               activeSubTab === 'projects'
-                ? 'glass-btn-primary shadow-md shadow-[#8B7CFF]/20 glow-purple'
-                : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                ? 'glass-btn-primary shadow-md shadow-[#A8DEFA]/20 lg-glow-ice'
+                : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
             }`}
           >
             Saved Projects ({projects.length})
@@ -109,8 +109,8 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
             onClick={() => setActiveSubTab('history')}
             className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
               activeSubTab === 'history'
-                ? 'glass-btn-primary shadow-md shadow-[#8B7CFF]/20 glow-purple'
-                : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                ? 'glass-btn-primary shadow-md shadow-[#A8DEFA]/20 lg-glow-ice'
+                : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
             }`}
           >
             History ({history.length})
@@ -119,8 +119,8 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
             onClick={() => setActiveSubTab('privacy')}
             className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
               activeSubTab === 'privacy'
-                ? 'glass-btn-primary shadow-md shadow-[#8B7CFF]/20 glow-purple'
-                : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                ? 'glass-btn-primary shadow-md shadow-[#A8DEFA]/20 lg-glow-ice'
+                : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
             }`}
           >
             Privacy &amp; Data
@@ -133,9 +133,9 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
         <div className="space-y-4">
           {projects.length === 0 ? (
             <div className="text-center py-20 border-2 border-dashed border-white/15 rounded-3xl p-6 glass-panel">
-              <FolderArchive className="w-10 h-10 mx-auto text-[#9BA3BD]/50 mb-3" />
-              <h3 className="text-base font-semibold text-[#F4F5FF]">No Saved Projects Yet</h3>
-              <p className="text-xs text-[#9BA3BD] max-w-sm mx-auto mt-1">
+              <FolderArchive className="w-10 h-10 mx-auto text-[#A7B8CA]/50 mb-3" />
+              <h3 className="text-base font-semibold text-[#F5FAFF]">No Saved Projects Yet</h3>
+              <p className="text-xs text-[#A7B8CA] max-w-sm mx-auto mt-1">
                 When you click "Save" in any workspace (PDF, Word, Slides, Sheets, Image), your progress is saved locally here.
               </p>
             </div>
@@ -144,23 +144,23 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
               {projects.map((proj) => (
                 <div
                   key={proj.id}
-                  className="p-5 rounded-2xl glass-card border-white/10 hover:border-[#8B7CFF]/50 transition-all flex flex-col justify-between group shadow-lg"
+                  className="p-5 rounded-2xl glass-card border-white/10 hover:border-[#A8DEFA]/50 transition-all flex flex-col justify-between group shadow-lg"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center">
                         {getIconForType(proj.type)}
                       </div>
-                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-white/[0.08] text-[#9BA3BD]">
+                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-white/[0.08] text-[#A7B8CA]">
                         {proj.type}
                       </span>
                     </div>
 
                     <div>
-                      <h4 className="text-sm font-bold text-[#F4F5FF] group-hover:text-[#42D6E8] transition-colors truncate">
+                      <h4 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors truncate">
                         {proj.title}
                       </h4>
-                      <p className="text-[11px] text-[#9BA3BD] mt-1">
+                      <p className="text-[11px] text-[#A7B8CA] mt-1">
                         Updated: {new Date(proj.updatedAt).toLocaleDateString()} • {formatFileSize(proj.sizeBytes)}
                       </p>
                     </div>
@@ -169,7 +169,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
                   <div className="flex items-center justify-between pt-4 mt-3 border-t border-white/10">
                     <button
                       onClick={() => onLoadProject(proj)}
-                      className="flex items-center gap-1.5 text-xs text-[#8B7CFF] hover:text-[#42D6E8] font-semibold cursor-pointer transition-colors"
+                      className="flex items-center gap-1.5 text-xs text-[#A8DEFA] hover:text-[#A8DEFA] font-semibold cursor-pointer transition-colors"
                     >
                       <span>Open Workspace</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -177,7 +177,7 @@ export const ProjectsManager: React.FC<ProjectsManagerProps> = ({
 
                     <button
                       onClick={() => onDeleteProject(proj.id)}
-                      className="p-1.5 rounded-lg text-[#9BA3BD] hover:text-rose-400 hover:bg-white/10 cursor-pointer transition-colors"
+                      className="p-1.5 rounded-lg text-[#A7B8CA] hover:text-rose-400 hover:bg-white/10 cursor-pointer transition-colors"
                       title="Delete Project"
                     >
                       <Trash2 className="w-4 h-4" />

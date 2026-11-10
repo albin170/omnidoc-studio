@@ -29,21 +29,21 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in">
       <div 
-        className="w-full max-w-2xl glass-panel rounded-[28px] border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-[#F4F5FF]"
+        className="w-full max-w-2xl glass-panel rounded-[28px] border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-[#F5FAFF]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 border-b border-white/10 flex items-center justify-between bg-[#11152A]/80">
+        <div className="p-5 border-b border-white/10 flex items-center justify-between bg-[#0B1420]/80">
           <div className="flex items-center gap-3">
             <OmniDocLogo size={34} />
             <div>
-              <h2 className="text-base font-extrabold text-[#F4F5FF] leading-tight flex items-center gap-2">
+              <h2 className="text-base font-extrabold text-[#F5FAFF] leading-tight flex items-center gap-2">
                 <span>OmniDoc Studio Help &amp; Shortcuts</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30 font-bold">
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30 font-bold">
                   v2.0
                 </span>
               </h2>
-              <p className="text-xs text-[#9BA3BD]">
+              <p className="text-xs text-[#A7B8CA]">
                 Quick guide and hotkeys for power productivity
               </p>
             </div>
@@ -51,25 +51,25 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-white/10 text-[#9BA3BD] hover:text-[#F4F5FF] flex items-center justify-center cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-full hover:bg-white/10 text-[#A7B8CA] hover:text-[#F5FAFF] flex items-center justify-center cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-6 text-xs text-[#9BA3BD] custom-scrollbar">
+        <div className="p-6 overflow-y-auto space-y-6 text-xs text-[#A7B8CA] custom-scrollbar">
           {/* Shortcuts Grid */}
           <div>
-            <div className="font-bold text-[#F4F5FF] mb-3 flex items-center gap-2 text-sm">
-              <Keyboard className="w-4 h-4 text-[#42D6E8]" />
+            <div className="font-bold text-[#F5FAFF] mb-3 flex items-center gap-2 text-sm">
+              <Keyboard className="w-4 h-4 text-[#A8DEFA]" />
               <span>Keyboard Shortcuts</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {shortcuts.map((s, idx) => (
                 <div key={idx} className="p-3 rounded-2xl glass-card border-white/10 flex items-center justify-between gap-3">
-                  <span className="text-[#9BA3BD] font-medium">{s.desc}</span>
-                  <kbd className="px-2 py-1 rounded-lg bg-white/10 border border-white/15 font-mono text-[11px] font-bold text-[#F4F5FF] shadow-sm shrink-0">
+                  <span className="text-[#A7B8CA] font-medium">{s.desc}</span>
+                  <kbd className="px-2 py-1 rounded-lg bg-white/10 border border-white/15 font-mono text-[11px] font-bold text-[#F5FAFF] shadow-sm shrink-0">
                     {s.key}
                   </kbd>
                 </div>
@@ -79,18 +79,18 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
 
           {/* Privacy & Architecture Features */}
           <div>
-            <div className="font-bold text-[#F4F5FF] mb-3 flex items-center gap-2 text-sm">
+            <div className="font-bold text-[#F5FAFF] mb-3 flex items-center gap-2 text-sm">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Key Architecture &amp; Privacy Rules</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {features.map((f, idx) => (
                 <div key={idx} className="p-3.5 rounded-2xl glass-card border-white/10 space-y-1">
-                  <div className="font-bold text-[#F4F5FF] flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#8B7CFF]" />
+                  <div className="font-bold text-[#F5FAFF] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#A8DEFA]" />
                     <span>{f.title}</span>
                   </div>
-                  <p className="text-[11px] text-[#9BA3BD] leading-relaxed">
+                  <p className="text-[11px] text-[#A7B8CA] leading-relaxed">
                     {f.desc}
                   </p>
                 </div>
@@ -100,11 +100,11 @@ export const HelpShortcutsModal: React.FC<HelpShortcutsModalProps> = ({ isOpen, 
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-[#11152A]/90 border-t border-white/10 flex items-center justify-between text-xs">
-          <span className="text-[#9BA3BD]">Need more assistance? Drop feedback in Settings.</span>
+        <div className="p-4 bg-[#0B1420]/90 border-t border-white/10 flex items-center justify-between text-xs">
+          <span className="text-[#A7B8CA]">Need more assistance? Drop feedback in Settings.</span>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl glass-btn-primary font-bold cursor-pointer transition-all shadow-md shadow-[#8B7CFF]/20"
+            className="px-5 py-2 rounded-xl glass-btn-primary font-bold cursor-pointer transition-all shadow-md shadow-[#A8DEFA]/20"
           >
             Got it
           </button>

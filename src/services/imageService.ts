@@ -172,7 +172,7 @@ export function renderLayersOnCanvas(
       // Draw sticker badge
       const w = (layer.width || 60) * scale;
       const h = (layer.height || 60) * scale;
-      ctx.fillStyle = layer.bgColor || '#6366f1';
+      ctx.fillStyle = layer.bgColor || '#7CC4ED';
       ctx.beginPath();
       ctx.roundRect(x, y, w, h, 8 * scale);
       ctx.fill();

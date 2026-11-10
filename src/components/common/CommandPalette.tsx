@@ -274,26 +274,26 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-start justify-center pt-[10vh] p-4 select-none animate-in fade-in">
       <div 
-        className="w-full max-w-2xl glass-panel rounded-[28px] border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[75vh] text-[#F4F5FF]"
+        className="w-full max-w-2xl glass-panel rounded-[28px] border border-white/15 shadow-2xl overflow-hidden flex flex-col max-h-[75vh] text-[#F5FAFF]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
         <div className="p-4 sm:p-5 border-b border-white/10 flex items-center gap-3">
-          <Search className="w-5 h-5 text-[#42D6E8] shrink-0" />
+          <Search className="w-5 h-5 text-[#A8DEFA] shrink-0" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search studios, tools, conversions, actions... (or type 'pdf', 'word', 'ocr')"
             autoFocus
-            className="flex-1 bg-transparent text-[#F4F5FF] placeholder-[#9BA3BD]/60 text-sm sm:text-base font-semibold outline-none"
+            className="flex-1 bg-transparent text-[#F5FAFF] placeholder-[#A7B8CA]/60 text-sm sm:text-base font-semibold outline-none"
           />
-          <kbd className="hidden sm:inline-block px-2 py-0.5 rounded-lg bg-white/10 border border-white/10 text-[11px] font-mono text-[#9BA3BD] font-bold">
+          <kbd className="hidden sm:inline-block px-2 py-0.5 rounded-lg bg-white/10 border border-white/10 text-[11px] font-mono text-[#A7B8CA] font-bold">
             ESC
           </kbd>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-white/10 text-[#9BA3BD] hover:text-[#F4F5FF] cursor-pointer transition-colors"
+            className="p-1 rounded-full hover:bg-white/10 text-[#A7B8CA] hover:text-[#F5FAFF] cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -302,10 +302,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         {/* Results List */}
         <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
           {filtered.length === 0 ? (
-            <div className="py-12 text-center text-[#9BA3BD]">
-              <Search className="w-8 h-8 mx-auto mb-2 opacity-40 text-[#42D6E8]" />
-              <p className="text-sm font-semibold text-[#F4F5FF]">No results found for "{query}"</p>
-              <p className="text-xs text-[#9BA3BD] mt-1">Try searching "pdf", "convert", "word", or "background"</p>
+            <div className="py-12 text-center text-[#A7B8CA]">
+              <Search className="w-8 h-8 mx-auto mb-2 opacity-40 text-[#A8DEFA]" />
+              <p className="text-sm font-semibold text-[#F5FAFF]">No results found for "{query}"</p>
+              <p className="text-xs text-[#A7B8CA] mt-1">Try searching "pdf", "convert", "word", or "background"</p>
             </div>
           ) : (
             filtered.map((cmd, idx) => {
@@ -319,29 +319,29 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`w-full flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-gradient-to-r from-[#8B7CFF]/30 to-[#42D6E8]/20 border border-[#8B7CFF]/50 text-[#F4F5FF] shadow-lg shadow-[#8B7CFF]/20 glow-purple'
-                      : 'hover:bg-white/[0.05] text-[#9BA3BD] border border-transparent'
+                      ? 'bg-gradient-to-r from-[#A8DEFA]/30 to-[#A8DEFA]/20 border border-[#A8DEFA]/50 text-[#F5FAFF] shadow-lg shadow-[#A8DEFA]/20 lg-glow-ice'
+                      : 'hover:bg-white/[0.05] text-[#A7B8CA] border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                      isSelected ? 'bg-[#8B7CFF]/30 text-[#F4F5FF]' : 'glass-card text-[#8B7CFF]'
+                      isSelected ? 'bg-[#A8DEFA]/30 text-[#F5FAFF]' : 'glass-card text-[#A8DEFA]'
                     }`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 text-left">
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold leading-tight ${isSelected ? 'text-[#F4F5FF]' : 'text-[#F4F5FF]'}`}>
+                        <span className={`text-xs font-bold leading-tight ${isSelected ? 'text-[#F5FAFF]' : 'text-[#F5FAFF]'}`}>
                           {cmd.title}
                         </span>
                         <span className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${
-                          isSelected ? 'bg-white/20 text-white' : 'bg-white/10 text-[#9BA3BD]'
+                          isSelected ? 'bg-white/20 text-white' : 'bg-white/10 text-[#A7B8CA]'
                         }`}>
                           {cmd.category}
                         </span>
                       </div>
                       <p className={`text-[11px] truncate leading-tight mt-0.5 ${
-                        isSelected ? 'text-indigo-200' : 'text-[#9BA3BD]'
+                        isSelected ? 'text-indigo-200' : 'text-[#A7B8CA]'
                       }`}>
                         {cmd.subtitle}
                       </p>
@@ -351,12 +351,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   <div className="flex items-center gap-2 shrink-0 ml-3">
                     {cmd.shortcut && (
                       <kbd className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-white/10 border border-white/10 text-[#9BA3BD]'
+                        isSelected ? 'bg-white/20 text-white' : 'bg-white/10 border border-white/10 text-[#A7B8CA]'
                       }`}>
                         {cmd.shortcut}
                       </kbd>
                     )}
-                    <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-[#42D6E8]' : 'text-[#9BA3BD]'}`} />
+                    <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-[#A8DEFA]' : 'text-[#A7B8CA]'}`} />
                   </div>
                 </div>
               );
@@ -365,20 +365,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         </div>
 
         {/* Footer Navigation Hints */}
-        <div className="p-3 bg-[#11152A]/90 border-t border-white/10 text-[11px] text-[#9BA3BD] flex items-center justify-between font-medium">
+        <div className="p-3 bg-[#0B1420]/90 border-t border-white/10 text-[11px] text-[#A7B8CA] flex items-center justify-between font-medium">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/10 font-mono text-[10px] text-[#F4F5FF]">↑</kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/10 font-mono text-[10px] text-[#F4F5FF]">↓</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/10 font-mono text-[10px] text-[#F5FAFF]">↑</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/10 font-mono text-[10px] text-[#F5FAFF]">↓</kbd>
               <span>to navigate</span>
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/10 font-mono text-[10px] text-[#F4F5FF]">↵</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/10 font-mono text-[10px] text-[#F5FAFF]">↵</kbd>
               <span>to select</span>
             </span>
           </div>
 
-          <span className="hidden sm:inline text-[#42D6E8] font-semibold">
+          <span className="hidden sm:inline text-[#A8DEFA] font-semibold">
             Press Ctrl + K anywhere
           </span>
         </div>

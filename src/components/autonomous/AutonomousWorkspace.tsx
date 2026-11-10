@@ -159,9 +159,9 @@ export const AutonomousWorkspace: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#080B18]/60 text-[#F4F5FF] flex flex-col overflow-y-auto custom-scrollbar">
+    <div className="flex-1 bg-[#070B13]/60 text-[#F5FAFF] flex flex-col overflow-y-auto custom-scrollbar">
       {/* Top Banner & Mode Selector */}
-      <div className="border-b border-white/10 bg-[#11152A]/85 p-6 backdrop-blur-2xl">
+      <div className="border-b border-white/10 bg-[#0B1420]/85 p-6 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -169,12 +169,12 @@ export const AutonomousWorkspace: React.FC = () => {
                 <Sparkles className="w-3 h-3 text-emerald-400" />
                 OmniDoc 2.0 Autonomous Engine
               </span>
-              <span className="text-xs text-[#9BA3BD]">Strict Tool Constraints &amp; Verifiable Provenance</span>
+              <span className="text-xs text-[#A7B8CA]">Strict Tool Constraints &amp; Verifiable Provenance</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#F4F5FF] mt-1">
+            <h1 className="text-2xl font-bold tracking-tight text-[#F5FAFF] mt-1">
               Autonomous Document Engineering Workspace
             </h1>
-            <p className="text-sm text-[#9BA3BD]">
+            <p className="text-sm text-[#A7B8CA]">
               Natural-language intent decomposition, DAG execution graphs, typed tool execution, and source evidence traceability.
             </p>
           </div>
@@ -185,7 +185,7 @@ export const AutonomousWorkspace: React.FC = () => {
               onClick={() => setMode('local')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${mode === 'local'
                   ? 'bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 shadow-lg shadow-emerald-500/20'
-                  : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                  : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
                 }`}
             >
               <Cpu className="w-3.5 h-3.5" />
@@ -194,8 +194,8 @@ export const AutonomousWorkspace: React.FC = () => {
             <button
               onClick={() => setMode('hybrid')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${mode === 'hybrid'
-                  ? 'bg-[#8B7CFF]/25 border border-[#8B7CFF]/40 text-[#F4F5FF] shadow-lg shadow-[#8B7CFF]/20 glow-purple'
-                  : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                  ? 'bg-[#A8DEFA]/25 border border-[#A8DEFA]/40 text-[#F5FAFF] shadow-lg shadow-[#A8DEFA]/20 lg-glow-ice'
+                  : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
                 }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -204,8 +204,8 @@ export const AutonomousWorkspace: React.FC = () => {
             <button
               onClick={() => setMode('cloud')}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${mode === 'cloud'
-                  ? 'bg-[#42D6E8]/25 border border-[#42D6E8]/40 text-[#42D6E8] shadow-lg shadow-[#42D6E8]/20'
-                  : 'text-[#9BA3BD] hover:text-[#F4F5FF]'
+                  ? 'bg-[#A8DEFA]/25 border border-[#A8DEFA]/40 text-[#A8DEFA] shadow-lg shadow-[#A8DEFA]/20'
+                  : 'text-[#A7B8CA] hover:text-[#F5FAFF]'
                 }`}
             >
               <Building2 className="w-3.5 h-3.5" />
@@ -219,8 +219,8 @@ export const AutonomousWorkspace: React.FC = () => {
           <button
             onClick={() => setSubTab('agent')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'agent'
-                ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
-                : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
+                ? 'glass-btn-primary shadow-lg shadow-[#A8DEFA]/25 lg-glow-ice'
+                : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05]'
               }`}
           >
             <Play className="w-3.5 h-3.5" />
@@ -230,8 +230,8 @@ export const AutonomousWorkspace: React.FC = () => {
           <button
             onClick={() => setSubTab('radar')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'radar'
-                ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
-                : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
+                ? 'glass-btn-primary shadow-lg shadow-[#A8DEFA]/25 lg-glow-ice'
+                : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05]'
               }`}
           >
             <Scale className="w-3.5 h-3.5" />
@@ -241,8 +241,8 @@ export const AutonomousWorkspace: React.FC = () => {
           <button
             onClick={() => setSubTab('graph')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'graph'
-                ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
-                : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
+                ? 'glass-btn-primary shadow-lg shadow-[#A8DEFA]/25 lg-glow-ice'
+                : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05]'
               }`}
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -252,8 +252,8 @@ export const AutonomousWorkspace: React.FC = () => {
           <button
             onClick={() => setSubTab('search')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${subTab === 'search'
-                ? 'glass-btn-primary shadow-lg shadow-[#8B7CFF]/25 glow-purple'
-                : 'text-[#9BA3BD] hover:text-[#F4F5FF] hover:bg-white/[0.05]'
+                ? 'glass-btn-primary shadow-lg shadow-[#A8DEFA]/25 lg-glow-ice'
+                : 'text-[#A7B8CA] hover:text-[#F5FAFF] hover:bg-white/[0.05]'
               }`}
           >
             <Search className="w-3.5 h-3.5" />
@@ -270,11 +270,11 @@ export const AutonomousWorkspace: React.FC = () => {
             <div className="glass-panel border-white/12 rounded-3xl p-6 shadow-2xl backdrop-blur-2xl space-y-5">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-[#F4F5FF] flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-[#8B7CFF]" />
+                  <h2 className="text-base font-semibold text-[#F5FAFF] flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[#A8DEFA]" />
                     Define Autonomous Document Objective
                   </h2>
-                  <p className="text-xs text-[#9BA3BD] mt-0.5">
+                  <p className="text-xs text-[#A7B8CA] mt-0.5">
                     Select an engineering workflow preset or enter custom requirements.
                   </p>
                 </div>
@@ -285,8 +285,8 @@ export const AutonomousWorkspace: React.FC = () => {
                       key={p.id}
                       onClick={() => handleSelectPreset(p.id)}
                       className={`px-3 py-1 rounded-xl text-xs font-medium border transition-all ${selectedPreset === p.id
-                          ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] border-[#8B7CFF]/40 shadow-sm'
-                          : 'glass-card text-[#9BA3BD] border-white/10 hover:text-[#F4F5FF]'
+                          ? 'bg-[#A8DEFA]/20 text-[#A8DEFA] border-[#A8DEFA]/40 shadow-sm'
+                          : 'glass-card text-[#A7B8CA] border-white/10 hover:text-[#F5FAFF]'
                         }`}
                     >
                       {p.name.split(' ')[0]} Intelligence
@@ -747,7 +747,7 @@ export const AutonomousWorkspace: React.FC = () => {
                           ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300'
                           : node.type === 'contradiction'
                             ? 'bg-rose-950/20 border-rose-500/40 text-rose-300'
-                            : 'bg-purple-950/20 border-purple-500/40 text-purple-300'
+                            : 'bg-[#A8DEFA]/20 border-[#A8DEFA]/40 text-[#A8DEFA]'
                       }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">

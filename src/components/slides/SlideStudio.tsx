@@ -287,15 +287,15 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#070B13]/60 text-[#F5FAFF]">
       {/* Top Header */}
-      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
+      <div className="h-14 border-b border-white/10 bg-[#0B1420]/85 backdrop-blur-2xl px-4 flex items-center justify-between shrink-0 gap-3 overflow-x-auto">
         <div className="flex items-center gap-3">
           <input
             type="text"
             value={deckTitle}
             onChange={(e) => setDeckTitle(e.target.value)}
-            className="bg-transparent text-sm font-bold text-[#F4F5FF] border-b border-transparent hover:border-white/20 focus:border-amber-400 px-1 py-0.5 outline-none w-52 md:w-64 transition-colors"
+            className="bg-transparent text-sm font-bold text-[#F5FAFF] border-b border-transparent hover:border-white/20 focus:border-amber-400 px-1 py-0.5 outline-none w-52 md:w-64 transition-colors"
             placeholder="Presentation Title"
           />
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-semibold border border-amber-400/30">
@@ -305,7 +305,7 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-amber-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-amber-400/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all">
             <Upload className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Import PPTX</span>
             <input type="file" accept=".pptx" className="hidden" onChange={handleImportPptx} />
@@ -314,9 +314,9 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(deckTitle, { slides })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all"
             >
-              <Save className="w-3.5 h-3.5 text-[#8B7CFF]" />
+              <Save className="w-3.5 h-3.5 text-[#A8DEFA]" />
               <span>Save</span>
             </button>
           )}
@@ -332,7 +332,7 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
           <button
             onClick={handleExportPdf}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-rose-400/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-rose-400/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all"
           >
             <DownloadCloud className="w-3.5 h-3.5 text-rose-400" />
             <span>PDF</span>
@@ -341,7 +341,7 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
           <button
             onClick={handleExportPptx}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#8B7CFF]/20 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-btn-primary text-xs font-semibold shadow-lg shadow-[#A8DEFA]/20 cursor-pointer"
           >
             <DownloadCloud className="w-3.5 h-3.5" />
             <span>Export .PPTX</span>
@@ -352,8 +352,8 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
       {/* Main Studio Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Slide Thumbnails */}
-        <div className="w-56 border-r border-white/10 bg-[#11152A]/40 backdrop-blur-xl p-3 overflow-y-auto space-y-3 shrink-0 hidden sm:block custom-scrollbar">
-          <div className="flex items-center justify-between text-xs font-bold text-[#9BA3BD] uppercase tracking-wider mb-2">
+        <div className="w-56 border-r border-white/10 bg-[#0B1420]/40 backdrop-blur-xl p-3 overflow-y-auto space-y-3 shrink-0 hidden sm:block custom-scrollbar">
+          <div className="flex items-center justify-between text-xs font-bold text-[#A7B8CA] uppercase tracking-wider mb-2">
             <span>Slides ({slides.length})</span>
             <button
               onClick={addSlide}
@@ -374,7 +374,7 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
                   : 'border-white/10 glass-card hover:border-white/20'
               }`}
             >
-              <div className="flex items-center justify-between text-[11px] font-bold text-[#F4F5FF] mb-1">
+              <div className="flex items-center justify-between text-[11px] font-bold text-[#F5FAFF] mb-1">
                 <span>Slide {idx + 1}</span>
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
@@ -429,10 +429,10 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
                 className="w-full h-18 rounded-xl border border-white/15 p-1.5 overflow-hidden text-[8px] flex flex-col justify-between shadow-sm"
                 style={{ backgroundColor: s.bgColor }}
               >
-                <div className="font-bold truncate text-[#F4F5FF]">
+                <div className="font-bold truncate text-[#F5FAFF]">
                   {s.elements.find((e) => e.type === 'title')?.content || 'Untitled'}
                 </div>
-                <div className="text-[#9BA3BD] truncate">
+                <div className="text-[#A7B8CA] truncate">
                   {s.elements.find((e) => e.type === 'text')?.content?.split('\n')[0] || ''}
                 </div>
               </div>
@@ -441,9 +441,9 @@ export const SlideStudio: React.FC<SlideStudioProps> = ({
         </div>
 
         {/* Center Canvas / Active Slide Viewport */}
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center justify-center bg-[#080B18]/60 custom-scrollbar">
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center justify-center bg-[#070B13]/60 custom-scrollbar">
           {/* Slide Theme Palettes */}
-          <div className="mb-4 flex items-center gap-2 glass-card px-3.5 py-1.5 rounded-2xl border-white/10 text-xs text-[#9BA3BD]">
+          <div className="mb-4 flex items-center gap-2 glass-card px-3.5 py-1.5 rounded-2xl border-white/10 text-xs text-[#A7B8CA]">
             <Palette className="w-3.5 h-3.5 text-amber-400" />
             <span>Theme:</span>
             {[

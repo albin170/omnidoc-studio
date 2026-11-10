@@ -26,19 +26,19 @@ export const OmniDocLogo: React.FC<OmniDocLogoProps> = ({
       >
         <defs>
           <linearGradient id="omniGrad1" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#3b82f6" />
-            <stop offset="0.5" stopColor="#6366f1" />
-            <stop offset="1" stopColor="#8b5cf6" />
+            <stop stopColor="#7CC4ED" />
+            <stop offset="0.5" stopColor="#A8DEFA" />
+            <stop offset="1" stopColor="#D9F3FF" />
           </linearGradient>
 
           <linearGradient id="omniGrad2" x1="12" y1="4" x2="36" y2="40" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#06b6d4" />
-            <stop offset="1" stopColor="#3b82f6" />
+            <stop stopColor="#7CC4ED" />
+            <stop offset="1" stopColor="#A8DEFA" />
           </linearGradient>
 
           <linearGradient id="omniGrad3" x1="4" y1="20" x2="38" y2="44" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#a855f7" />
-            <stop offset="1" stopColor="#ec4899" />
+            <stop stopColor="#A8DEFA" />
+            <stop offset="1" stopColor="#D9F3FF" />
           </linearGradient>
 
           <filter id="omniGlow" x="0" y="0" width="48" height="48" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
@@ -103,14 +103,14 @@ export const OmniDocLogo: React.FC<OmniDocLogoProps> = ({
       {showText && (
         <div className="flex flex-col text-left">
           <div className="flex items-center gap-1.5">
-            <span className={`font-extrabold text-base tracking-tight ${textColor}`}>
+            <span className={`font-extrabold text-base tracking-tight font-display ${textColor}`}>
               OmniDoc
             </span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-blue-500/10 text-blue-600 font-bold border border-blue-500/20">
+            <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#A8DEFA]/10 text-[#A8DEFA] font-bold border border-[#A8DEFA]/20">
               STUDIO
             </span>
           </div>
-          <span className="text-[10px] text-slate-400 font-medium leading-none -mt-0.5">
+          <span className="text-[10px] text-[#A7B8CA] font-medium leading-none -mt-0.5">
             Convert, Edit &amp; Create
           </span>
         </div>

@@ -107,24 +107,24 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#080B18]/80 backdrop-blur-xl animate-fadeIn">
-      <div className="w-full max-w-5xl max-h-[90vh] glass-panel border-white/15 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#F4F5FF] select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070B13]/80 backdrop-blur-xl animate-fadeIn">
+      <div className="w-full max-w-5xl max-h-[90vh] glass-panel border-white/15 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#F5FAFF] select-none">
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-[#42D6E8]/15 border border-[#42D6E8]/30 text-[#42D6E8]">
+            <div className="p-2.5 rounded-2xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/30 text-[#A8DEFA]">
               <GitCommit className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-extrabold text-base text-[#F4F5FF] tracking-tight">
+                <h2 className="font-extrabold text-base text-[#F5FAFF] tracking-tight">
                   Document Data Lineage &amp; Provenance
                 </h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#42D6E8]/20 text-[#42D6E8] border border-[#42D6E8]/30">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30">
                   v2.1 TRACEABILITY
                 </span>
               </div>
-              <p className="text-xs text-[#9BA3BD]">
+              <p className="text-xs text-[#A7B8CA]">
                 Audit extracted business numbers, totals, and fields anchored with confidence metrics
               </p>
             </div>
@@ -132,7 +132,7 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[#9BA3BD] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-[#A7B8CA] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -152,10 +152,10 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
               disabled={isExtracting}
               className="flex items-center gap-2 px-4 py-2 rounded-xl glass-btn-primary text-white font-extrabold text-xs transition-colors cursor-pointer"
             >
-              <Upload className="w-4 h-4 text-[#42D6E8]" />
+              <Upload className="w-4 h-4 text-[#A8DEFA]" />
               <span>Select Document</span>
             </button>
-            <span className="text-xs text-[#9BA3BD] font-medium truncate max-w-[200px]">
+            <span className="text-xs text-[#A7B8CA] font-medium truncate max-w-[200px]">
               {file ? file.name : 'No document selected'}
             </span>
           </div>
@@ -164,16 +164,16 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportJson}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F4F5FF] border border-white/15 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F5FAFF] border border-white/15 transition-colors cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Manifest JSON</span>
               </button>
               <button
                 onClick={handleExportCsv}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F4F5FF] border border-white/15 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F5FAFF] border border-white/15 transition-colors cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-[#42D6E8]" />
+                <FileSpreadsheet className="w-3.5 h-3.5 text-[#A8DEFA]" />
                 <span>Export CSV</span>
               </button>
             </div>
@@ -184,22 +184,22 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
         {manifest && (
           <div className="px-6 py-3 bg-white/[0.02] border-b border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div>
-              <span className="text-[#9BA3BD]">Extracted Fields:</span>
-              <span className="ml-2 font-mono font-bold text-[#F4F5FF]">{manifest.fields.length}</span>
+              <span className="text-[#A7B8CA]">Extracted Fields:</span>
+              <span className="ml-2 font-mono font-bold text-[#F5FAFF]">{manifest.fields.length}</span>
             </div>
             <div>
-              <span className="text-[#9BA3BD]">Mean Confidence:</span>
-              <span className="ml-2 font-mono font-bold text-[#42D6E8]">{avgConfidence}%</span>
+              <span className="text-[#A7B8CA]">Mean Confidence:</span>
+              <span className="ml-2 font-mono font-bold text-[#A8DEFA]">{avgConfidence}%</span>
             </div>
             <div>
-              <span className="text-[#9BA3BD]">Flagged For Review:</span>
-              <span className={`ml-2 font-mono font-bold ${flaggedCount > 0 ? 'text-amber-400' : 'text-[#9BA3BD]'}`}>
+              <span className="text-[#A7B8CA]">Flagged For Review:</span>
+              <span className={`ml-2 font-mono font-bold ${flaggedCount > 0 ? 'text-amber-400' : 'text-[#A7B8CA]'}`}>
                 {flaggedCount}
               </span>
             </div>
             <div className="truncate">
-              <span className="text-[#9BA3BD]">Source Hash:</span>
-              <span className="ml-2 font-mono text-[10px] text-[#9BA3BD]" title={manifest.documentHash}>
+              <span className="text-[#A7B8CA]">Source Hash:</span>
+              <span className="ml-2 font-mono text-[10px] text-[#A7B8CA]" title={manifest.documentHash}>
                 {manifest.documentHash.slice(0, 10)}...
               </span>
             </div>
@@ -210,13 +210,13 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
         {manifest && (
           <div className="px-6 py-2.5 bg-white/[0.02] border-b border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 flex-1 max-w-sm bg-white/[0.04] px-3 py-1.5 rounded-xl border border-white/15">
-              <Search className="w-3.5 h-3.5 text-[#9BA3BD]" />
+              <Search className="w-3.5 h-3.5 text-[#A7B8CA]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search extracted fields or values..."
-                className="bg-transparent border-none text-xs text-[#F4F5FF] placeholder:text-[#9BA3BD]/50 outline-none w-full"
+                className="bg-transparent border-none text-xs text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 outline-none w-full"
               />
             </div>
 
@@ -224,7 +224,7 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
               onClick={() => setOnlyFlagged(!onlyFlagged)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${onlyFlagged
                 ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                : 'bg-white/10 text-[#9BA3BD] border-white/15 hover:text-white'
+                : 'bg-white/10 text-[#A7B8CA] border-white/15 hover:text-white'
                 }`}
             >
               <Filter className="w-3.5 h-3.5" />
@@ -236,14 +236,14 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
         {/* Content Table / Cards */}
         <div className="flex-1 overflow-y-auto p-6">
           {isExtracting && (
-            <div className="py-16 flex flex-col items-center justify-center gap-3 text-[#9BA3BD]">
-              <div className="w-8 h-8 border-2 border-[#42D6E8] border-t-transparent rounded-full animate-spin" />
+            <div className="py-16 flex flex-col items-center justify-center gap-3 text-[#A7B8CA]">
+              <div className="w-8 h-8 border-2 border-[#A8DEFA] border-t-transparent rounded-full animate-spin" />
               <p className="text-xs font-medium">Extracting field lineage and confidence scores...</p>
             </div>
           )}
 
           {!isExtracting && manifest && filteredFields.length === 0 && (
-            <div className="py-16 text-center text-[#9BA3BD] text-xs">
+            <div className="py-16 text-center text-[#A7B8CA] text-xs">
               No lineage fields match your filter criteria.
             </div>
           )}
@@ -266,9 +266,9 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs text-[#F4F5FF]">{field.fieldName}</span>
+                        <span className="font-bold text-xs text-[#F5FAFF]">{field.fieldName}</span>
                         {field.pageNumber && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/10 text-[#9BA3BD] border border-white/10">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/10 text-[#A7B8CA] border border-white/10">
                             Page {field.pageNumber}
                           </span>
                         )}
@@ -286,22 +286,22 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
                     </div>
 
                     <div className="flex items-baseline gap-2">
-                      <span className="text-[11px] text-[#9BA3BD]">Extracted Value:</span>
-                      <span className="font-mono text-sm font-extrabold text-[#42D6E8] select-text">
+                      <span className="text-[11px] text-[#A7B8CA]">Extracted Value:</span>
+                      <span className="font-mono text-sm font-extrabold text-[#A8DEFA] select-text">
                         {String(field.extractedValue)}
                       </span>
                     </div>
 
                     {/* Context Snippet */}
-                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-[#F4F5FF] select-text leading-relaxed">
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 font-mono text-[11px] text-[#F5FAFF] select-text leading-relaxed">
                       {field.contextSnippet}
                     </div>
 
                     {/* Transformation Pipeline */}
-                    <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] text-[#9BA3BD]">
-                      <span className="text-[#9BA3BD]">Transformations:</span>
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] text-[#A7B8CA]">
+                      <span className="text-[#A7B8CA]">Transformations:</span>
                       {field.transformations.map((t, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-white/10 text-[#F4F5FF] font-mono">
+                        <span key={idx} className="px-2 py-0.5 rounded bg-white/10 text-[#F5FAFF] font-mono">
                           {t}
                         </span>
                       ))}
@@ -313,10 +313,10 @@ export const DataLineageModal: React.FC<DataLineageModalProps> = ({
           )}
 
           {!isExtracting && !manifest && (
-            <div className="py-16 text-center text-[#9BA3BD] text-xs space-y-2">
-              <GitCommit className="w-10 h-10 mx-auto text-[#9BA3BD]/40 mb-2" />
-              <p className="font-bold text-[#F4F5FF]">Select or drop a document to inspect its data provenance.</p>
-              <p className="text-[#9BA3BD]">Extracts totals, dates, IDs, and rates with verifiable confidence scoring.</p>
+            <div className="py-16 text-center text-[#A7B8CA] text-xs space-y-2">
+              <GitCommit className="w-10 h-10 mx-auto text-[#A7B8CA]/40 mb-2" />
+              <p className="font-bold text-[#F5FAFF]">Select or drop a document to inspect its data provenance.</p>
+              <p className="text-[#A7B8CA]">Extracts totals, dates, IDs, and rates with verifiable confidence scoring.</p>
             </div>
           )}
         </div>

@@ -236,7 +236,7 @@ export const Modals: React.FC<ModalsProps> = ({
                     <strong className="text-emerald-400">XLSX / CSV</strong> → PDF, CSV, XLSX
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                    <strong className="text-purple-400">PNG / JPG / WebP</strong> → PDF, Formats
+                    <strong className="text-[#A8DEFA]">PNG / JPG / WebP</strong> → PDF, Formats
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
                     <strong className="text-cyan-400">OCR Scans</strong> → Searchable PDF, DOCX, TXT

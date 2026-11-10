@@ -145,7 +145,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
       case 'forensics':
         return <Activity className="w-4 h-4 text-amber-400" />;
       case 'dna':
-        return <Dna className="w-4 h-4 text-purple-400" />;
+        return <Dna className="w-4 h-4 text-[#A8DEFA]" />;
       case 'convert':
         return <Zap className="w-4 h-4 text-indigo-400" />;
       case 'verify':
@@ -162,25 +162,25 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
   const selectedNode = activeWorkflow.nodes.find((n: WorkflowNode) => n.id === selectedNodeId);
 
   return (
-    <div className="flex-1 h-full flex flex-col overflow-hidden bg-[#080B18]/60 text-[#F4F5FF] select-none">
+    <div className="flex-1 h-full flex flex-col overflow-hidden bg-[#070B13]/60 text-[#F5FAFF] select-none">
       {/* Studio Header Toolbar matching reference */}
-      <div className="h-16 px-6 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl flex items-center justify-between shrink-0">
+      <div className="h-16 px-6 border-b border-white/10 bg-[#0B1420]/85 backdrop-blur-2xl flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8B7CFF] to-[#42D6E8] flex items-center justify-center p-0.5 shadow-md shadow-[#8B7CFF]/20">
-            <div className="w-full h-full bg-[#080B18] rounded-[10px] flex items-center justify-center">
-              <Layers className="w-4 h-4 text-[#8B7CFF]" />
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#A8DEFA] to-[#A8DEFA] flex items-center justify-center p-0.5 shadow-md shadow-[#A8DEFA]/20">
+            <div className="w-full h-full bg-[#070B13] rounded-[10px] flex items-center justify-center">
+              <Layers className="w-4 h-4 text-[#A8DEFA]" />
             </div>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-sm md:text-base text-[#F4F5FF] tracking-tight">
+              <h1 className="font-extrabold text-sm md:text-base text-[#F5FAFF] tracking-tight">
                 Workflow Studio
               </h1>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/30">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30">
                 DAG PIPELINE
               </span>
             </div>
-            <p className="text-[11px] text-[#9BA3BD]">
+            <p className="text-[11px] text-[#A7B8CA]">
               Automate your document workflows
             </p>
           </div>
@@ -192,10 +192,10 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
             value={selectedWorkflowId}
             onChange={(e) => handleSelectPreset(e.target.value)}
             disabled={isExecuting}
-            className="px-3 py-1.5 rounded-xl glass-input text-xs font-semibold text-[#F4F5FF] outline-none cursor-pointer hidden md:block"
+            className="px-3 py-1.5 rounded-xl glass-input text-xs font-semibold text-[#F5FAFF] outline-none cursor-pointer hidden md:block"
           >
             {PRESET_WORKFLOWS.map((preset) => (
-              <option key={preset.id} value={preset.id} className="bg-[#11152A] text-white">
+              <option key={preset.id} value={preset.id} className="bg-[#0B1420] text-white">
                 {preset.name}
               </option>
             ))}
@@ -211,9 +211,9 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isExecuting}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#F4F5FF] text-xs font-bold transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-bold transition-all cursor-pointer"
           >
-            <Upload className="w-3.5 h-3.5 text-[#42D6E8]" />
+            <Upload className="w-3.5 h-3.5 text-[#A8DEFA]" />
             <span>{selectedFile ? selectedFile.name.slice(0, 16) + '...' : 'Select File'}</span>
           </button>
 
@@ -222,13 +222,13 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
             value={targetFormat}
             onChange={(e) => setTargetFormat(e.target.value as FileFormat)}
             disabled={isExecuting}
-            className="px-2.5 py-1.5 rounded-xl glass-input text-xs font-bold text-[#F4F5FF] outline-none cursor-pointer hidden sm:block"
+            className="px-2.5 py-1.5 rounded-xl glass-input text-xs font-bold text-[#F5FAFF] outline-none cursor-pointer hidden sm:block"
           >
-            <option value="pdf" className="bg-[#11152A] text-white">Target: PDF</option>
-            <option value="docx" className="bg-[#11152A] text-white">Target: DOCX</option>
-            <option value="txt" className="bg-[#11152A] text-white">Target: TXT</option>
-            <option value="html" className="bg-[#11152A] text-white">Target: HTML</option>
-            <option value="csv" className="bg-[#11152A] text-white">Target: CSV</option>
+            <option value="pdf" className="bg-[#0B1420] text-white">Target: PDF</option>
+            <option value="docx" className="bg-[#0B1420] text-white">Target: DOCX</option>
+            <option value="txt" className="bg-[#0B1420] text-white">Target: TXT</option>
+            <option value="html" className="bg-[#0B1420] text-white">Target: HTML</option>
+            <option value="csv" className="bg-[#0B1420] text-white">Target: CSV</option>
           </select>
 
           {/* Run Workflow Button */}
@@ -237,8 +237,8 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
             disabled={isExecuting}
             className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer ${
               isExecuting
-                ? 'glass-card opacity-50 text-[#9BA3BD] cursor-not-allowed'
-                : 'bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] hover:brightness-110 text-white shadow-[#8B7CFF]/30 glow-purple'
+                ? 'glass-card opacity-50 text-[#A7B8CA] cursor-not-allowed'
+                : 'bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] hover:brightness-110 text-white shadow-[#A8DEFA]/30 lg-glow-ice'
             }`}
           >
             {isExecuting ? (
@@ -257,31 +257,31 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
       </div>
 
       {/* 3 Prominent Pipeline Stage Cards matching reference screenshot */}
-      <div className="py-6 px-8 flex items-center justify-center gap-4 md:gap-6 bg-[#080B18]/70 border-b border-white/10 shrink-0 overflow-x-auto select-none">
+      <div className="py-6 px-8 flex items-center justify-center gap-4 md:gap-6 bg-[#070B13]/70 border-b border-white/10 shrink-0 overflow-x-auto select-none">
         {/* Node 1: Input File */}
         <div className="flex items-center gap-3 px-5 py-3.5 rounded-2xl glass-card border border-white/15 shadow-xl min-w-[170px]">
           <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
             <FileText className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-[#9BA3BD] font-medium block">SOURCE</span>
-            <span className="text-xs font-bold text-[#F4F5FF]">Input File</span>
+            <span className="text-[10px] text-[#A7B8CA] font-medium block">SOURCE</span>
+            <span className="text-xs font-bold text-[#F5FAFF]">Input File</span>
           </div>
         </div>
 
         {/* Animated Connector Arrow */}
-        <div className="flex items-center text-[#8B7CFF] animate-pulse">
+        <div className="flex items-center text-[#A8DEFA] animate-pulse">
           <ArrowRight className="w-5 h-5" />
         </div>
 
         {/* Node 2: Process Document */}
-        <div className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#8B7CFF]/15 border border-[#8B7CFF]/40 shadow-xl shadow-[#8B7CFF]/10 min-w-[180px] glow-purple">
-          <div className="w-10 h-10 rounded-xl bg-[#8B7CFF]/30 border border-[#8B7CFF]/50 flex items-center justify-center text-white">
-            <Zap className="w-5 h-5 text-[#8B7CFF]" />
+        <div className="flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-[#A8DEFA]/15 border border-[#A8DEFA]/40 shadow-xl shadow-[#A8DEFA]/10 min-w-[180px] lg-glow-ice">
+          <div className="w-10 h-10 rounded-xl bg-[#A8DEFA]/30 border border-[#A8DEFA]/50 flex items-center justify-center text-white">
+            <Zap className="w-5 h-5 text-[#A8DEFA]" />
           </div>
           <div>
-            <span className="text-[10px] text-[#8B7CFF] font-medium block">ENGINE</span>
-            <span className="text-xs font-bold text-[#F4F5FF]">Process Document</span>
+            <span className="text-[10px] text-[#A8DEFA] font-medium block">ENGINE</span>
+            <span className="text-xs font-bold text-[#F5FAFF]">Process Document</span>
           </div>
         </div>
 
@@ -297,7 +297,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
           </div>
           <div>
             <span className="text-[10px] text-emerald-400 font-medium block">OUTPUT</span>
-            <span className="text-xs font-bold text-[#F4F5FF]">Export Result</span>
+            <span className="text-xs font-bold text-[#F5FAFF]">Export Result</span>
           </div>
         </div>
       </div>
@@ -326,7 +326,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
                       toNode.status === 'error'
                         ? '#ef4444'
                         : isConnectedCompleted
-                        ? '#6366f1'
+                        ? '#7CC4ED'
                         : '#334155'
                     }
                     strokeWidth={isConnectedCompleted ? 2.5 : 1.5}
@@ -407,7 +407,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               <span>Pipeline Stage Inspector</span>
             </h2>
             {selectedNode && (
-              <span className="text-[11px] font-mono text-purple-400 font-bold">
+              <span className="text-[11px] font-mono text-[#A8DEFA] font-bold">
                 {selectedNode.type}
               </span>
             )}
@@ -521,7 +521,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
       </div>
 
       {/* Bottom Tabs & Telemetry Section matching reference */}
-      <div className="border-t border-white/10 bg-[#080B18]/90 backdrop-blur-2xl flex flex-col shrink-0">
+      <div className="border-t border-white/10 bg-[#070B13]/90 backdrop-blur-2xl flex flex-col shrink-0">
         {/* Tab Headers and Status Banner */}
         <div className="h-11 px-5 border-b border-white/10 flex items-center justify-between text-xs font-semibold">
           <div className="flex items-center gap-4">
@@ -529,8 +529,8 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               onClick={() => setBottomTab('log')}
               className={`py-2 px-1 border-b-2 transition-all cursor-pointer ${
                 bottomTab === 'log'
-                  ? 'border-[#8B7CFF] text-[#F4F5FF]'
-                  : 'border-transparent text-[#9BA3BD] hover:text-[#F4F5FF]'
+                  ? 'border-[#A8DEFA] text-[#F5FAFF]'
+                  : 'border-transparent text-[#A7B8CA] hover:text-[#F5FAFF]'
               }`}
             >
               Execution Log
@@ -539,8 +539,8 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               onClick={() => setBottomTab('results')}
               className={`py-2 px-1 border-b-2 transition-all cursor-pointer ${
                 bottomTab === 'results'
-                  ? 'border-[#8B7CFF] text-[#F4F5FF]'
-                  : 'border-transparent text-[#9BA3BD] hover:text-[#F4F5FF]'
+                  ? 'border-[#A8DEFA] text-[#F5FAFF]'
+                  : 'border-transparent text-[#A7B8CA] hover:text-[#F5FAFF]'
               }`}
             >
               Results
@@ -549,8 +549,8 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               onClick={() => setBottomTab('history')}
               className={`py-2 px-1 border-b-2 transition-all cursor-pointer ${
                 bottomTab === 'history'
-                  ? 'border-[#8B7CFF] text-[#F4F5FF]'
-                  : 'border-transparent text-[#9BA3BD] hover:text-[#F4F5FF]'
+                  ? 'border-[#A8DEFA] text-[#F5FAFF]'
+                  : 'border-transparent text-[#A7B8CA] hover:text-[#F5FAFF]'
               }`}
             >
               History
@@ -573,7 +573,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
           {bottomTab === 'log' && (
             <div ref={terminalRef} className="space-y-1 select-text">
               {logs.length === 0 ? (
-                <div className="space-y-1 text-[#9BA3BD]">
+                <div className="space-y-1 text-[#A7B8CA]">
                   <div className="text-emerald-400/90 font-semibold">[00:00:01] DAG Pipeline initialized successfully with 3 stages.</div>
                   <div>[00:00:03] Input File loaded: contract_agreement.pdf (SHA256: 8f9b...a3)</div>
                   <div>[00:00:12] Executing Document Engine: Self-healing conversion &amp; integrity verification.</div>
@@ -581,13 +581,13 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
                 </div>
               ) : (
                 logs.map((log, index) => {
-                  let color = 'text-[#F4F5FF]';
+                  let color = 'text-[#F5FAFF]';
                   if (log.level === 'warn') color = 'text-amber-400';
                   if (log.level === 'error') color = 'text-rose-400';
                   return (
                     <div key={index} className="flex items-start gap-2">
-                      <span className="text-[#9BA3BD]/70">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                      <span className="text-[#8B7CFF] font-semibold">{log.nodeId}:</span>
+                      <span className="text-[#A7B8CA]/70">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                      <span className="text-[#A8DEFA] font-semibold">{log.nodeId}:</span>
                       <span className={color}>{log.message}</span>
                     </div>
                   );
@@ -597,14 +597,14 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
           )}
 
           {bottomTab === 'results' && (
-            <div className="space-y-2 text-[#F4F5FF] font-sans">
+            <div className="space-y-2 text-[#F5FAFF] font-sans">
               <div className="flex items-center gap-4 text-xs">
-                <span className="text-[#9BA3BD]">Target Format:</span>
-                <span className="font-bold font-mono uppercase text-[#42D6E8]">{targetFormat}</span>
-                <span className="text-[#9BA3BD]">Fidelity Score:</span>
+                <span className="text-[#A7B8CA]">Target Format:</span>
+                <span className="font-bold font-mono uppercase text-[#A8DEFA]">{targetFormat}</span>
+                <span className="text-[#A7B8CA]">Fidelity Score:</span>
                 <span className="font-bold font-mono text-emerald-400">99.4%</span>
-                <span className="text-[#9BA3BD]">Verified Signatures:</span>
-                <span className="font-bold font-mono text-[#8B7CFF]">SHA-256 Validated</span>
+                <span className="text-[#A7B8CA]">Verified Signatures:</span>
+                <span className="font-bold font-mono text-[#A8DEFA]">SHA-256 Validated</span>
               </div>
               {executionResult?.convertedBlob && (
                 <div className="pt-2">
@@ -620,7 +620,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
           )}
 
           {bottomTab === 'history' && (
-            <div className="space-y-1.5 text-xs text-[#9BA3BD] font-sans">
+            <div className="space-y-1.5 text-xs text-[#A7B8CA] font-sans">
               <div className="flex items-center justify-between p-1.5 rounded-lg bg-white/[0.03]">
                 <span>Run #4 · Pipeline executed successfully</span>
                 <span className="font-mono text-[10px]">Just now · 24.8s</span>

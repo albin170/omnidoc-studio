@@ -363,19 +363,19 @@ export const UserPanel: React.FC<UserPanelProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#080B18]/80 backdrop-blur-xl flex items-center justify-center p-3 sm:p-5 select-none animate-in fade-in">
-      <div className="glass-panel border-white/15 rounded-[28px] max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-[#F4F5FF]">
+    <div className="fixed inset-0 z-50 bg-[#070B13]/80 backdrop-blur-xl flex items-center justify-center p-3 sm:p-5 select-none animate-in fade-in">
+      <div className="glass-panel border-white/15 rounded-[28px] max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-[#F5FAFF]">
         {/* Header */}
         <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/[0.03]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#8B7CFF]/30 to-[#42D6E8]/30 border border-[#8B7CFF]/40 text-[#42D6E8] flex items-center justify-center font-bold shadow-md shadow-[#8B7CFF]/20">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#A8DEFA]/30 to-[#A8DEFA]/30 border border-[#A8DEFA]/40 text-[#A8DEFA] flex items-center justify-center font-bold shadow-md shadow-[#A8DEFA]/20">
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-[#F4F5FF] leading-tight">
+              <h2 className="text-base font-extrabold text-[#F5FAFF] leading-tight">
                 Account &amp; Studio Panel
               </h2>
-              <p className="text-xs text-[#9BA3BD]">
+              <p className="text-xs text-[#A7B8CA]">
                 Manage your user identity, verified quotas, and developer credentials
               </p>
             </div>
@@ -383,19 +383,19 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-white/10 text-[#9BA3BD] hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-full hover:bg-white/10 text-[#A7B8CA] hover:text-white flex items-center justify-center cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center px-5 border-b border-white/10 bg-white/[0.02] gap-2 overflow-x-auto text-xs font-semibold text-[#9BA3BD]">
+        <div className="flex items-center px-5 border-b border-white/10 bg-white/[0.02] gap-2 overflow-x-auto text-xs font-semibold text-[#A7B8CA]">
           <button
             onClick={() => setActiveTab('profile')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'profile'
-                ? 'border-[#8B7CFF] text-[#8B7CFF] font-bold'
+                ? 'border-[#A8DEFA] text-[#A8DEFA] font-bold'
                 : 'border-transparent hover:text-white'
             }`}
           >
@@ -407,11 +407,11 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('plan')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'plan'
-                ? 'border-[#8B7CFF] text-[#8B7CFF] font-bold'
+                ? 'border-[#A8DEFA] text-[#A8DEFA] font-bold'
                 : 'border-transparent hover:text-white'
             }`}
           >
-            <Zap className="w-4 h-4 text-[#42D6E8]" />
+            <Zap className="w-4 h-4 text-[#A8DEFA]" />
             <span>Plans &amp; Quota</span>
           </button>
 
@@ -419,7 +419,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('security')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'security'
-                ? 'border-[#8B7CFF] text-[#8B7CFF] font-bold'
+                ? 'border-[#A8DEFA] text-[#A8DEFA] font-bold'
                 : 'border-transparent hover:text-white'
             }`}
           >
@@ -431,7 +431,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             onClick={() => setActiveTab('api')}
             className={`py-3 px-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'api'
-                ? 'border-[#8B7CFF] text-[#8B7CFF] font-bold'
+                ? 'border-[#A8DEFA] text-[#A8DEFA] font-bold'
                 : 'border-transparent hover:text-white'
             }`}
           >
@@ -447,7 +447,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             <div className="space-y-6">
               {/* Avatar Chooser */}
               <div>
-                <label className="text-xs font-bold text-[#F4F5FF] block mb-2">
+                <label className="text-xs font-bold text-[#F5FAFF] block mb-2">
                   Select User Avatar
                 </label>
                 <div className="flex items-center gap-3 overflow-x-auto pb-1">
@@ -459,7 +459,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                       onClick={() => setSelectedAvatar(avatar)}
                       className={`w-12 h-12 rounded-2xl object-cover cursor-pointer transition-all border-2 ${
                         selectedAvatar === avatar
-                          ? 'border-[#8B7CFF] ring-2 ring-[#8B7CFF]/40 scale-105'
+                          ? 'border-[#A8DEFA] ring-2 ring-[#A8DEFA]/40 scale-105'
                           : 'border-transparent hover:opacity-80'
                       }`}
                     />
@@ -470,23 +470,23 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               {/* Form Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="font-bold text-[#9BA3BD] block mb-1">Full Name</label>
+                  <label className="font-bold text-[#A7B8CA] block mb-1">Full Name</label>
                   <input
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     placeholder="e.g. Zach Marion"
-                    className="w-full p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#8B7CFF] outline-none text-[#F4F5FF] placeholder:text-[#9BA3BD]/50 font-medium"
+                    className="w-full p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#A8DEFA] outline-none text-[#F5FAFF] placeholder:text-[#A7B8CA]/50 font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-[#9BA3BD] block mb-1">Email Address (Authoritative)</label>
+                  <label className="font-bold text-[#A7B8CA] block mb-1">Email Address (Authoritative)</label>
                   <input
                     type="email"
                     value={userEmail}
                     disabled
-                    className="w-full p-2.5 rounded-xl border border-white/10 bg-white/[0.02] text-[#9BA3BD] font-medium cursor-not-allowed"
+                    className="w-full p-2.5 rounded-xl border border-white/10 bg-white/[0.02] text-[#A7B8CA] font-medium cursor-not-allowed"
                     title="Account email address is bound to your organization identity."
                   />
                 </div>
@@ -496,7 +496,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                 <button
                   onClick={handleSaveProfile}
                   disabled={isSavingProfile}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] text-white font-bold text-xs hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-2"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] text-white font-bold text-xs hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-2"
                 >
                   {isSavingProfile ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                   <span>Save Profile</span>
@@ -504,15 +504,15 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               </div>
 
               {/* Status info box */}
-              <div className="p-4 rounded-2xl bg-[#8B7CFF]/10 border border-[#8B7CFF]/30 flex items-center justify-between text-xs">
+              <div className="p-4 rounded-2xl bg-[#A8DEFA]/10 border border-[#A8DEFA]/30 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="w-5 h-5 text-[#42D6E8]" />
+                  <ShieldCheck className="w-5 h-5 text-[#A8DEFA]" />
                   <div>
-                    <div className="font-bold text-[#F4F5FF]">Authenticated Account</div>
-                    <div className="text-[#9BA3BD] text-[11px]">Protected by JWT session authentication and tenant isolation</div>
+                    <div className="font-bold text-[#F5FAFF]">Authenticated Account</div>
+                    <div className="text-[#A7B8CA] text-[11px]">Protected by JWT session authentication and tenant isolation</div>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-[#8B7CFF] text-white font-bold text-[10px] shadow-sm shadow-[#8B7CFF]/40 uppercase">
+                <span className="px-2.5 py-1 rounded-full bg-[#A8DEFA] text-white font-bold text-[10px] shadow-sm shadow-[#A8DEFA]/40 uppercase">
                   {userSession.role || 'USER'}
                 </span>
               </div>
@@ -525,11 +525,20 @@ export const UserPanel: React.FC<UserPanelProps> = ({
               {/* Storage Quota Usage */}
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <div className="font-bold text-[#F4F5FF] flex items-center gap-2">
-                    <HardDrive className="w-4 h-4 text-[#42D6E8]" />
-                    <span>Server Storage Quota</span>
+                  <div className="font-bold text-[#F5FAFF] flex items-center gap-2">
+                    <HardDrive className="w-4 h-4 text-[#A8DEFA]" />
+                    <span>Storage Quota</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+                      userSession.authSource === 'backend' || backendUsage?.storage_used_bytes != null
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30'
+                    }`}>
+                      {userSession.authSource === 'backend' || backendUsage?.storage_used_bytes != null
+                        ? 'Cloud Vault (Supabase)'
+                        : 'Local Sandbox (IndexedDB)'}
+                    </span>
                   </div>
-                  <div className="font-mono text-[#9BA3BD] font-semibold">
+                  <div className="font-mono text-[#A7B8CA] font-semibold">
                     {formatFileSize(currentUsedBytes)} / {formatFileSize(maxQuotaBytes)} ({quotaPct}%)
                   </div>
                 </div>
@@ -537,15 +546,15 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                 <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${
-                      quotaPct > 90 ? 'bg-rose-500' : 'bg-gradient-to-r from-[#8B7CFF] to-[#42D6E8]'
+                      quotaPct > 90 ? 'bg-rose-500' : 'bg-gradient-to-r from-[#A8DEFA] to-[#A8DEFA]'
                     }`}
                     style={{ width: `${quotaPct}%` }}
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-[#9BA3BD] pt-0.5">
+                <div className="flex items-center justify-between text-[11px] text-[#A7B8CA] pt-0.5">
                   <span>{backendUsage?.documents_count ?? totalProjectsCount} documents stored</span>
-                  <span className="text-[#42D6E8] font-semibold">
+                  <span className="text-[#A8DEFA] font-semibold">
                     Active Plan: {(backendEntitlements?.plan_name || userSession.planTier || 'Free Community').toUpperCase()}
                   </span>
                 </div>
@@ -553,14 +562,14 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
               {/* Billing Cycle Switcher */}
               <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.04] border border-white/10">
-                <span className="text-xs font-bold text-[#F4F5FF]">Billing Cadence</span>
+                <span className="text-xs font-bold text-[#F5FAFF]">Billing Cadence</span>
                 <div className="flex items-center gap-1 bg-white/[0.06] p-1 rounded-xl border border-white/10 text-xs font-semibold">
                   <button
                     onClick={() => onUpdateSession({ ...userSession, billingCycle: 'monthly' })}
                     className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       (userSession.billingCycle || 'monthly') === 'monthly'
-                        ? 'bg-gradient-to-r from-[#8B7CFF] to-[#7363f8] text-white shadow-xs'
-                        : 'text-[#9BA3BD] hover:text-white'
+                        ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7363f8] text-white shadow-xs'
+                        : 'text-[#A7B8CA] hover:text-white'
                     }`}
                   >
                     Monthly
@@ -569,8 +578,8 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                     onClick={() => onUpdateSession({ ...userSession, billingCycle: 'annual' })}
                     className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all cursor-pointer ${
                       (userSession.billingCycle || 'monthly') === 'annual'
-                        ? 'bg-gradient-to-r from-[#8B7CFF] to-[#7363f8] text-white shadow-xs'
-                        : 'text-[#9BA3BD] hover:text-white'
+                        ? 'bg-gradient-to-r from-[#A8DEFA] to-[#7363f8] text-white shadow-xs'
+                        : 'text-[#A7B8CA] hover:text-white'
                     }`}
                   >
                     <span>Annual</span>
@@ -593,46 +602,46 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                       key={p.tier}
                       className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
                         isCurrent
-                          ? 'border-[#8B7CFF] bg-[#8B7CFF]/15 shadow-lg shadow-[#8B7CFF]/20 ring-1 ring-[#8B7CFF]/40'
+                          ? 'border-[#A8DEFA] bg-[#A8DEFA]/15 shadow-lg shadow-[#A8DEFA]/20 ring-1 ring-[#A8DEFA]/40'
                           : 'border-white/10 bg-white/[0.03] hover:border-white/20'
                       }`}
                     >
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-[#9BA3BD]">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-[#A7B8CA]">
                             {p.badge}
                           </span>
                           {isCurrent && (
-                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#8B7CFF] text-white">
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#A8DEFA] text-white">
                               ACTIVE
                             </span>
                           )}
                         </div>
 
                         <div>
-                          <h4 className="text-sm font-bold text-[#F4F5FF]">{p.name}</h4>
+                          <h4 className="text-sm font-bold text-[#F5FAFF]">{p.name}</h4>
                           <div className="flex items-baseline gap-1 mt-0.5">
-                            <span className="text-xl font-extrabold text-[#F4F5FF]">{price}</span>
-                            <span className="text-xs text-[#9BA3BD]">{p.period}</span>
+                            <span className="text-xl font-extrabold text-[#F5FAFF]">{price}</span>
+                            <span className="text-xs text-[#A7B8CA]">{p.period}</span>
                           </div>
                           {(userSession.billingCycle || 'monthly') === 'annual' && p.tier !== 'free' && (
-                            <div className="text-[10px] text-[#42D6E8] font-mono mt-0.5">{p.annualTotal} billed annually</div>
+                            <div className="text-[10px] text-[#A8DEFA] font-mono mt-0.5">{p.annualTotal} billed annually</div>
                           )}
                         </div>
 
-                        <p className="text-[11px] text-[#9BA3BD] leading-tight">{p.desc}</p>
+                        <p className="text-[11px] text-[#A7B8CA] leading-tight">{p.desc}</p>
 
-                        <div className="pt-2 border-t border-white/10 space-y-1 text-[11px] text-[#9BA3BD]">
+                        <div className="pt-2 border-t border-white/10 space-y-1 text-[11px] text-[#A7B8CA]">
                           <div className="flex items-center gap-1.5 font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#42D6E8]" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#A8DEFA]" />
                             <span>{p.maxSize}</span>
                           </div>
                           <div className="flex items-center gap-1.5 font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#42D6E8]" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#A8DEFA]" />
                             <span>{p.storage}</span>
                           </div>
                           <div className="flex items-center gap-1.5 font-medium">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#42D6E8]" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#A8DEFA]" />
                             <span>{p.monthlyProcessing}</span>
                           </div>
                         </div>
@@ -643,7 +652,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                         disabled={isCurrent}
                         className={`w-full mt-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           isCurrent
-                            ? 'bg-[#8B7CFF]/20 text-[#8B7CFF] cursor-default'
+                            ? 'bg-[#A8DEFA]/20 text-[#A8DEFA] cursor-default'
                             : 'glass-btn-primary text-white shadow-xs'
                         }`}
                       >
@@ -661,40 +670,40 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             <div className="space-y-6 text-xs">
               {/* Password Change Form */}
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
-                <div className="font-bold text-[#F4F5FF] flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-[#8B7CFF]" />
+                <div className="font-bold text-[#F5FAFF] flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-[#A8DEFA]" />
                   <span>Update Account Password</span>
                 </div>
                 <form onSubmit={handleChangePassword} className="space-y-3">
                   <div>
-                    <label className="block text-[#9BA3BD] mb-1 font-semibold">Current Password</label>
+                    <label className="block text-[#A7B8CA] mb-1 font-semibold">Current Password</label>
                     <input
                       type="password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#8B7CFF]"
+                      className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#A8DEFA]"
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[#9BA3BD] mb-1 font-semibold">New Password (min 8 chars)</label>
+                      <label className="block text-[#A7B8CA] mb-1 font-semibold">New Password (min 8 chars)</label>
                       <input
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#8B7CFF]"
+                        className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#A8DEFA]"
                       />
                     </div>
                     <div>
-                      <label className="block text-[#9BA3BD] mb-1 font-semibold">Confirm New Password</label>
+                      <label className="block text-[#A7B8CA] mb-1 font-semibold">Confirm New Password</label>
                       <input
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#8B7CFF]"
+                        className="w-full p-2 rounded-xl bg-white/5 border border-white/10 text-white outline-none focus:border-[#A8DEFA]"
                       />
                     </div>
                   </div>
@@ -702,7 +711,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                     <button
                       type="submit"
                       disabled={isChangingPassword}
-                      className="px-4 py-1.5 rounded-xl bg-[#8B7CFF] hover:bg-[#7363f8] text-white font-bold transition-colors cursor-pointer"
+                      className="px-4 py-1.5 rounded-xl bg-[#A8DEFA] hover:bg-[#7363f8] text-white font-bold transition-colors cursor-pointer"
                     >
                       {isChangingPassword ? 'Updating...' : 'Update Password'}
                     </button>
@@ -712,32 +721,32 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
               {/* Active Session Information (Phase 5) */}
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
-                <div className="font-bold text-[#F4F5FF] flex items-center justify-between">
+                <div className="font-bold text-[#F5FAFF] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-[#42D6E8]" />
+                    <ShieldCheck className="w-4 h-4 text-[#A8DEFA]" />
                     <span>Active Session Information</span>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono">
                     AUTHENTICATED
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-[#9BA3BD]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-[#A7B8CA]">
                   <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-0.5">
-                    <div className="text-[#9BA3BD]/70 text-[10px]">Session Identity</div>
+                    <div className="text-[#A7B8CA]/70 text-[10px]">Session Identity</div>
                     <div className="text-white font-mono break-all">{userSession.userEmail || userEmail}</div>
                   </div>
                   <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-0.5">
-                    <div className="text-[#9BA3BD]/70 text-[10px]">Access Role &amp; Tier</div>
+                    <div className="text-[#A7B8CA]/70 text-[10px]">Access Role &amp; Tier</div>
                     <div className="text-white font-semibold">
                       {(userSession.role || 'user').toUpperCase()} • {(backendEntitlements?.plan_name || userSession.planTier || 'Free').toUpperCase()}
                     </div>
                   </div>
                   <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-0.5">
-                    <div className="text-[#9BA3BD]/70 text-[10px]">Auth Source</div>
+                    <div className="text-[#A7B8CA]/70 text-[10px]">Auth Source</div>
                     <div className="text-white font-semibold">{userSession.authSource || 'JWT Bearer (Backend)'}</div>
                   </div>
                   <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-0.5">
-                    <div className="text-[#9BA3BD]/70 text-[10px]">Security Protocol</div>
+                    <div className="text-[#A7B8CA]/70 text-[10px]">Security Protocol</div>
                     <div className="text-white font-semibold">TLS Encrypted • SHA-256 Token Vault</div>
                   </div>
                 </div>
@@ -745,33 +754,33 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
               {/* Privacy Settings & Consent Management (Phase 5) */}
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
-                <div className="font-bold text-[#F4F5FF] flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-[#8B7CFF]" />
+                <div className="font-bold text-[#F5FAFF] flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-[#A8DEFA]" />
                   <span>Privacy &amp; Processing Consents</span>
                 </div>
                 <div className="space-y-2 pt-1 text-xs">
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
                     <div>
                       <div className="font-semibold text-white">Autonomous AI Processing</div>
-                      <div className="text-[11px] text-[#9BA3BD]">Consent for AI document parsing, OCR and summarization pipelines</div>
+                      <div className="text-[11px] text-[#A7B8CA]">Consent for AI document parsing, OCR and summarization pipelines</div>
                     </div>
                     <input
                       type="checkbox"
                       checked={aiConsentEnabled}
                       onChange={(e) => handleToggleAiConsent(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#8B7CFF] cursor-pointer"
+                      className="w-4 h-4 rounded text-[#A8DEFA] cursor-pointer"
                     />
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
                     <div>
                       <div className="font-semibold text-white">Security &amp; Operational Updates</div>
-                      <div className="text-[11px] text-[#9BA3BD]">Receive transactional emails and critical security disclosures</div>
+                      <div className="text-[11px] text-[#A7B8CA]">Receive transactional emails and critical security disclosures</div>
                     </div>
                     <input
                       type="checkbox"
                       checked={marketingConsentEnabled}
                       onChange={(e) => setMarketingConsentEnabled(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#8B7CFF] cursor-pointer"
+                      className="w-4 h-4 rounded text-[#A8DEFA] cursor-pointer"
                     />
                   </div>
                 </div>
@@ -779,11 +788,11 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
               {/* Data Export & Account Deletion */}
               <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
-                <div className="font-bold text-[#F4F5FF] flex items-center gap-2">
-                  <Download className="w-4 h-4 text-[#42D6E8]" />
+                <div className="font-bold text-[#F5FAFF] flex items-center gap-2">
+                  <Download className="w-4 h-4 text-[#A8DEFA]" />
                   <span>Privacy &amp; Data Rights (GDPR / CCPA)</span>
                 </div>
-                <p className="text-[#9BA3BD] text-[11px]">
+                <p className="text-[#A7B8CA] text-[11px]">
                   Request an immutable copy of your account profile, audit trail, and policy consents, or exercise right to erasure.
                 </p>
                 <div className="flex items-center gap-3 pt-1 flex-wrap">
@@ -796,7 +805,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                   </button>
                   <button
                     onClick={handlePurgeAllData}
-                    className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-[#9BA3BD] hover:text-white font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-[#A7B8CA] hover:text-white font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Wipe Local Cache</span>
@@ -839,13 +848,13 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                   <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center mx-auto">
                     <Lock className="w-6 h-6" />
                   </div>
-                  <h3 className="text-sm font-bold text-[#F4F5FF]">Developer API Keys Unavailable on Free Tier</h3>
-                  <p className="text-[#9BA3BD] text-xs max-w-md mx-auto">
+                  <h3 className="text-sm font-bold text-[#F5FAFF]">Developer API Keys Unavailable on Free Tier</h3>
+                  <p className="text-[#A7B8CA] text-xs max-w-md mx-auto">
                     Programmatic REST API keys and automated webhooks require the <strong>Professional Suite</strong> or <strong>Enterprise Cloud</strong> tier.
                   </p>
                   <button
                     onClick={() => setActiveTab('plan')}
-                    className="px-4 py-2 rounded-xl bg-[#8B7CFF] text-white font-bold cursor-pointer hover:bg-[#7363f8] transition-colors"
+                    className="px-4 py-2 rounded-xl bg-[#A8DEFA] text-white font-bold cursor-pointer hover:bg-[#7363f8] transition-colors"
                   >
                     View Upgrade Options
                   </button>
@@ -859,7 +868,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                         <CheckCircle2 className="w-4 h-4" />
                         <span>API Key Generated Successfully</span>
                       </div>
-                      <p className="text-[#9BA3BD] text-[11px]">
+                      <p className="text-[#A7B8CA] text-[11px]">
                         Copy your key secret now. For security reasons, it will never be displayed again.
                       </p>
                       <div className="flex items-center gap-2 p-2 rounded-xl bg-black/40 border border-white/10 font-mono text-emerald-400 text-xs">
@@ -882,19 +891,19 @@ export const UserPanel: React.FC<UserPanelProps> = ({
 
                   {/* Create New Key Section */}
                   <div className="p-4 rounded-2xl border border-white/10 bg-white/[0.03] space-y-3">
-                    <span className="font-bold text-[#F4F5FF] block">Create New API Key</span>
+                    <span className="font-bold text-[#F5FAFF] block">Create New API Key</span>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={newKeyName}
                         onChange={(e) => setNewKeyName(e.target.value)}
                         placeholder="Key Identifier (e.g. CI/CD Pipeline, Production Worker)"
-                        className="flex-1 p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#8B7CFF] outline-none text-[#F4F5FF] placeholder:text-[#9BA3BD]/50"
+                        className="flex-1 p-2.5 rounded-xl border border-white/15 bg-white/[0.04] focus:border-[#A8DEFA] outline-none text-[#F5FAFF] placeholder:text-[#A7B8CA]/50"
                       />
                       <button
                         onClick={handleCreateApiKey}
                         disabled={isCreatingKey}
-                        className="px-4 py-2.5 rounded-xl bg-[#8B7CFF] hover:bg-[#7363f8] text-white font-bold flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
+                        className="px-4 py-2.5 rounded-xl bg-[#A8DEFA] hover:bg-[#7363f8] text-white font-bold flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
                       >
                         <Plus className="w-4 h-4" />
                         <span>{isCreatingKey ? 'Generating...' : 'Generate Key'}</span>
@@ -905,14 +914,14 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                   {/* Active Keys List */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#F4F5FF]">Active API Keys</span>
-                      <span className="text-[#9BA3BD] font-mono text-[11px]">{apiKeys.length} keys active</span>
+                      <span className="font-bold text-[#F5FAFF]">Active API Keys</span>
+                      <span className="text-[#A7B8CA] font-mono text-[11px]">{apiKeys.length} keys active</span>
                     </div>
 
                     {isLoadingKeys ? (
-                      <div className="p-6 text-center text-[#9BA3BD]">Loading active keys...</div>
+                      <div className="p-6 text-center text-[#A7B8CA]">Loading active keys...</div>
                     ) : apiKeys.length === 0 ? (
-                      <div className="p-6 text-center rounded-2xl border border-white/10 bg-white/[0.02] text-[#9BA3BD]">
+                      <div className="p-6 text-center rounded-2xl border border-white/10 bg-white/[0.02] text-[#A7B8CA]">
                         No active API keys found. Generate one above to access the REST API.
                       </div>
                     ) : (
@@ -923,13 +932,13 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                             className="p-3 rounded-2xl border border-white/10 bg-white/[0.02] flex items-center justify-between"
                           >
                             <div className="space-y-0.5">
-                              <div className="font-bold text-[#F4F5FF] flex items-center gap-2">
+                              <div className="font-bold text-[#F5FAFF] flex items-center gap-2">
                                 <span>{k.name}</span>
                                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono">
                                   {k.key_prefix}••••
                                 </span>
                               </div>
-                              <div className="text-[11px] text-[#9BA3BD] space-x-2">
+                              <div className="text-[11px] text-[#A7B8CA] space-x-2">
                                 <span>Created: {new Date(k.created_at).toLocaleDateString()}</span>
                                 <span>•</span>
                                 <span>Limit: {k.rate_limit_rpm} req/min</span>
@@ -955,18 +964,18 @@ export const UserPanel: React.FC<UserPanelProps> = ({
         {/* Persistent Modal Footer: Active Account & Universal Sign Out */}
         <div className="p-4 px-6 border-t border-white/10 bg-white/[0.03] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3 w-full sm:w-auto min-w-0">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#8B7CFF] to-[#42D6E8] flex items-center justify-center font-bold text-xs text-[#080B18] uppercase shadow-sm shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#A8DEFA] to-[#A8DEFA] flex items-center justify-center font-bold text-xs text-[#070B13] uppercase shadow-sm shrink-0">
               {(userName || userEmail || 'U').charAt(0)}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold text-[#F4F5FF] truncate">
+              <span className="text-xs font-semibold text-[#F5FAFF] truncate">
                 {userEmail || 'Active Session'}
               </span>
-              <div className="flex items-center gap-1.5 text-[10px] text-[#9BA3BD]">
+              <div className="flex items-center gap-1.5 text-[10px] text-[#A7B8CA]">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                 <span>Active Account</span>
                 <span>•</span>
-                <span className="uppercase font-mono text-[10px] text-[#42D6E8] font-bold">
+                <span className="uppercase font-mono text-[10px] text-[#A8DEFA] font-bold">
                   {userSession.role || 'Member'}
                 </span>
               </div>
@@ -991,7 +1000,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[#9BA3BD] hover:text-white text-xs font-medium cursor-pointer transition-colors"
+              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[#A7B8CA] hover:text-white text-xs font-medium cursor-pointer transition-colors"
             >
               Close
             </button>

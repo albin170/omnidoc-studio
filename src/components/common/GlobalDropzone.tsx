@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { UploadCloud, FileText, Sparkles, ShieldCheck } from 'lucide-react';
+import { UploadCloud, ShieldCheck } from 'lucide-react';
 
 interface GlobalDropzoneProps {
   onFilesDropped: (files: File[]) => void;
@@ -12,7 +12,6 @@ export const GlobalDropzone: React.FC<GlobalDropzoneProps> = ({ onFilesDropped }
   useEffect(() => {
     const handleDragEnter = (e: DragEvent) => {
       e.preventDefault();
-      // Ensure it is files being dragged
       if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
         setDragCounter((prev) => prev + 1);
         setIsDraggingOver(true);
@@ -62,17 +61,17 @@ export const GlobalDropzone: React.FC<GlobalDropzoneProps> = ({ onFilesDropped }
   if (!isDraggingOver) return null;
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none bg-blue-950/70 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in select-none">
-      <div className="w-full max-w-xl p-8 rounded-[32px] bg-white/95 border-2 border-dashed border-blue-500 shadow-2xl flex flex-col items-center text-center space-y-4 scale-100 transform transition-transform">
-        <div className="w-20 h-20 rounded-3xl bg-blue-100 text-blue-600 flex items-center justify-center animate-bounce shadow-inner">
+    <div className="fixed inset-0 z-50 pointer-events-none lg-backdrop flex items-center justify-center p-6 animate-fade-in select-none">
+      <div className="w-full max-w-xl p-8 rounded-[28px] lg-primary border-2 border-dashed border-[#A8DEFA]/60 shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col items-center text-center space-y-4 scale-100 transform transition-transform">
+        <div className="w-20 h-20 rounded-3xl bg-[#A8DEFA]/15 text-[#A8DEFA] border border-[#A8DEFA]/30 flex items-center justify-center animate-bounce shadow-[0_0_25px_rgba(168,222,250,0.3)]">
           <UploadCloud className="w-10 h-10" />
         </div>
 
         <div className="space-y-1">
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h2 className="text-2xl font-black text-[#F5FAFF] tracking-tight font-display">
             Drop Your File Anywhere!
           </h2>
-          <p className="text-xs text-slate-600 max-w-md">
+          <p className="text-xs text-[#A7B8CA] max-w-md">
             OmniDoc Studio automatically detects your file format and opens the optimal studio or queues for conversion.
           </p>
         </div>
@@ -82,16 +81,16 @@ export const GlobalDropzone: React.FC<GlobalDropzoneProps> = ({ onFilesDropped }
           {['PDF', 'DOCX', 'PPTX', 'XLSX', 'CSV', 'PNG', 'JPG', 'WEBP', 'TXT'].map((ext) => (
             <span
               key={ext}
-              className="px-2.5 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-mono text-[11px] font-bold"
+              className="px-2.5 py-1 rounded-xl bg-white/[0.06] border border-[rgba(180,225,255,0.18)] text-[#D9F3FF] font-mono text-[11px] font-bold"
             >
               .{ext.toLowerCase()}
             </span>
           ))}
         </div>
 
-        <div className="pt-2 flex items-center gap-2 text-[11px] font-semibold text-emerald-700">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>100% In-Browser Execution • Files never leave your computer</span>
+        <div className="pt-2 flex items-center gap-2 text-[11px] font-semibold text-emerald-400">
+          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <span>100% In-Browser Execution • Privacy Guaranteed</span>
         </div>
       </div>
     </div>

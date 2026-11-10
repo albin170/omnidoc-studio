@@ -221,30 +221,30 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
   const readTimeMin = Math.max(1, Math.ceil(wordsCount / 200));
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#080B18]/60 text-[#F4F5FF]">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#070B13]/60 text-[#F5FAFF]">
       {/* Top Action Bar matching reference */}
-      <div className="h-14 border-b border-white/10 bg-[#11152A]/85 backdrop-blur-2xl px-5 flex items-center justify-between shrink-0 gap-3">
+      <div className="h-14 border-b border-white/10 bg-[#0B1420]/85 backdrop-blur-2xl px-5 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8B7CFF] to-[#42D6E8] flex items-center justify-center p-0.5 shadow-md shadow-[#8B7CFF]/20">
-            <div className="w-full h-full bg-[#080B18] rounded-[10px] flex items-center justify-center">
-              <TableIcon className="w-4 h-4 text-[#8B7CFF]" />
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#A8DEFA] to-[#A8DEFA] flex items-center justify-center p-0.5 shadow-md shadow-[#A8DEFA]/20">
+            <div className="w-full h-full bg-[#070B13] rounded-[10px] flex items-center justify-center">
+              <TableIcon className="w-4 h-4 text-[#A8DEFA]" />
             </div>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold text-[#F4F5FF] tracking-tight">DOCX Studio</h1>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8B7CFF]/20 text-[#8B7CFF] font-semibold border border-[#8B7CFF]/30">
+              <h1 className="text-sm font-bold text-[#F5FAFF] tracking-tight">DOCX Studio</h1>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] font-semibold border border-[#A8DEFA]/30">
                 PRO WRITER
               </span>
             </div>
-            <p className="text-[11px] text-[#9BA3BD]">Edit and enhance your documents</p>
+            <p className="text-[11px] text-[#A7B8CA]">Edit and enhance your documents</p>
           </div>
         </div>
 
         {/* Export Controls */}
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#42D6E8]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all">
-            <Upload className="w-3.5 h-3.5 text-[#42D6E8]" />
+          <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all">
+            <Upload className="w-3.5 h-3.5 text-[#A8DEFA]" />
             <span className="hidden sm:inline">Import DOCX</span>
             <input type="file" accept=".docx,.txt,.html,.md" className="hidden" onChange={handleImportDocx} />
           </label>
@@ -252,9 +252,9 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {onSaveToProjects && (
             <button
               onClick={() => onSaveToProjects(docTitle, { content: editorRef.current?.innerHTML })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#8B7CFF]/50 text-[#F4F5FF] text-xs font-semibold cursor-pointer transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-[#A8DEFA]/50 text-[#F5FAFF] text-xs font-semibold cursor-pointer transition-all"
             >
-              <Save className="w-3.5 h-3.5 text-[#8B7CFF]" />
+              <Save className="w-3.5 h-3.5 text-[#A8DEFA]" />
               <span>Save</span>
             </button>
           )}
@@ -263,17 +263,17 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
             <select
               value={exportFormat}
               onChange={(e) => setExportFormat(e.target.value as any)}
-              className="bg-transparent text-[#F4F5FF] font-semibold px-2.5 py-1 outline-none uppercase text-xs cursor-pointer"
+              className="bg-transparent text-[#F5FAFF] font-semibold px-2.5 py-1 outline-none uppercase text-xs cursor-pointer"
             >
-              <option value="docx" className="bg-[#11152A] text-white">.DOCX</option>
-              <option value="pdf" className="bg-[#11152A] text-white">.PDF</option>
-              <option value="txt" className="bg-[#11152A] text-white">.TXT</option>
-              <option value="html" className="bg-[#11152A] text-white">.HTML</option>
+              <option value="docx" className="bg-[#0B1420] text-white">.DOCX</option>
+              <option value="pdf" className="bg-[#0B1420] text-white">.PDF</option>
+              <option value="txt" className="bg-[#0B1420] text-white">.TXT</option>
+              <option value="html" className="bg-[#0B1420] text-white">.HTML</option>
             </select>
             <button
               onClick={handleExport}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-3.5 py-1 rounded-lg bg-gradient-to-r from-[#8B7CFF] to-[#6366F1] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#8B7CFF]/20"
+              className="flex items-center gap-1.5 px-3.5 py-1 rounded-lg bg-gradient-to-r from-[#A8DEFA] to-[#7CC4ED] text-white text-xs font-semibold cursor-pointer shadow-md shadow-[#A8DEFA]/20"
             >
               <DownloadCloud className="w-3.5 h-3.5" />
               <span>Export</span>
@@ -283,18 +283,18 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
       </div>
 
       {/* Editor Formatting Toolbar */}
-      <div className="h-11 border-b border-white/10 bg-[#11152A]/60 backdrop-blur-xl px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-[#9BA3BD]">
+      <div className="h-11 border-b border-white/10 bg-[#0B1420]/60 backdrop-blur-xl px-4 flex items-center justify-between shrink-0 overflow-x-auto gap-2 text-[#A7B8CA]">
         <div className="flex items-center gap-1">
           <button
             onClick={() => executeCommand('undo')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Undo"
           >
             <Undo className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => executeCommand('redo')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Redo"
           >
             <Redo className="w-3.5 h-3.5" />
@@ -305,21 +305,21 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {/* Heading formats */}
           <button
             onClick={() => executeCommand('formatBlock', '<h1>')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Heading 1"
           >
             <Heading1 className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('formatBlock', '<h2>')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Heading 2"
           >
             <Heading2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('formatBlock', '<h3>')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Heading 3"
           >
             <Heading3 className="w-4 h-4" />
@@ -330,21 +330,21 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {/* Inline styles */}
           <button
             onClick={() => executeCommand('bold')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] font-bold transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] font-bold transition-colors"
             title="Bold (Ctrl+B)"
           >
             <Bold className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('italic')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] italic transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] italic transition-colors"
             title="Italic (Ctrl+I)"
           >
             <Italic className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('underline')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] underline transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] underline transition-colors"
             title="Underline (Ctrl+U)"
           >
             <Underline className="w-4 h-4" />
@@ -355,14 +355,14 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {/* Lists */}
           <button
             onClick={() => executeCommand('insertUnorderedList')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Bullet List"
           >
             <List className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('insertOrderedList')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Numbered List"
           >
             <ListOrdered className="w-4 h-4" />
@@ -373,21 +373,21 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {/* Alignment */}
           <button
             onClick={() => executeCommand('justifyLeft')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Align Left"
           >
             <AlignLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('justifyCenter')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Align Center"
           >
             <AlignCenter className="w-4 h-4" />
           </button>
           <button
             onClick={() => executeCommand('justifyRight')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Align Right"
           >
             <AlignRight className="w-4 h-4" />
@@ -398,16 +398,16 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {/* Table */}
           <button
             onClick={handleInsertTable}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Insert Table"
           >
-            <TableIcon className="w-4 h-4 text-[#42D6E8]" />
+            <TableIcon className="w-4 h-4 text-[#A8DEFA]" />
           </button>
 
           {/* Clear format */}
           <button
             onClick={() => executeCommand('removeFormat')}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F4F5FF] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] hover:text-[#F5FAFF] transition-colors"
             title="Clear Formatting"
           >
             <RemoveFormatting className="w-4 h-4" />
@@ -416,7 +416,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
           {/* Search */}
           <button
             onClick={() => setIsFindOpen(!isFindOpen)}
-            className={`p-1.5 rounded-lg transition-colors ${isFindOpen ? 'text-[#8B7CFF] bg-[#8B7CFF]/20 border border-[#8B7CFF]/30' : 'hover:bg-white/[0.06] hover:text-[#F4F5FF]'}`}
+            className={`p-1.5 rounded-lg transition-colors ${isFindOpen ? 'text-[#A8DEFA] bg-[#A8DEFA]/20 border border-[#A8DEFA]/30' : 'hover:bg-white/[0.06] hover:text-[#F5FAFF]'}`}
             title="Find & Replace"
           >
             <Search className="w-4 h-4" />
@@ -424,11 +424,11 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
         </div>
 
         {/* Word and character count */}
-        <div className="flex items-center gap-3 text-[11px] text-[#9BA3BD] font-mono">
+        <div className="flex items-center gap-3 text-[11px] text-[#A7B8CA] font-mono">
           <span>{wordsCount} words</span>
           <span>{charsCount} chars</span>
           <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-[#42D6E8]" />
+            <Clock className="w-3 h-3 text-[#A8DEFA]" />
             {readTimeMin} min read
           </span>
         </div>
@@ -436,30 +436,30 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
 
       {/* Find & Replace Bar */}
       {isFindOpen && (
-        <div className="p-3 bg-[#11152A]/90 backdrop-blur-xl border-b border-white/10 flex items-center gap-3 text-xs">
+        <div className="p-3 bg-[#0B1420]/90 backdrop-blur-xl border-b border-white/10 flex items-center gap-3 text-xs">
           <input
             type="text"
             placeholder="Find text..."
             value={findQuery}
             onChange={(e) => setFindQuery(e.target.value)}
-            className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] outline-none w-48"
+            className="glass-input rounded-xl px-2.5 py-1 text-[#F5FAFF] outline-none w-48"
           />
           <input
             type="text"
             placeholder="Replace with..."
             value={replaceQuery}
             onChange={(e) => setReplaceQuery(e.target.value)}
-            className="glass-input rounded-xl px-2.5 py-1 text-[#F4F5FF] outline-none w-48"
+            className="glass-input rounded-xl px-2.5 py-1 text-[#F5FAFF] outline-none w-48"
           />
           <button
             onClick={handleFindReplace}
-            className="px-3 py-1 rounded-xl glass-btn-primary font-semibold cursor-pointer shadow-md shadow-[#8B7CFF]/20"
+            className="px-3 py-1 rounded-xl glass-btn-primary font-semibold cursor-pointer shadow-md shadow-[#A8DEFA]/20"
           >
             Replace All
           </button>
           <button
             onClick={() => setIsFindOpen(false)}
-            className="text-[#9BA3BD] hover:text-[#F4F5FF] p-1 rounded-lg ml-auto"
+            className="text-[#A7B8CA] hover:text-[#F5FAFF] p-1 rounded-lg ml-auto"
           >
             <X className="w-4 h-4" />
           </button>
@@ -467,7 +467,7 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
       )}
 
       {/* Document Writing Surface (Clean White Paper Document matching reference) */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center bg-[#080B18]/60 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center bg-[#070B13]/60 custom-scrollbar">
         <div
           style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
           className="w-full max-w-3xl bg-white text-slate-900 rounded-2xl shadow-2xl p-8 md:p-12 min-h-[680px] flex flex-col transition-transform duration-150"
@@ -483,9 +483,9 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
       </div>
 
       {/* Bottom Status Bar matching reference */}
-      <div className="h-9 border-t border-white/10 bg-[#11152A]/90 backdrop-blur-xl px-4 flex items-center justify-between text-xs text-[#9BA3BD] font-medium shrink-0">
+      <div className="h-9 border-t border-white/10 bg-[#0B1420]/90 backdrop-blur-xl px-4 flex items-center justify-between text-xs text-[#A7B8CA] font-medium shrink-0">
         <div className="flex items-center gap-3">
-          <span className="font-semibold text-[#F4F5FF]">Page 1 of 3</span>
+          <span className="font-semibold text-[#F5FAFF]">Page 1 of 3</span>
           <span className="text-white/20">|</span>
           <span>{wordsCount} words</span>
           <span>{charsCount} characters</span>
@@ -495,22 +495,22 @@ export const DocxStudio: React.FC<DocxStudioProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setZoom((z) => Math.max(50, z - 10))}
-            className="w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center text-[#F4F5FF] cursor-pointer"
+            className="w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center text-[#F5FAFF] cursor-pointer"
             title="Zoom Out"
           >
             -
           </button>
-          <span className="font-mono text-[11px] text-[#42D6E8] w-10 text-center">{zoom}%</span>
+          <span className="font-mono text-[11px] text-[#A8DEFA] w-10 text-center">{zoom}%</span>
           <button
             onClick={() => setZoom((z) => Math.min(200, z + 10))}
-            className="w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center text-[#F4F5FF] cursor-pointer"
+            className="w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center text-[#F5FAFF] cursor-pointer"
             title="Zoom In"
           >
             +
           </button>
           <button
             onClick={() => setZoom(100)}
-            className="px-2 py-0.5 rounded text-[10px] hover:bg-white/10 text-[#9BA3BD] hover:text-white cursor-pointer ml-1"
+            className="px-2 py-0.5 rounded text-[10px] hover:bg-white/10 text-[#A7B8CA] hover:text-white cursor-pointer ml-1"
           >
             Reset
           </button>
