@@ -85,8 +85,11 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: Optional[str] = os.getenv("STRIPE_SECRET_KEY")
     STRIPE_WEBHOOK_SECRET: Optional[str] = os.getenv("STRIPE_WEBHOOK_SECRET")
 
-    # Persistent Storage (S3 / R2)
-    STORAGE_PROVIDER: str = os.getenv("STORAGE_PROVIDER", "local") # "local" or "s3"
+    # Persistent Storage (Supabase / S3 / R2)
+    STORAGE_PROVIDER: str = os.getenv("STORAGE_PROVIDER", "local") # "supabase", "s3", or "local"
+    SUPABASE_URL: Optional[str] = os.getenv("SUPABASE_URL")
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    SUPABASE_BUCKET_NAME: str = os.getenv("SUPABASE_BUCKET_NAME", "documents")
     S3_BUCKET_NAME: Optional[str] = os.getenv("S3_BUCKET_NAME")
     S3_ENDPOINT_URL: Optional[str] = os.getenv("S3_ENDPOINT_URL")
     AWS_ACCESS_KEY_ID: Optional[str] = os.getenv("AWS_ACCESS_KEY_ID")
@@ -145,7 +148,12 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "CRITICAL CONFIGURATION ERROR: Production requires persistent object storage (STORAGE_PROVIDER=s3 or compatible). Local ephemeral storage is strictly prohibited in production."
                 )
-            if self.STORAGE_PROVIDER.lower() == "s3":
+            if self.STORAGE_PROVIDER.lower() == "supabase":
+                if not self.SUPABASE_URL or not self.SUPABASE_SERVICE_ROLE_KEY:
+                    raise ValueError(
+                        "CRITICAL CONFIGURATION ERROR: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured when STORAGE_PROVIDER=supabase in production."
+                    )
+            elif self.STORAGE_PROVIDER.lower() == "s3":
                 if not self.S3_BUCKET_NAME:
                     raise ValueError(
                         "CRITICAL CONFIGURATION ERROR: S3_BUCKET_NAME must be configured when STORAGE_PROVIDER=s3 in production."
