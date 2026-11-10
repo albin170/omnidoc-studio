@@ -1,3 +1,4 @@
+# Render configuration using Supabase as database and storage provider
 services:
   - type: web
     name: omnidoc-fastapi-backend
@@ -5,28 +6,24 @@ services:
     rootDir: backend
     buildCommand: "pip install -r requirements.txt && alembic upgrade head"
     startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
-    disk:
-      name: omnidoc-data
-      mountPath: /data
-      sizeGB: 10
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: ENVIRONMENT
         value: production
       - key: SECRET_KEY
-        generateValue: true
+        value: "omnidoc_prod_sec_key_d92f8a1103c8479e2bc91e7041a384f5_supabase_ready"
       - key: CORS_ORIGINS
         value: "https://omnidoc-studio-jet.vercel.app,http://localhost:5173"
       - key: DATABASE_URL
-        fromDatabase:
-          name: omnidoc-postgres
-          property: connectionString
-      - key: STORAGE_DIR
-        value: "/data/storage_vault"
-
-databases:
-  - name: omnidoc-postgres
-    databaseName: omnidoc_studio
-    user: omnidoc_admin
-    plan: standard
+        value: "postgresql+asyncpg://postgres:OmniDoc_Db_2026_SecureKey!@db.kflqymlcrtqepwjeulpb.supabase.co:5432/postgres"
+      - key: STORAGE_PROVIDER
+        value: "supabase"
+      - key: SUPABASE_URL
+        value: "https://kflqymlcrtqepwjeulpb.supabase.co"
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbHF5bWxjcnRxZXB3amV1bHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDMwNDI3MywiZXhwIjoyMTA5ODgwMjczfQ.-hrU9vqXaPVsf9PwBVNCefQjWIpL_Rfm5RGUftsS7i8"
+      - key: SUPABASE_BUCKET_NAME
+        value: "documents"
+      - key: ENABLE_STRIPE
+        value: "false"

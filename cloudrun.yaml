@@ -1,0 +1,47 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: omnidoc-backend
+  labels:
+    cloud.googleapis.com/location: us-central1
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "5"
+        run.googleapis.com/cpu-throttling: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/PROJECT_ID/omnidoc-backend:latest
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "512Mi"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: SECRET_KEY
+          value: "omnidoc_prod_sec_key_d92f8a1103c8479e2bc91e7041a384f5_supabase_ready"
+        - name: DATABASE_URL
+          value: "postgresql+asyncpg://postgres:OmniDoc_Db_2026_SecureKey!@db.kflqymlcrtqepwjeulpb.supabase.co:5432/postgres"
+        - name: STORAGE_PROVIDER
+          value: "supabase"
+        - name: SUPABASE_URL
+          value: "https://kflqymlcrtqepwjeulpb.supabase.co"
+        - name: SUPABASE_SERVICE_ROLE_KEY
+          value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbHF5bWxjcnRxZXB3amV1bHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDMwNDI3MywiZXhwIjoyMTA5ODgwMjczfQ.-hrU9vqXaPVsf9PwBVNCefQjWIpL_Rfm5RGUftsS7i8"
+        - name: SUPABASE_BUCKET_NAME
+          value: "documents"
+        - name: FRONTEND_URL
+          value: "https://omnidoc-studio-jet.vercel.app"
+        - name: ENABLE_STRIPE
+          value: "false"
+        - name: TRUST_PROXY_HEADERS
+          value: "true"
