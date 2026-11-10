@@ -370,8 +370,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 4. LOWER 3-SECTION GRID: Recent Documents, Storage Overview & Quick Access */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left Column (5 cols): Recent Documents */}
-        <div className="lg:col-span-5 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-4">
+        {/* Left Column (6 cols): Recent Documents */}
+        <div className="lg:col-span-6 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
           <div className="flex items-center justify-between pb-2 border-b border-[rgba(180,225,255,0.1)]">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Recent Documents</h2>
             <button
@@ -455,21 +455,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
           )}
         </div>
 
-        {/* Center Column (3.5 cols): Storage Overview Radial Chart */}
-        <div className="lg:col-span-3.5 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-4">
-          <div className="pb-2 border-b border-[rgba(180,225,255,0.1)] flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Storage Usage</h2>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 ${
+        {/* Center Column (3 cols): Storage Overview Radial Chart */}
+        <div className="lg:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
+          <div className="pb-2 border-b border-[rgba(180,225,255,0.1)] flex items-center justify-between gap-1">
+            <h2 className="text-sm font-bold text-[#F5FAFF] font-display truncate">Storage Usage</h2>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 shrink-0 ${
               storageSource === 'cloud'
                 ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                 : 'bg-[#A8DEFA]/15 text-[#A8DEFA] border border-[#A8DEFA]/30'
             }`}>
               {storageSource === 'cloud' ? <Database className="w-2.5 h-2.5" /> : <HardDrive className="w-2.5 h-2.5" />}
-              <span>{storageSource === 'cloud' ? 'Cloud Vault' : 'Browser Sandbox'}</span>
+              <span>{storageSource === 'cloud' ? 'Cloud' : 'Sandbox'}</span>
             </span>
           </div>
 
-          <div className="flex items-center justify-center gap-4 py-3">
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-center justify-center gap-4 py-3 text-center sm:text-left lg:text-center xl:text-left">
             {/* Circular Gauge Ring */}
             <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
               <svg className="w-full h-full transform -rotate-90">
@@ -506,24 +506,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             {/* Storage Legend with honest numbers */}
-            <div>
-              <div className="text-xs font-bold text-[#F5FAFF]">
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-[#F5FAFF] truncate">
                 {formatFileSize(usedBytes)}
               </div>
-              <div className="text-[11px] text-[#A7B8CA] mt-0.5">
+              <div className="text-[11px] text-[#A7B8CA] mt-0.5 truncate">
                 of {formatFileSize(quotaBytes)} quota
               </div>
             </div>
           </div>
 
           <div className="pt-2 border-t border-[rgba(180,225,255,0.1)] flex items-center justify-between text-[11px] text-[#A7B8CA]">
-            <span>{storageSource === 'cloud' ? 'Supabase Storage' : 'Local IndexedDB'}</span>
-            <span className="text-emerald-400 font-semibold">Active</span>
+            <span className="truncate">{storageSource === 'cloud' ? 'Supabase Storage' : 'Local IndexedDB'}</span>
+            <span className="text-emerald-400 font-semibold shrink-0 ml-1">Active</span>
           </div>
         </div>
 
-        {/* Right Column (3.5 cols): Quick Access */}
-        <div className="lg:col-span-3.5 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-3">
+        {/* Right Column (3 cols): Quick Access */}
+        <div className="lg:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(180,225,255,0.14)] flex flex-col justify-between space-y-3 min-w-0">
           <div className="pb-2 border-b border-[rgba(180,225,255,0.1)]">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Quick Access</h2>
           </div>
@@ -537,10 +537,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="w-8 h-8 rounded-lg bg-[#A8DEFA]/15 text-[#A8DEFA] flex items-center justify-center shrink-0">
                 <Folder className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors flex-1">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors flex-1 truncate">
                 My Projects
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
             </div>
 
             {/* Templates */}
@@ -551,10 +551,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="w-8 h-8 rounded-lg bg-[#7CC4ED]/15 text-[#7CC4ED] flex items-center justify-center shrink-0">
                 <LayoutTemplate className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors flex-1">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#A8DEFA] transition-colors flex-1 truncate">
                 Templates
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
             </div>
 
             {/* Activity Log */}
@@ -565,10 +565,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="w-8 h-8 rounded-lg bg-[#D9F3FF]/15 text-[#D9F3FF] flex items-center justify-center shrink-0">
                 <History className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#D9F3FF] transition-colors flex-1">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#D9F3FF] transition-colors flex-1 truncate">
                 Conversion History
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
             </div>
 
             {/* Settings */}
@@ -579,10 +579,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
                 <SettingsIcon className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-emerald-300 transition-colors flex-1">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-emerald-300 transition-colors flex-1 truncate">
                 Settings &amp; Keys
               </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
             </div>
           </div>
         </div>

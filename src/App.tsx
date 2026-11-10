@@ -576,7 +576,7 @@ export const App: React.FC = () => {
 
   return (
     /* Full-Screen, 100% Viewport App Shell — Liquid Glass */
-    <div className="w-full h-screen min-h-screen m-0 p-0 overflow-hidden flex flex-col md:flex-row bg-[#070B13] text-[#F5FAFF] select-none relative font-sans">
+    <div className="w-full h-screen min-h-screen m-0 p-0 overflow-hidden flex flex-col md:flex-row bg-[#03050C] text-[#F5FAFF] select-none relative font-sans">
       {/* Deep Spatial Background — Ice Blue Ambient Lighting */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="ambient-glow-1 absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-[#A8DEFA]/10 blur-[180px]" />

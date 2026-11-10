@@ -191,15 +191,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Full-Height Floating Liquid Glass Sidebar */}
       <aside
-        className={`lg-sidebar h-full flex flex-col justify-between shrink-0 p-3 select-none transition-all duration-300 z-50 ${isCollapsed ? 'w-20' : 'w-64'
+        className={`lg-sidebar h-full flex flex-col shrink-0 p-3 select-none transition-all duration-300 z-50 overflow-hidden ${isCollapsed ? 'w-20' : 'w-64'
           } ${isMobileOpen
             ? 'fixed inset-y-0 left-0 shadow-2xl translate-x-0 w-72'
             : 'hidden md:flex'
           }`}
       >
         {/* Brand Header & Toggle */}
-        <div>
-          <div className="pt-1 pb-4 px-1.5 flex items-center justify-between border-b border-[rgba(180,225,255,0.22)] mb-2">
+        <div className="shrink-0">
+          <div className="pt-1 pb-3 px-1.5 flex items-center justify-between border-b border-[rgba(180,225,255,0.18)] mb-2">
             <div
               className="flex items-center gap-2.5 cursor-pointer min-w-0"
               onClick={() => handleSelectTab('dashboard')}
@@ -264,14 +264,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               )}
             </button>
           )}
+        </div>
 
-          {/* Navigation Section Header */}
-          <div className="text-[9px] font-extrabold text-[#73869A] uppercase tracking-widest px-2 mb-1 font-display">
+        {/* Scrollable Navigation Area */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden mb-2">
+          <div className="text-[9px] font-extrabold text-[#73869A] uppercase tracking-widest px-2 mb-1.5 font-display shrink-0">
             Navigation
           </div>
 
           {/* Navigation Links */}
-          <nav className="space-y-1 overflow-y-auto max-h-[calc(100vh-280px)] pr-0.5 custom-scrollbar">
+          <nav className="flex-1 min-h-0 space-y-1 overflow-y-auto pr-0.5 custom-scrollbar">
             {navItems.map((item, idx) => {
               const Icon = item.icon;
               const isActive = activeTab === item.tab;

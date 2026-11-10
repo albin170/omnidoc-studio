@@ -225,16 +225,16 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#070B13]/90 backdrop-blur-2xl overflow-y-auto select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#03050C]/95 backdrop-blur-2xl overflow-y-auto select-none">
       {/* Dynamic Spatial Ambient Lighting */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#A8DEFA]/12 blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-[#A8DEFA]/14 blur-[140px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-[#7CC4ED]/10 blur-[150px] pointer-events-none" />
 
       {/* Main Liquid Glass Modal Card */}
-      <div className="relative w-full max-w-4xl rounded-[28px] border border-[rgba(180,225,255,0.22)] lg-primary shadow-[0_25px_70px_rgba(0,0,0,0.6)] overflow-hidden grid grid-cols-1 md:grid-cols-12 my-auto">
+      <div className="relative w-full max-w-4xl rounded-[28px] border border-[rgba(180,225,255,0.22)] lg-primary shadow-[0_30px_90px_rgba(0,0,0,0.85)] overflow-hidden grid grid-cols-1 md:grid-cols-12 my-auto">
         
         {/* Left Side: Brand & Live Architecture Badge (5 cols) */}
-        <div className="md:col-span-5 p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-[rgba(180,225,255,0.14)] bg-gradient-to-br from-[#A8DEFA]/10 via-[#0B1420]/80 to-transparent relative overflow-hidden">
+        <div className="md:col-span-5 p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-[rgba(180,225,255,0.14)] bg-gradient-to-br from-[#A8DEFA]/10 via-[#060B18]/90 to-transparent relative overflow-hidden">
           <div className="space-y-6 relative z-10">
             <div className="flex items-center gap-3">
               <OmniDocLogo className="w-9 h-9" />
@@ -350,7 +350,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
         </div>
 
         {/* Right Side: Auth Form (7 cols) */}
-        <div className="md:col-span-7 p-7 sm:p-10 flex flex-col justify-between bg-white/[0.02] backdrop-blur-xl text-[#F5FAFF] overflow-y-auto max-h-[85vh]">
+        <div className="md:col-span-7 p-7 sm:p-10 flex flex-col justify-between bg-[#060C1B]/80 backdrop-blur-xl text-[#F5FAFF] overflow-y-auto max-h-[85vh]">
           <div>
             {/* Mode Switcher */}
             <div className="flex items-center justify-between pb-5">
@@ -448,6 +448,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={mode === 'admin' ? 'admin@company.com' : 'alex@company.com'}
+                      autoComplete="username"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl lg-input text-xs"
                       required
                     />
@@ -465,6 +466,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
+                      autoComplete="current-password"
                       className="w-full pl-10 pr-10 py-2.5 rounded-xl lg-input text-xs"
                       required
                     />

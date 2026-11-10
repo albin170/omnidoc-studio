@@ -343,8 +343,8 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
               let badgeColor = 'bg-slate-800 text-slate-400';
 
               if (node.status === 'running') {
-                borderClass = 'border-indigo-500 shadow-lg shadow-indigo-500/20 ring-2 ring-indigo-500/20 animate-pulse';
-                badgeColor = 'bg-indigo-500/20 text-indigo-400';
+                borderClass = 'border-[#A8DEFA] shadow-lg shadow-[#A8DEFA]/20 ring-2 ring-[#A8DEFA]/30 animate-pulse';
+                badgeColor = 'bg-[#A8DEFA]/20 text-[#A8DEFA]';
               } else if (node.status === 'completed') {
                 borderClass = 'border-emerald-500/60 bg-slate-900/90 shadow-md shadow-emerald-500/10';
                 badgeColor = 'bg-emerald-500/20 text-emerald-400';
@@ -364,7 +364,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
                     width: '180px',
                   }}
                   className={`z-10 p-3.5 rounded-2xl bg-slate-900 border transition-all cursor-pointer ${borderClass} ${
-                    isSelected ? 'ring-2 ring-purple-400' : ''
+                    isSelected ? 'ring-2 ring-[#A8DEFA]' : ''
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -378,7 +378,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
                     </div>
 
                     {node.status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                    {node.status === 'running' && <RotateCcw className="w-3.5 h-3.5 text-indigo-400 animate-spin" />}
+                    {node.status === 'running' && <RotateCcw className="w-3.5 h-3.5 text-[#A8DEFA] animate-spin" />}
                     {node.status === 'error' && <XCircle className="w-3.5 h-3.5 text-red-400" />}
                   </div>
 
@@ -462,7 +462,7 @@ export const VisualWorkflowStudio: React.FC<VisualWorkflowStudioProps> = ({ onNo
 
             {/* Execution Result Summary Card */}
             {executionResult && (
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/40 to-purple-950/40 border border-indigo-500/30 space-y-3">
+              <div className="p-4 rounded-2xl lg-secondary border border-[rgba(180,225,255,0.22)] space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-extrabold text-white">Execution Result</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${executionResult.success ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>

@@ -300,14 +300,14 @@ export const AutonomousWorkspace: React.FC = () => {
                   value={objective}
                   onChange={(e) => setObjective(e.target.value)}
                   rows={3}
-                  className="w-full bg-slate-950/70 border border-slate-800 rounded-2xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all resize-none"
+                  className="w-full bg-[#080E1C] border border-[rgba(180,225,255,0.18)] rounded-2xl p-4 text-sm text-[#F5FAFF] placeholder-[#62758A] focus:outline-none focus:ring-2 focus:ring-[#A8DEFA]/30 focus:border-[#A8DEFA] transition-all resize-none"
                   placeholder="State your goal (e.g., extract invoice line items, detect tax discrepancies, synthesize reconciliation Excel workbook)..."
                 />
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
                   <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <label className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 cursor-pointer transition-all">
-                      <FileText className="w-4 h-4 text-slate-400" />
+                    <label className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white/[0.04] hover:bg-white/[0.08] text-[#A7B8CA] border border-[rgba(180,225,255,0.14)] cursor-pointer transition-all">
+                      <FileText className="w-4 h-4 text-[#A7B8CA]" />
                       <span>
                         {uploadedFiles.length > 0
                           ? `${uploadedFiles.length} file(s) attached`
@@ -334,19 +334,19 @@ export const AutonomousWorkspace: React.FC = () => {
                   <button
                     onClick={handleStartPlan}
                     disabled={isRunning}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-bold text-white shadow-lg transition-all ${isRunning
-                        ? 'bg-slate-800 cursor-not-allowed text-slate-500'
-                        : 'bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 shadow-indigo-900/30'
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-bold shadow-lg transition-all ${isRunning
+                        ? 'bg-white/10 cursor-not-allowed text-[#73869A]'
+                        : 'lg-btn-primary'
                       }`}
                   >
                     {isRunning ? (
                       <>
-                        <RefreshCw className="w-4 h-4 animate-spin text-indigo-400" />
+                        <RefreshCw className="w-4 h-4 animate-spin text-[#030611]" />
                         <span>Executing Plan...</span>
                       </>
                     ) : (
                       <>
-                        <Play className="w-4 h-4 fill-white" />
+                        <Play className="w-4 h-4 fill-current" />
                         <span>Generate Plan &amp; Execute</span>
                       </>
                     )}
@@ -367,17 +367,17 @@ export const AutonomousWorkspace: React.FC = () => {
                             : activeJob.status === 'awaiting_approval'
                               ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                               : activeJob.status === 'running'
-                                ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                                ? 'bg-[#A8DEFA]/10 text-[#A8DEFA] border-[#A8DEFA]/30'
                                 : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
                           }`}
                       >
                         {activeJob.status.toUpperCase()}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-[#A7B8CA]">
                         Step {activeJob.currentStepIndex} of {activeJob.totalSteps}
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-white mt-1">{activeJob.title}</h3>
+                    <h3 className="text-lg font-bold text-[#F5FAFF] mt-1 font-display">{activeJob.title}</h3>
                   </div>
 
                   {activeJob.status !== 'completed' && activeJob.status !== 'cancelled' && (
@@ -400,15 +400,15 @@ export const AutonomousWorkspace: React.FC = () => {
                           : node.status === 'waiting_approval'
                             ? 'bg-amber-950/30 border-amber-500/50 shadow-lg shadow-amber-950/20'
                             : node.status === 'running'
-                              ? 'bg-indigo-950/30 border-indigo-500/50'
+                              ? 'bg-[#A8DEFA]/15 border-[#A8DEFA]/40 shadow-lg shadow-[#A8DEFA]/10'
                               : node.status === 'failed'
                                 ? 'bg-rose-950/20 border-rose-500/40'
-                                : 'bg-slate-950/50 border-slate-800'
+                                : 'bg-[#080E1C]/60 border-[rgba(180,225,255,0.1)]'
                         }`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1.5">
-                          <span className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center font-bold text-slate-200">
+                        <span className="text-[11px] font-mono text-[#A7B8CA] flex items-center gap-1.5">
+                          <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center font-bold text-[#F5FAFF]">
                             {idx + 1}
                           </span>
                           {node.toolName}
@@ -427,7 +427,7 @@ export const AutonomousWorkspace: React.FC = () => {
                           </span>
                         )}
                         {node.status === 'running' && (
-                          <span className="text-xs text-indigo-400 font-semibold flex items-center gap-1">
+                          <span className="text-xs text-[#A8DEFA] font-semibold flex items-center gap-1">
                             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                             Running
                           </span>
@@ -808,7 +808,7 @@ export const AutonomousWorkspace: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all cursor-pointer shadow-md"
+                className="px-6 py-2.5 rounded-2xl lg-btn-primary text-xs font-bold transition-all cursor-pointer shadow-md"
               >
                 Search Vault
               </button>

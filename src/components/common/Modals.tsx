@@ -63,65 +63,65 @@ export const Modals: React.FC<ModalsProps> = ({
     <>
       {/* 1. Account / Auth Modal */}
       {isAuthOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white font-bold text-base">
-                <User className="w-5 h-5 text-indigo-400" />
+        <div className="fixed inset-0 z-50 bg-[#03050C]/90 backdrop-blur-2xl flex items-center justify-center p-4">
+          <div className="lg-primary border border-[rgba(180,225,255,0.22)] rounded-[24px] max-w-md w-full p-6 space-y-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)]">
+            <div className="flex items-center justify-between pb-3 border-b border-[rgba(180,225,255,0.14)]">
+              <div className="flex items-center gap-2 text-[#F5FAFF] font-bold text-base font-display">
+                <User className="w-5 h-5 text-[#A8DEFA]" />
                 <span>Account &amp; Storage Profile</span>
               </div>
-              <button onClick={onCloseAuth} className="text-slate-400 hover:text-white">
+              <button onClick={onCloseAuth} className="text-[#A7B8CA] hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
+            <div className="p-3 rounded-xl lg-secondary border border-[rgba(180,225,255,0.14)] flex items-center justify-between text-xs">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-400 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-full bg-[#A8DEFA]/20 text-[#A8DEFA] border border-[#A8DEFA]/30 flex items-center justify-center font-bold">
                   {userSession.isGuest ? 'G' : (nameInput[0]?.toUpperCase() || 'U')}
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-200">
+                  <div className="font-semibold text-[#F5FAFF]">
                     {userSession.isGuest ? 'Anonymous Guest Session' : nameInput}
                   </div>
-                  <div className="text-[10px] text-slate-500">
+                  <div className="text-[10px] text-[#A7B8CA]">
                     {userSession.isGuest ? 'Session-isolated offline storage' : emailInput || 'Local profile'}
                   </div>
                 </div>
               </div>
 
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 ACTIVE
               </span>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-400 font-semibold block mb-1">Your Name</label>
+                <label className="text-[#A7B8CA] font-semibold block mb-1">Your Name</label>
                 <input
                   type="text"
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white outline-none focus:border-indigo-500"
+                  className="w-full lg-input text-xs"
                 />
               </div>
 
               <div>
-                <label className="text-slate-400 font-semibold block mb-1">Email (Optional for exports)</label>
+                <label className="text-[#A7B8CA] font-semibold block mb-1">Email (Optional for exports)</label>
                 <input
                   type="email"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   placeholder="name@company.com"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white outline-none focus:border-indigo-500"
+                  className="w-full lg-input text-xs"
                 />
               </div>
             </div>
 
-            <div className="pt-2 flex items-center justify-between">
+            <div className="pt-2 flex items-center justify-between border-t border-[rgba(180,225,255,0.1)]">
               <button
                 onClick={handleSwitchGuest}
-                className="text-xs text-slate-400 hover:text-white underline cursor-pointer"
+                className="text-xs text-[#A7B8CA] hover:text-[#A8DEFA] transition-colors cursor-pointer"
               >
                 Use Anonymous Mode
               </button>
@@ -129,13 +129,13 @@ export const Modals: React.FC<ModalsProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={onCloseAuth}
-                  className="px-3 py-1.5 rounded-xl text-xs text-slate-400 hover:bg-slate-800"
+                  className="px-3 py-1.5 rounded-xl text-xs text-[#A7B8CA] hover:bg-white/10 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveAuth}
-                  className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer shadow-md shadow-indigo-600/30"
+                  className="px-4 py-1.5 rounded-xl lg-btn-primary text-xs font-semibold cursor-pointer"
                 >
                   Save Profile
                 </button>
@@ -147,54 +147,54 @@ export const Modals: React.FC<ModalsProps> = ({
 
       {/* 2. Settings Modal */}
       {isSettingsOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white font-bold text-base">
-                <Settings className="w-5 h-5 text-indigo-400" />
+        <div className="fixed inset-0 z-50 bg-[#03050C]/90 backdrop-blur-2xl flex items-center justify-center p-4">
+          <div className="lg-primary border border-[rgba(180,225,255,0.22)] rounded-[24px] max-w-lg w-full p-6 space-y-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)]">
+            <div className="flex items-center justify-between pb-3 border-b border-[rgba(180,225,255,0.14)]">
+              <div className="flex items-center gap-2 text-[#F5FAFF] font-bold text-base font-display">
+                <Settings className="w-5 h-5 text-[#A8DEFA]" />
                 <span>Application Settings</span>
               </div>
-              <button onClick={onCloseSettings} className="text-slate-400 hover:text-white">
+              <button onClick={onCloseSettings} className="text-[#A7B8CA] hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs text-slate-300">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <div className="space-y-3 text-xs text-[#A7B8CA]">
+              <div className="flex items-center justify-between p-3 rounded-xl lg-secondary border border-[rgba(180,225,255,0.14)]">
                 <div>
-                  <div className="font-semibold text-white">Default PDF Page Layout</div>
-                  <div className="text-[11px] text-slate-500">Standard ISO A4 (595 x 842 pt)</div>
+                  <div className="font-semibold text-[#F5FAFF]">Default PDF Page Layout</div>
+                  <div className="text-[11px] text-[#A7B8CA]">Standard ISO A4 (595 x 842 pt)</div>
                 </div>
-                <span className="px-2 py-1 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">
+                <span className="px-2 py-1 rounded-lg bg-white/10 text-[#F5FAFF] font-mono text-[10px]">
                   A4
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <div className="flex items-center justify-between p-3 rounded-xl lg-secondary border border-[rgba(180,225,255,0.14)]">
                 <div>
-                  <div className="font-semibold text-white">Presentation Aspect Ratio</div>
-                  <div className="text-[11px] text-slate-500">Widescreen 16:9 for modern displays</div>
+                  <div className="font-semibold text-[#F5FAFF]">Presentation Aspect Ratio</div>
+                  <div className="text-[11px] text-[#A7B8CA]">Widescreen 16:9 for modern displays</div>
                 </div>
-                <span className="px-2 py-1 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">
+                <span className="px-2 py-1 rounded-lg bg-white/10 text-[#F5FAFF] font-mono text-[10px]">
                   16:9
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <div className="flex items-center justify-between p-3 rounded-xl lg-secondary border border-[rgba(180,225,255,0.14)]">
                 <div>
-                  <div className="font-semibold text-white">Local Privacy Sandbox</div>
-                  <div className="text-[11px] text-slate-500">Process files in WebAssembly &amp; Memory</div>
+                  <div className="font-semibold text-[#F5FAFF]">Local Privacy Sandbox</div>
+                  <div className="text-[11px] text-[#A7B8CA]">Process files in WebAssembly &amp; Memory</div>
                 </div>
-                <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 font-semibold text-[10px]">
+                <span className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold text-[10px]">
                   ENFORCED
                 </span>
               </div>
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-2 border-t border-[rgba(180,225,255,0.1)]">
               <button
                 onClick={onCloseSettings}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer"
+                className="px-5 py-2 rounded-xl lg-btn-primary text-xs font-semibold cursor-pointer"
               >
                 Done
               </button>
@@ -205,75 +205,75 @@ export const Modals: React.FC<ModalsProps> = ({
 
       {/* 3. Help & Shortcuts Modal */}
       {isHelpOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white font-bold text-base">
-                <HelpCircle className="w-5 h-5 text-indigo-400" />
+        <div className="fixed inset-0 z-50 bg-[#03050C]/90 backdrop-blur-2xl flex items-center justify-center p-4">
+          <div className="lg-primary border border-[rgba(180,225,255,0.22)] rounded-[24px] max-w-xl w-full p-6 space-y-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)] max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[rgba(180,225,255,0.14)]">
+              <div className="flex items-center gap-2 text-[#F5FAFF] font-bold text-base font-display">
+                <HelpCircle className="w-5 h-5 text-[#A8DEFA]" />
                 <span>OmniDoc Studio Documentation</span>
               </div>
-              <button onClick={onCloseHelp} className="text-slate-400 hover:text-white">
+              <button onClick={onCloseHelp} className="text-[#A7B8CA] hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs text-slate-300">
+            <div className="space-y-4 text-xs text-[#A7B8CA]">
               <div className="space-y-2">
-                <h4 className="font-bold text-white uppercase text-[11px] tracking-wider text-indigo-400">
+                <h4 className="font-bold text-[#F5FAFF] uppercase text-[11px] tracking-wider text-[#A8DEFA] font-display">
                   Supported File Conversions
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                    <strong className="text-red-400">PDF</strong> → DOCX, TXT, PNG, JPG
+                  <div className="p-2.5 rounded-xl lg-secondary border border-[rgba(180,225,255,0.12)]">
+                    <strong className="text-rose-400">PDF</strong> → DOCX, TXT, PNG, JPG
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                    <strong className="text-blue-400">DOCX</strong> → PDF, TXT, HTML
+                  <div className="p-2.5 rounded-xl lg-secondary border border-[rgba(180,225,255,0.12)]">
+                    <strong className="text-sky-400">DOCX</strong> → PDF, TXT, HTML
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                  <div className="p-2.5 rounded-xl lg-secondary border border-[rgba(180,225,255,0.12)]">
                     <strong className="text-amber-400">PPTX</strong> → PDF, PNG
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                  <div className="p-2.5 rounded-xl lg-secondary border border-[rgba(180,225,255,0.12)]">
                     <strong className="text-emerald-400">XLSX / CSV</strong> → PDF, CSV, XLSX
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                  <div className="p-2.5 rounded-xl lg-secondary border border-[rgba(180,225,255,0.12)]">
                     <strong className="text-[#A8DEFA]">PNG / JPG / WebP</strong> → PDF, Formats
                   </div>
-                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                    <strong className="text-cyan-400">OCR Scans</strong> → Searchable PDF, DOCX, TXT
+                  <div className="p-2.5 rounded-xl lg-secondary border border-[rgba(180,225,255,0.12)]">
+                    <strong className="text-teal-400">OCR Scans</strong> → Searchable PDF, DOCX, TXT
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-2 pt-2">
-                <h4 className="font-bold text-white uppercase text-[11px] tracking-wider text-indigo-400">
+              <div className="space-y-2 pt-2 border-t border-[rgba(180,225,255,0.1)]">
+                <h4 className="font-bold text-[#F5FAFF] uppercase text-[11px] tracking-wider text-[#A8DEFA] font-display">
                   Spreadsheet Formulas Supported
                 </h4>
-                <p className="text-slate-400 leading-relaxed text-[11px]">
+                <p className="text-[#A7B8CA] leading-relaxed text-[11px]">
                   Enter standard uppercase formulas in the formula bar:
                   <br />
-                  <code className="text-indigo-300 font-mono">=SUM(A1:A5)</code>,{' '}
-                  <code className="text-indigo-300 font-mono">=AVERAGE(B2:E2)</code>,{' '}
-                  <code className="text-indigo-300 font-mono">=MIN(A1:B3)</code>,{' '}
-                  <code className="text-indigo-300 font-mono">=MAX(A1:B3)</code>,{' '}
-                  <code className="text-indigo-300 font-mono">=COUNT(A1:A10)</code>, or simple math{' '}
-                  <code className="text-indigo-300 font-mono">=(A1+B1)*2</code>.
+                  <code className="text-[#A8DEFA] font-mono">=SUM(A1:A5)</code>,{' '}
+                  <code className="text-[#A8DEFA] font-mono">=AVERAGE(B2:E2)</code>,{' '}
+                  <code className="text-[#A8DEFA] font-mono">=MIN(A1:B3)</code>,{' '}
+                  <code className="text-[#A8DEFA] font-mono">=MAX(A1:B3)</code>,{' '}
+                  <code className="text-[#A8DEFA] font-mono">=COUNT(A1:A10)</code>, or simple math{' '}
+                  <code className="text-[#A8DEFA] font-mono">=(A1+B1)*2</code>.
                 </p>
               </div>
 
-              <div className="space-y-2 pt-2">
-                <h4 className="font-bold text-white uppercase text-[11px] tracking-wider text-indigo-400">
+              <div className="space-y-2 pt-2 border-t border-[rgba(180,225,255,0.1)]">
+                <h4 className="font-bold text-[#F5FAFF] uppercase text-[11px] tracking-wider text-[#A8DEFA] font-display">
                   Privacy-First Guarantee
                 </h4>
-                <p className="text-slate-400 leading-relaxed text-[11px]">
+                <p className="text-[#A7B8CA] leading-relaxed text-[11px]">
                   All processing runs directly inside your browser. No files are transmitted to external servers without explicit consent.
                 </p>
               </div>
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-2 border-t border-[rgba(180,225,255,0.1)]">
               <button
                 onClick={onCloseHelp}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer"
+                className="px-5 py-2 rounded-xl lg-btn-primary text-xs font-semibold cursor-pointer"
               >
                 Close
               </button>

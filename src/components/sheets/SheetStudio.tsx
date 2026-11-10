@@ -557,8 +557,8 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
           </div>
 
           {/* User Profile Avatar */}
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 p-0.5 ml-1">
-            <div className="w-full h-full rounded-full bg-[#0B1420] flex items-center justify-center text-xs font-bold text-white">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#7CC4ED] to-[#A8DEFA] p-0.5 ml-1">
+            <div className="w-full h-full rounded-full bg-[#080E1C] flex items-center justify-center text-xs font-bold text-white">
               <User className="w-4 h-4 text-[#A8DEFA]" />
             </div>
           </div>
