@@ -150,11 +150,12 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
   const handleLaunchLocalSandbox = async () => {
     setIsLoading(true);
     try {
+      // Local sandboxes must NEVER create administrator sessions or elevated tiers (Section 2.C)
       const sandbox = await createSecureSession(
         email.trim() || 'local.engineer@omnidoc.io',
         name.trim() || (email ? email.split('@')[0] : 'Document Engineer'),
-        mode === 'admin' ? 'admin' : 'user',
-        mode === 'admin' ? 'enterprise' : 'free'
+        'user',
+        'free'
       );
       sandbox.rememberMe = rememberMe;
       onAuthenticate(sandbox);
@@ -524,7 +525,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder={mode === 'admin' ? 'admin@omnidoc.io' : 'alex@company.com'}
+                      placeholder={mode === 'admin' ? 'admin@company.com' : 'alex@company.com'}
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/10 text-xs text-[#F4F5FF] placeholder:text-[#9BA3BD]/50 focus:outline-none focus:border-[#8B7CFF] transition-all"
                       required
                     />
@@ -565,59 +566,6 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                     />
                     <span>Remember me on this browser</span>
                   </label>
-                </div>
-
-                <div className="pt-1.5 pb-0.5">
-                  <div className="text-[10px] text-[#9BA3BD] mb-1 font-medium">Quick Fill Credentials:</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {mode === 'admin' ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEmail('admin@omnidoc.io');
-                            setPassword('AdminPass123!');
-                          }}
-                          className="px-2 py-1 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono transition-colors cursor-pointer"
-                        >
-                          admin@omnidoc.io
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEmail('albinbinu170@gmail.com');
-                            setPassword('AdminPass123!');
-                          }}
-                          className="px-2 py-1 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono transition-colors cursor-pointer"
-                        >
-                          albinbinu170@gmail.com
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEmail('albinbinu170@gmail.com');
-                            setPassword('AdminPass123!');
-                          }}
-                          className="px-2 py-1 rounded-md bg-[#8B7CFF]/15 hover:bg-[#8B7CFF]/25 text-[#C4BCFF] border border-[#8B7CFF]/30 text-[10px] font-mono transition-colors cursor-pointer"
-                        >
-                          albinbinu170@gmail.com
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEmail('user@omnidoc.io');
-                            setPassword('UserPass123!');
-                          }}
-                          className="px-2 py-1 rounded-md bg-[#8B7CFF]/15 hover:bg-[#8B7CFF]/25 text-[#C4BCFF] border border-[#8B7CFF]/30 text-[10px] font-mono transition-colors cursor-pointer"
-                        >
-                          user@omnidoc.io
-                        </button>
-                      </>
-                    )}
-                  </div>
                 </div>
 
                 <button

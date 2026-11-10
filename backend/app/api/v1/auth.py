@@ -1,4 +1,5 @@
 import uuid
+import json
 import secrets
 import hashlib
 from datetime import datetime, timezone, timedelta
@@ -6,7 +7,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from jose import JWTError, jwt
 
 from app.core.config import settings
@@ -190,7 +191,13 @@ async def login_json(
     org = org_res.scalars().first()
     plan_tier = user.individual_plan_tier or (org.plan_tier if org else "free")
 
-    token = create_access_token(data={"sub": user.id, "org_id": user.org_id, "role": user.role, "plan_tier": plan_tier})
+    token = create_access_token(data={
+        "sub": user.id,
+        "org_id": user.org_id,
+        "role": user.role,
+        "plan_tier": plan_tier,
+        "token_version": user.token_version or 1
+    })
     return Token(
         access_token=token,
         token_type="bearer",
@@ -227,7 +234,13 @@ async def login_for_access_token(
     org = org_res.scalars().first()
     plan_tier = user.individual_plan_tier or (org.plan_tier if org else "free")
 
-    token = create_access_token(data={"sub": user.id, "org_id": user.org_id, "role": user.role, "plan_tier": plan_tier})
+    token = create_access_token(data={
+        "sub": user.id,
+        "org_id": user.org_id,
+        "role": user.role,
+        "plan_tier": plan_tier,
+        "token_version": user.token_version or 1
+    })
     return Token(
         access_token=token,
         token_type="bearer",
@@ -386,33 +399,55 @@ async def logout(
 ):
     """
     Revokes the active JWT token via token JTI blacklist and records audit event.
+    Failures in revocation are never suppressed (Section 2.B).
     """
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        jti = payload.get("jti")
-        exp_ts = payload.get("exp")
-        exp_dt = datetime.fromtimestamp(exp_ts, tz=timezone.utc) if exp_ts else datetime.now(timezone.utc) + timedelta(hours=24)
-        if jti:
-            revocation = RevokedToken(
-                token_jti=jti,
-                user_id=current_user.id,
-                expires_at=exp_dt
-            )
-            db.add(revocation)
-            
-            audit = AuditEvent(
-                org_id=current_user.org_id,
-                user_id=current_user.id,
-                action="AUTH_LOGOUT",
-                target_type="user",
-                target_id=current_user.id,
-                timestamp=datetime.now(timezone.utc)
-            )
-            db.add(audit)
-            await db.commit()
-    except Exception:
-        pass
-        
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    jti = payload.get("jti")
+    if not jti:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token missing JTI")
+
+    exp_ts = payload.get("exp")
+    exp_dt = datetime.fromtimestamp(exp_ts, tz=timezone.utc) if exp_ts else datetime.now(timezone.utc) + timedelta(hours=24)
+
+    try:
+        revocation = RevokedToken(
+            token_jti=jti,
+            user_id=current_user.id,
+            expires_at=exp_dt
+        )
+        db.add(revocation)
+
+        audit = AuditEvent(
+            org_id=current_user.org_id,
+            user_id=current_user.id,
+            action="AUTH_LOGOUT",
+            target_type="user",
+            target_id=current_user.id,
+            details_json=json.dumps({"jti": jti}),
+            timestamp=datetime.now(timezone.utc)
+        )
+        db.add(audit)
+
+        # Safely clean up expired revocation records
+        await db.execute(
+            delete(RevokedToken).where(RevokedToken.expires_at < datetime.now(timezone.utc))
+        )
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Revocation database error: {e}"
+        )
+
     return {
         "status": "success",
         "message": "Successfully logged out and session revoked."
@@ -469,7 +504,7 @@ async def forgot_password(
         await db.commit()
 
         # Dispatch reset instructions via configured email service
-        email_service.send_password_reset_email(user.email, raw_token)
+        await email_service.send_password_reset_email(user.email, raw_token)
 
         # In testing environments, store raw token on app state for regression test verification
         if settings.ENVIRONMENT.lower() in ("test", "testing", "development"):
@@ -542,13 +577,8 @@ async def reset_password(
     token_record.used_at = now
     user.hashed_password = get_password_hash(payload.new_password)
 
-    # Invalidate all prior sessions/tokens for this user after password reset
-    revocation = RevokedToken(
-        token_jti=f"pwd_reset_revocation_{user.id}_{int(now.timestamp())}",
-        user_id=user.id,
-        expires_at=now + timedelta(days=7)
-    )
-    db.add(revocation)
+    # Invalidate all prior sessions/tokens for this user via server-controlled session version (Section 2.B)
+    user.token_version = (user.token_version or 1) + 1
 
     audit = AuditEvent(
         org_id=user.org_id,
@@ -556,6 +586,7 @@ async def reset_password(
         action="AUTH_PASSWORD_RESET_SUCCESS",
         target_type="user",
         target_id=user.id,
+        details_json=json.dumps({"token_version": user.token_version}),
         timestamp=now
     )
     db.add(audit)

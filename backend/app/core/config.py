@@ -36,6 +36,12 @@ logger = logging.getLogger("omnidoc")
 DEFAULT_DEV_SECRET = "omnidoc_dev_sec_key_d92f8a1103c8479e2bc91e7041a384f5"
 
 class Settings(BaseSettings):
+    # Existing fields ... (kept unchanged)
+    # Supabase configuration (optional)
+    SUPABASE_URL: Optional[str] = os.getenv("SUPABASE_URL")
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    SUPABASE_BUCKET_NAME: Optional[str] = os.getenv("SUPABASE_BUCKET_NAME")
+
     # Database connection pool settings (optional)
     DATABASE_POOL_SIZE: int = int(os.getenv("DATABASE_POOL_SIZE", "10"))
     DATABASE_MAX_OVERFLOW: int = int(os.getenv("DATABASE_MAX_OVERFLOW", "20"))
@@ -58,8 +64,8 @@ class Settings(BaseSettings):
     # Storage Vault
     default_storage: str = "/tmp/storage_vault" if is_vercel else "./storage_vault"
     STORAGE_DIR: str = os.getenv("STORAGE_DIR", default_storage)
-    MAX_UPLOAD_SIZE_BYTES: int = 50 * 1024 * 1024 # 50 MB
-    MAX_ARCHIVE_EXPANSION_BYTES: int = 75 * 1024 * 1024 # 75 MB (Decompression bomb guard)
+    MAX_UPLOAD_SIZE_BYTES: int = int(os.getenv("MAX_UPLOAD_SIZE_BYTES", str(500 * 1024 * 1024))) # 500 MB (plan limits up to 500MB)
+    MAX_ARCHIVE_EXPANSION_BYTES: int = int(os.getenv("MAX_ARCHIVE_EXPANSION_BYTES", str(500 * 1024 * 1024))) # 500 MB (Decompression bomb guard)
     
     # Allowed Extensions
     ALLOWED_EXTENSIONS: Set[str] = {
@@ -94,25 +100,52 @@ class Settings(BaseSettings):
         "https://omnidoc-studio-jet.vercel.app"
     ]
 
+    # Trusted proxy network configuration for rate limiting
+    TRUSTED_PROXIES: List[str] = [p.strip() for p in os.getenv("TRUSTED_PROXIES", "127.0.0.1,::1").split(",") if p.strip()]
+    TRUST_PROXY_HEADERS: bool = os.getenv("TRUST_PROXY_HEADERS", "false").lower() in ("true", "1")
 
     def validate_production_security(self):
         """Validate production-specific security constraints.
-        Ensures that in production mode a non-default secret key is set and
-        wildcard CORS origins are prohibited.
+        Ensures that in production mode a non-default secret key is set,
+        sufficient entropy and length are enforced, and wildcard CORS origins are prohibited.
         """
+        # Fail closed: detect production environments even if ENVIRONMENT variable was omitted
+        is_cloud_prod = bool(
+            os.getenv("VERCEL") or os.getenv("RENDER") or os.getenv("FLY_APP_NAME") or
+            os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("K_SERVICE")
+        )
+        if is_cloud_prod and self.ENVIRONMENT.lower() == "development":
+            raise ValueError(
+                "CRITICAL SECURITY CONFIGURATION ERROR: Cloud deployment detected without explicit production ENVIRONMENT configuration. Failing closed."
+            )
+
         if self.ENVIRONMENT.lower() in ("production", "prod"):
             if not self.SECRET_KEY or self.SECRET_KEY == DEFAULT_DEV_SECRET:
                 raise ValueError(
                     "CRITICAL SECURITY CONFIGURATION ERROR: Production mode requires a secure, non-default SECRET_KEY environment variable with at least 32 bytes of entropy."
                 )
+            if len(self.SECRET_KEY) < 32:
+                raise ValueError(
+                    "CRITICAL SECURITY CONFIGURATION ERROR: Production mode requires a secure SECRET_KEY with at least 32 characters."
+                )
             if "*" in self.CORS_ORIGINS:
                 raise ValueError(
                     "CRITICAL SECURITY CONFIGURATION ERROR: Wildcard origin '*' is forbidden when credentials are enabled in production CORS."
                 )
-            if self.STORAGE_PROVIDER == "s3" and not self.S3_BUCKET_NAME:
+            # Enforce non-trivial entropy for production secret
+            if len(set(self.SECRET_KEY)) < 6:
                 raise ValueError(
-                    "CRITICAL CONFIGURATION ERROR: S3_BUCKET_NAME must be configured when STORAGE_PROVIDER=s3 in production."
+                    "CRITICAL SECURITY CONFIGURATION ERROR: Production SECRET_KEY lacks sufficient cryptographic entropy."
                 )
+            if self.STORAGE_PROVIDER == "s3":
+                if not self.S3_BUCKET_NAME:
+                    raise ValueError(
+                        "CRITICAL CONFIGURATION ERROR: S3_BUCKET_NAME must be configured when STORAGE_PROVIDER=s3 in production."
+                    )
+                if not self.AWS_ACCESS_KEY_ID or not self.AWS_SECRET_ACCESS_KEY:
+                    raise ValueError(
+                        "CRITICAL CONFIGURATION ERROR: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be configured when STORAGE_PROVIDER=s3 in production."
+                    )
 
 
     class Config:
@@ -134,6 +167,10 @@ class Settings(BaseSettings):
             if "sqlite" in self.DATABASE_URL.lower():
                 raise ValueError(
                     "CRITICAL CONFIGURATION ERROR: Production requires a persistent PostgreSQL database connection (e.g., postgresql+asyncpg://...). Temporary SQLite is strictly prohibited in production."
+                )
+            if self.STORAGE_PROVIDER == "local":
+                raise ValueError(
+                    "CRITICAL CONFIGURATION ERROR: Production requires persistent object storage (STORAGE_PROVIDER=s3 or compatible). Local ephemeral storage is strictly prohibited in production."
                 )
         # Ensure production security constraints are also validated
         self.validate_production_security()

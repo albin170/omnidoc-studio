@@ -299,8 +299,14 @@ export const UserPanel: React.FC<UserPanelProps> = ({
     }
   };
 
-  // Authoritative Quota Calculation
-  const maxQuotaBytes = backendEntitlements?.storage_quota_bytes || 100 * 1024 * 1024;
+  // Authoritative Quota Calculation (Resolve fallback: don't default to 100MB if user tier is higher)
+  const planDefaultQuota: Record<string, number> = {
+    free: 100 * 1024 * 1024,
+    starter: 1024 * 1024 * 1024,
+    pro: 10 * 1024 * 1024 * 1024,
+    enterprise: 100 * 1024 * 1024 * 1024,
+  };
+  const maxQuotaBytes = backendEntitlements?.storage_quota_bytes ?? (planDefaultQuota[userSession.planTier || 'free'] || 100 * 1024 * 1024);
   const currentUsedBytes = backendUsage?.storage_used_bytes ?? totalStorageBytes;
   const quotaPct = Math.min(100, Math.max(1, Math.round((currentUsedBytes / maxQuotaBytes) * 100)));
 
@@ -310,6 +316,7 @@ export const UserPanel: React.FC<UserPanelProps> = ({
       name: 'Free Community',
       monthlyPrice: '$0',
       annualPrice: '$0',
+      annualTotal: '$0/yr',
       period: 'forever',
       badge: 'COMMUNITY',
       maxSize: '25 MB max file',
@@ -321,7 +328,8 @@ export const UserPanel: React.FC<UserPanelProps> = ({
       tier: 'starter',
       name: 'Starter Pro',
       monthlyPrice: '$19',
-      annualPrice: '$15',
+      annualPrice: '$15.83',
+      annualTotal: '$190/yr',
       period: '/month',
       badge: 'STARTER',
       maxSize: '50 MB max file',
@@ -333,7 +341,8 @@ export const UserPanel: React.FC<UserPanelProps> = ({
       tier: 'pro',
       name: 'Professional Suite',
       monthlyPrice: '$49',
-      annualPrice: '$39',
+      annualPrice: '$40.83',
+      annualTotal: '$490/yr',
       period: '/month',
       badge: 'MOST POPULAR',
       maxSize: '100 MB max file',
@@ -345,7 +354,8 @@ export const UserPanel: React.FC<UserPanelProps> = ({
       tier: 'enterprise',
       name: 'Enterprise Cloud',
       monthlyPrice: '$199',
-      annualPrice: '$165',
+      annualPrice: '$165.83',
+      annualTotal: '$1,990/yr',
       period: '/month',
       badge: 'ENTERPRISE',
       maxSize: '500 MB max file',
@@ -608,6 +618,9 @@ export const UserPanel: React.FC<UserPanelProps> = ({
                             <span className="text-xl font-extrabold text-[#F4F5FF]">{price}</span>
                             <span className="text-xs text-[#9BA3BD]">{p.period}</span>
                           </div>
+                          {(userSession.billingCycle || 'monthly') === 'annual' && p.tier !== 'free' && (
+                            <div className="text-[10px] text-[#42D6E8] font-mono mt-0.5">{p.annualTotal} billed annually</div>
+                          )}
                         </div>
 
                         <p className="text-[11px] text-[#9BA3BD] leading-tight">{p.desc}</p>

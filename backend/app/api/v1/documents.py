@@ -1,6 +1,8 @@
 import os
 import uuid
 import time
+import json
+import logging
 import hmac
 import hashlib
 from typing import List, Optional
@@ -14,6 +16,7 @@ from app.core.security import get_current_user
 from app.core.rate_limit import rate_limiter
 from app.core.config import settings
 from app.models.user import User
+from app.models.organization import Organization
 from app.models.document import Document
 from app.models.audit import AuditEvent
 from app.schemas.document import DocumentOut, DocumentDetailOut
@@ -21,6 +24,8 @@ from app.schemas.digital_twin import DocumentDigitalTwin
 from app.services.storage import storage_vault
 from app.services.parser import document_parser
 from app.services.entitlement_service import calculate_user_entitlements
+
+logger = logging.getLogger("omnidoc.documents")
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -76,7 +81,22 @@ async def upload_document(
             detail=f"Unsupported format '{ext}'. Allowed: {sorted(list(settings.ALLOWED_EXTENSIONS))}"
         )
 
-    # Bounded chunk streaming to prevent memory exhaustion (BUG-05 fix)
+    # Server-Side Entitlements calculated before streaming to resolve global limit conflict (Section 4.B)
+    entitlements = await calculate_user_entitlements(current_user, db)
+
+    # Enforce plan document upload count limit (Section 4.B)
+    if entitlements.upload_limit > 0:
+        doc_count = await db.scalar(
+            select(func.count(Document.id)).where(Document.org_id == current_user.org_id)
+        ) or 0
+        if doc_count >= entitlements.upload_limit:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Plan document upload limit reached ({entitlements.upload_limit} documents). Upgrade your plan or delete existing documents."
+            )
+
+    # Bounded chunk streaming to prevent memory exhaustion, capped by plan max_file_size_bytes
+    max_allowed = min(settings.MAX_UPLOAD_SIZE_BYTES, entitlements.max_file_size_bytes)
     chunk_size = 64 * 1024
     chunks: list[bytes] = []
     total_bytes = 0
@@ -85,23 +105,19 @@ async def upload_document(
         if not chunk:
             break
         total_bytes += len(chunk)
-        if total_bytes > settings.MAX_UPLOAD_SIZE_BYTES:
+        if total_bytes > max_allowed:
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail=f"File exceeds maximum allowed upload size ({settings.MAX_UPLOAD_SIZE_BYTES // (1024 * 1024)}MB)"
+                detail=f"File exceeds plan maximum allowed file size ({entitlements.max_file_size_bytes // (1024 * 1024)}MB)."
             )
         chunks.append(chunk)
 
     content = b"".join(chunks)
 
-    # Server-Side Entitlements & Storage Quota Verification (Phase 4.3)
-    entitlements = await calculate_user_entitlements(current_user, db)
-    if total_bytes > entitlements.max_file_size_bytes:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File exceeds plan maximum allowed file size ({entitlements.max_file_size_bytes // (1024 * 1024)}MB)."
-        )
-
+    # Concurrency-safe storage quota verification: lock organization row
+    await db.scalar(
+        select(Organization).where(Organization.id == current_user.org_id).with_for_update()
+    )
     used_storage = await db.scalar(
         select(func.sum(Document.file_size)).where(Document.org_id == current_user.org_id)
     ) or 0
@@ -123,45 +139,53 @@ async def upload_document(
         content=content
     )
 
-    # Parse initial Document Digital Twin
-    digital_twin = document_parser.parse_document(
-        document_id=doc_id,
-        filename=filename,
-        content=content,
-        format_type=ext
-    )
+    try:
+        # Parse initial Document Digital Twin
+        digital_twin = document_parser.parse_document(
+            document_id=doc_id,
+            filename=filename,
+            content=content,
+            format_type=ext
+        )
 
-    new_doc = Document(
-        id=doc_id,
-        org_id=current_user.org_id,
-        user_id=current_user.id,
-        filename=filename,
-        file_size=file_size,
-        mime_type=file.content_type or f"application/{ext}",
-        format_type=ext,
-        storage_path=storage_path,
-        content_hash_sha256=content_hash,
-        digital_twin_json=digital_twin.model_dump_json(),
-        version=1
-    )
+        new_doc = Document(
+            id=doc_id,
+            org_id=current_user.org_id,
+            user_id=current_user.id,
+            filename=filename,
+            file_size=file_size,
+            mime_type=file.content_type or f"application/{ext}",
+            format_type=ext,
+            storage_path=storage_path,
+            content_hash_sha256=content_hash,
+            digital_twin_json=digital_twin.model_dump_json(),
+            version=1
+        )
 
-    db.add(new_doc)
+        db.add(new_doc)
 
-    audit = AuditEvent(
-        org_id=current_user.org_id,
-        user_id=current_user.id,
-        action="DOCUMENT_UPLOADED",
-        target_type="document",
-        target_id=doc_id,
-        details_json=f'{{"filename": "{filename}", "file_size": {file_size}}}',
-        timestamp=datetime.now(timezone.utc)
-    )
-    db.add(audit)
+        audit = AuditEvent(
+            org_id=current_user.org_id,
+            user_id=current_user.id,
+            action="DOCUMENT_UPLOADED",
+            target_type="document",
+            target_id=doc_id,
+            details_json=json.dumps({"filename": filename, "file_size": file_size}),
+            timestamp=datetime.now(timezone.utc)
+        )
+        db.add(audit)
 
-    await db.commit()
-    await db.refresh(new_doc)
-
-    return new_doc
+        await db.commit()
+        await db.refresh(new_doc)
+        return new_doc
+    except Exception as e:
+        # Consistency recovery: purge saved storage artifact if database persistence or parsing fails (Section 4.C)
+        try:
+            storage_vault.delete_file(org_id=current_user.org_id, storage_path=storage_path)
+        except Exception as cleanup_err:
+            logger.error("Failed to clean up orphaned storage artifact: %s", cleanup_err)
+        await db.rollback()
+        raise e
 
 @router.get("", response_model=List[DocumentOut])
 async def list_tenant_documents(
@@ -262,7 +286,7 @@ async def download_document_file(
         action="DOCUMENT_DOWNLOADED",
         target_type="document",
         target_id=doc.id,
-        details_json=f'{{"filename": "{doc.filename}"}}',
+        details_json=json.dumps({"filename": doc.filename}),
         timestamp=datetime.now(timezone.utc)
     )
     db.add(audit)
@@ -297,7 +321,7 @@ async def delete_document(
         action="DOCUMENT_DELETED",
         target_type="document",
         target_id=doc.id,
-        details_json=f'{{"filename": "{doc.filename}", "file_size": {doc.file_size}}}',
+        details_json=json.dumps({"filename": doc.filename, "file_size": doc.file_size}),
         timestamp=datetime.now(timezone.utc)
     )
     db.add(audit)

@@ -30,7 +30,8 @@ class EffectiveEntitlements:
         max_file_size_bytes: int,
         has_api_access: bool,
         support_level: str,
-        overrides_applied: Dict[str, Any]
+        overrides_applied: Dict[str, Any],
+        upload_limit: int = 20
     ):
         self.user_id = user_id
         self.org_id = org_id
@@ -49,6 +50,7 @@ class EffectiveEntitlements:
         self.has_api_access = has_api_access
         self.support_level = support_level
         self.overrides_applied = overrides_applied
+        self.upload_limit = upload_limit
 
     def is_feature_allowed(self, feature_key: str) -> bool:
         if self.is_suspended or not self.is_active:
@@ -71,6 +73,7 @@ class EffectiveEntitlements:
             "ai_quota": self.ai_quota,
             "workflow_quota": self.workflow_quota,
             "max_file_size_bytes": self.max_file_size_bytes,
+            "upload_limit": self.upload_limit,
             "has_api_access": self.has_api_access,
             "support_level": self.support_level,
             "overrides_applied": self.overrides_applied
@@ -86,23 +89,26 @@ async def calculate_user_entitlements(user: User, db: AsyncSession) -> Effective
     # 1. Account status & suspension check
     is_suspended = not user.is_active
 
-    # 2. Query Organization & Plan (Individual user plan takes precedence over org subscription)
-    org = await db.get(Organization, user.org_id)
-    plan_tier = getattr(user, "individual_plan_tier", None) or (org.plan_tier if org else "free")
-
-    # Query active subscription if present
-    sub = await db.scalar(
-        select(SubscriptionModel)
-        .where(SubscriptionModel.org_id == user.org_id, SubscriptionModel.status == "active")
-        .order_by(SubscriptionModel.created_at.desc())
-    )
-
+    # 2. Query Organization & Plan: Individual user plan strictly takes precedence over org subscription (Section 4, Item 4)
     plan = None
-    if sub:
-        plan = await db.get(PlanModel, sub.plan_id)
+    if user.individual_plan_tier:
+        plan = await db.scalar(select(PlanModel).where(PlanModel.slug == user.individual_plan_tier))
 
+    # If no individual plan override, query active organization subscription
     if not plan:
-        plan = await db.scalar(select(PlanModel).where(PlanModel.slug == plan_tier))
+        sub = await db.scalar(
+            select(SubscriptionModel)
+            .where(SubscriptionModel.org_id == user.org_id, SubscriptionModel.status == "active")
+            .order_by(SubscriptionModel.created_at.desc())
+        )
+        if sub:
+            plan = await db.get(PlanModel, sub.plan_id)
+
+    # Fallback to organization plan_tier column
+    if not plan:
+        org = await db.get(Organization, user.org_id)
+        org_tier = org.plan_tier if org else "free"
+        plan = await db.scalar(select(PlanModel).where(PlanModel.slug == org_tier))
 
     if not plan:
         # Fallback to default free plan
@@ -121,6 +127,7 @@ async def calculate_user_entitlements(user: User, db: AsyncSession) -> Effective
         plan_name = "Free Community"
         has_api = False
         support_level = "community"
+        upload_limit = 20
     else:
         try:
             plan_features = json.loads(plan.features_json)
@@ -136,6 +143,7 @@ async def calculate_user_entitlements(user: User, db: AsyncSession) -> Effective
         plan_name = plan.name
         has_api = plan.has_api_access
         support_level = plan.support_level
+        upload_limit = getattr(plan, "upload_limit", 20)
 
     # 3. Query all available system features
     all_features_res = await db.scalars(select(FeatureModel).where(FeatureModel.is_active == True))
@@ -171,23 +179,23 @@ async def calculate_user_entitlements(user: User, db: AsyncSession) -> Effective
             enabled_set.discard(feat)
             overrides_applied[f"feature_{feat}"] = "force_disabled"
 
-        # Quotas
-        if ov.custom_storage_quota_bytes is not None:
+        # Quotas (validate against invalid negative values)
+        if ov.custom_storage_quota_bytes is not None and ov.custom_storage_quota_bytes >= 0:
             storage_quota = ov.custom_storage_quota_bytes
             overrides_applied["storage_quota_bytes"] = storage_quota
-        if ov.custom_processing_quota is not None:
+        if ov.custom_processing_quota is not None and ov.custom_processing_quota >= 0:
             proc_quota = ov.custom_processing_quota
             overrides_applied["processing_quota"] = proc_quota
-        if ov.custom_ocr_quota is not None:
+        if ov.custom_ocr_quota is not None and ov.custom_ocr_quota >= 0:
             ocr_quota = ov.custom_ocr_quota
             overrides_applied["ocr_quota"] = ocr_quota
-        if ov.custom_ai_quota is not None:
+        if ov.custom_ai_quota is not None and ov.custom_ai_quota >= 0:
             ai_quota = ov.custom_ai_quota
             overrides_applied["ai_quota"] = ai_quota
-        if ov.custom_workflow_quota is not None:
+        if ov.custom_workflow_quota is not None and ov.custom_workflow_quota >= 0:
             wf_quota = ov.custom_workflow_quota
             overrides_applied["workflow_quota"] = wf_quota
-        if ov.custom_max_file_size_bytes is not None:
+        if ov.custom_max_file_size_bytes is not None and ov.custom_max_file_size_bytes >= 0:
             max_size = ov.custom_max_file_size_bytes
             overrides_applied["max_file_size_bytes"] = max_size
 
@@ -216,6 +224,7 @@ async def calculate_user_entitlements(user: User, db: AsyncSession) -> Effective
         max_file_size_bytes=max_size,
         has_api_access=has_api or ("api_access" in final_enabled),
         support_level=support_level,
-        overrides_applied=overrides_applied
+        overrides_applied=overrides_applied,
+        upload_limit=upload_limit
     )
 

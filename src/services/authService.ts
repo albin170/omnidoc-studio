@@ -263,6 +263,11 @@ export async function logoutUser(userEmail?: string): Promise<void> {
   try {
     await omniDocClient.logout();
   } catch {}
+  try {
+    localStorage.removeItem('omnidoc_backend_jwt');
+    localStorage.removeItem('omnidoc_user_auth_v1');
+    sessionStorage.removeItem('omnidoc_device_session_signing_secret');
+  } catch {}
   recordAuditLog('LOGOUT_SUCCESS', userEmail || 'anonymous', 'Session terminated and JWT purged');
 }
 
@@ -276,12 +281,16 @@ export async function createSecureSession(
   planTier: PlanTier = 'free'
 ): Promise<SecureAuthSession> {
   const now = Date.now();
+  // Section 2.C: A local sandbox must never create an administrator or superadministrator session
+  const safeRole: UserRole = (role === 'admin' as any || (role as string) === 'superadmin') ? 'user' : role;
+  const safePlan: PlanTier = safeRole === 'user' && role === 'admin' as any ? 'free' : planTier;
+
   const session: SecureAuthSession = {
-    isGuest: false,
+    isGuest: safeRole === 'guest',
     userEmail: email.trim().toLowerCase(),
     userName: userName.trim() || email.split('@')[0],
-    role,
-    planTier,
+    role: safeRole,
+    planTier: safePlan,
     storageUsedBytes: 0,
     isAuthenticated: true,
     issuedAt: now,
@@ -297,7 +306,7 @@ export async function createSecureSession(
   };
 
   session.signature = await computeSessionSignature(session);
-  recordAuditLog('SANDBOX_SESSION_CREATED', session.userEmail || '', `Sandbox session issued for role: ${role}`);
+  recordAuditLog('SANDBOX_SESSION_CREATED', session.userEmail || '', `Sandbox session issued for role: ${safeRole}`);
   return session;
 }
 
@@ -353,6 +362,12 @@ export async function verifyAndSanitizeSession(rawSession: any): Promise<SecureA
       role: 'user',
       planTier: 'free',
     };
+  }
+
+  // Section 2.C: Local sandbox must NEVER retain administrator or superadministrator role
+  if (rawSession.authSource === 'local_sandbox' && (rawSession.role === 'admin' || (rawSession.role as string) === 'superadmin')) {
+    rawSession.role = 'user';
+    rawSession.planTier = 'free';
   }
 
   return rawSession;

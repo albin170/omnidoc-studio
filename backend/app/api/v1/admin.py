@@ -242,7 +242,8 @@ async def admin_login(req: AdminLoginRequest, db: AsyncSession = Depends(get_db)
             "user_id": user.id,
             "org_id": user.org_id,
             "role": user.role,
-            "plan_tier": "enterprise"
+            "plan_tier": "enterprise",
+            "token_version": user.token_version or 1
         }
     )
 
@@ -967,6 +968,14 @@ async def list_audit_logs(
     res = await db.execute(query)
     logs = res.scalars().all()
 
+    def _safe_parse_details(details_str):
+        if not details_str:
+            return {}
+        try:
+            return json.loads(details_str)
+        except Exception:
+            return {"raw": details_str}
+
     return [
         {
             "id": l.id,
@@ -976,7 +985,7 @@ async def list_audit_logs(
             "target_type": l.target_type,
             "target_id": l.target_id,
             "timestamp": l.timestamp.isoformat(),
-            "details": json.loads(l.details_json) if l.details_json else {}
+            "details": _safe_parse_details(l.details_json)
         }
         for l in logs
     ]

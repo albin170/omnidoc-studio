@@ -337,3 +337,217 @@ async def test_rate_limiting_triggers_429(client: AsyncClient):
 
     assert 429 in status_codes
     clear_rate_limits()
+
+@pytest.mark.asyncio
+async def test_password_change_invalidates_prior_sessions(client: AsyncClient, db_session: AsyncSession):
+    from app.core.security import get_password_hash
+    from app.models.organization import Organization
+    import uuid
+
+    org = Organization(name="Token Revoke Org", slug=f"tr-org-{uuid.uuid4().hex[:6]}", plan_tier="free")
+    db_session.add(org)
+    await db_session.flush()
+
+    user = User(
+        email="token.invalidation@test.com",
+        hashed_password=get_password_hash("OldPassword123!"),
+        full_name="Token Test User",
+        role="user",
+        org_id=org.id,
+        is_active=True,
+        terms_accepted=True,
+        privacy_accepted=True,
+        ai_consent=True
+    )
+    db_session.add(user)
+    await db_session.commit()
+
+    # Session 1 login
+    res1 = await client.post("/api/v1/auth/login", json={"email": user.email, "password": "OldPassword123!"})
+    token1 = res1.json()["access_token"]
+
+    # Session 2 login
+    res2 = await client.post("/api/v1/auth/login", json={"email": user.email, "password": "OldPassword123!"})
+    token2 = res2.json()["access_token"]
+
+    # Verify both work
+    me1 = await client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {token1}"})
+    assert me1.status_code == 200
+
+    # User changes password via /users/me/change-password using token1
+    change_res = await client.post(
+        "/api/v1/users/me/change-password",
+        headers={"Authorization": f"Bearer {token1}"},
+        json={"current_password": "OldPassword123!", "new_password": "NewSecurePassword456!"}
+    )
+    assert change_res.status_code == 200
+    token_fresh = change_res.json()["access_token"]
+
+    # Token 2 (other concurrent session) MUST fail with 401 (session invalidated via token_version)
+    me2 = await client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {token2}"})
+    assert me2.status_code == 401
+    assert "invalidated" in me2.json()["detail"].lower() or "revoked" in me2.json()["detail"].lower()
+
+    # Prior Token 1 also now fails because its token_version is older
+    me1_old = await client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {token1}"})
+    assert me1_old.status_code == 401
+
+    # Fresh token works
+    me_fresh = await client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {token_fresh}"})
+    assert me_fresh.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_billing_cancellation_authorization_enforces_billing_owner(client: AsyncClient, db_session: AsyncSession):
+    from app.core.security import get_password_hash
+    from app.models.organization import Organization
+    import uuid
+
+    org = Organization(name="Billing Auth Org", slug=f"bo-org-{uuid.uuid4().hex[:6]}", plan_tier="free")
+    db_session.add(org)
+    await db_session.flush()
+
+    # Owner user (created first)
+    owner = User(
+        email="billing.owner@test.com",
+        hashed_password=get_password_hash("OwnerPass123!"),
+        full_name="Billing Owner",
+        role="user",
+        org_id=org.id,
+        is_active=True,
+        terms_accepted=True,
+        privacy_accepted=True,
+        ai_consent=True
+    )
+    db_session.add(owner)
+    await db_session.commit()
+
+    # Member user (created second)
+    member = User(
+        email="billing.member@test.com",
+        hashed_password=get_password_hash("MemberPass123!"),
+        full_name="Regular Member",
+        role="user",
+        org_id=org.id,
+        is_active=True,
+        terms_accepted=True,
+        privacy_accepted=True,
+        ai_consent=True
+    )
+    db_session.add(member)
+    await db_session.commit()
+
+    # Login both
+    res_m = await client.post("/api/v1/auth/login", json={"email": member.email, "password": "MemberPass123!"})
+    token_member = res_m.json()["access_token"]
+    res_o = await client.post("/api/v1/auth/login", json={"email": owner.email, "password": "OwnerPass123!"})
+    token_owner = res_o.json()["access_token"]
+
+    # 1. Non-owner member attempts checkout -> 403 Forbidden
+    res_checkout_m = await client.post(
+        "/api/v1/billing/checkout",
+        headers={"Authorization": f"Bearer {token_member}"},
+        json={"plan_slug": "pro", "billing_interval": "monthly"}
+    )
+    assert res_checkout_m.status_code == 403
+    assert "billing owner" in res_checkout_m.json()["detail"].lower()
+
+    # 2. Non-owner member attempts cancellation -> 403 Forbidden
+    res_cancel_m = await client.post(
+        "/api/v1/billing/cancel",
+        headers={"Authorization": f"Bearer {token_member}"},
+        json={"reason": "Attacker trying to cancel"}
+    )
+    assert res_cancel_m.status_code == 403
+
+    # 3. Billing owner attempts checkout -> passes owner auth check (returns 503 gateway unconfigured, NOT 403)
+    res_checkout_o = await client.post(
+        "/api/v1/billing/checkout",
+        headers={"Authorization": f"Bearer {token_owner}"},
+        json={"plan_slug": "pro", "billing_interval": "monthly"}
+    )
+    assert res_checkout_o.status_code == 503
+
+    # 4. Billing owner with malicious external redirect URL -> 400 Bad Request
+    res_evil_redirect = await client.post(
+        "/api/v1/billing/checkout",
+        headers={"Authorization": f"Bearer {token_owner}"},
+        json={
+            "plan_slug": "pro",
+            "billing_interval": "monthly",
+            "success_url": "https://malicious-phishing-site.example/steal"
+        }
+    )
+    assert res_evil_redirect.status_code == 400
+    assert "unauthorized external origin" in res_evil_redirect.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_native_docx_and_pptx_parsing():
+    import io
+    import zipfile
+    from app.services.parser import DocumentParserService
+
+    # Construct minimal valid DOCX package in memory
+    docx_buf = io.BytesIO()
+    with zipfile.ZipFile(docx_buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>')
+        doc_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+            <w:body>
+                <w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>Architecture Overview</w:t></w:r></w:p>
+                <w:p><w:r><w:t>This is a confidential architecture document.</w:t></w:r></w:p>
+                <w:tbl>
+                    <w:tr>
+                        <w:tc><w:p><w:r><w:t>Service</w:t></w:r></w:p></w:tc>
+                        <w:tc><w:p><w:r><w:t>Status</w:t></w:r></w:p></w:tc>
+                    </w:tr>
+                    <w:tr>
+                        <w:tc><w:p><w:r><w:t>Vault</w:t></w:r></w:p></w:tc>
+                        <w:tc><w:p><w:r><w:t>Healthy</w:t></w:r></w:p></w:tc>
+                    </w:tr>
+                </w:tbl>
+            </w:body>
+        </w:document>"""
+        zf.writestr("word/document.xml", doc_xml)
+
+    docx_bytes = docx_buf.getvalue()
+    twin_docx = DocumentParserService.parse_document(
+        document_id="doc-docx-1",
+        filename="architecture.docx",
+        content=docx_bytes,
+        format_type="docx"
+    )
+    assert any("Architecture Overview" in h.text for h in twin_docx.headings)
+    assert any("confidential architecture document" in p.text for p in twin_docx.paragraphs)
+    assert len(twin_docx.tables) >= 1
+    assert twin_docx.tables[0].row_count == 2
+
+    # Construct minimal valid PPTX package in memory
+    pptx_buf = io.BytesIO()
+    with zipfile.ZipFile(pptx_buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>')
+        slide_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+            <p:cSld>
+                <p:spTree>
+                    <p:sp>
+                        <p:txBody>
+                            <a:p><a:r><a:t>OmniDoc Keynote 2026</a:t></a:r></a:p>
+                            <a:p><a:r><a:t>Enterprise Autonomous Document Intelligence</a:t></a:r></a:p>
+                        </p:txBody>
+                    </p:sp>
+                </p:spTree>
+            </p:cSld>
+        </p:sld>"""
+        zf.writestr("ppt/slides/slide1.xml", slide_xml)
+
+    pptx_bytes = pptx_buf.getvalue()
+    twin_pptx = DocumentParserService.parse_document(
+        document_id="doc-pptx-1",
+        filename="presentation.pptx",
+        content=pptx_bytes,
+        format_type="pptx"
+    )
+    assert twin_pptx.metadata.page_count == 1
+    assert any("OmniDoc Keynote 2026" in p.text for p in twin_pptx.paragraphs)

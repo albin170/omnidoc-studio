@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -14,6 +14,7 @@ class User(Base):
     role = Column(String(32), default="user", nullable=False) # superadmin, admin, staff, user, auditor
     is_active = Column(Boolean, default=True, nullable=False)
     individual_plan_tier = Column(String(32), nullable=True) # Overrides org-level plan for this specific user
+    token_version = Column(Integer, default=1, nullable=False) # Incremented on password change/reset for session revocation
     
     # Consent Flags
     terms_accepted = Column(Boolean, default=False, nullable=False)

@@ -1,4 +1,5 @@
 import uuid
+import json
 import bcrypt
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List
@@ -31,6 +32,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode = data.copy()
     if "jti" not in to_encode:
         to_encode["jti"] = str(uuid.uuid4())
+    if "token_version" not in to_encode:
+        to_encode["token_version"] = 1
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
@@ -129,6 +132,16 @@ async def get_current_user(
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive or suspended user account")
 
+    # Enforce server-controlled token version invalidation (Section 2.B)
+    token_ver = payload.get("token_version")
+    if token_ver is not None and getattr(user, "token_version", None) is not None:
+        if token_ver != user.token_version:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session invalidated by recent password change or security revocation. Please log in again.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
     # If impersonated, bind session identity and strictly demote role so target privilege cannot escalate
     if is_admin_view and view_session:
         user.is_impersonated = True
@@ -147,7 +160,7 @@ async def get_current_user(
             target_type="user",
             target_id=user.id,
             ip_address=client_ip,
-            details_json=f'{{"method": "{request.method}", "path": "{request.url.path}", "view_session_id": "{view_session.id}"}}',
+            details_json=json.dumps({"method": request.method, "path": request.url.path, "view_session_id": str(view_session.id)}),
             timestamp=datetime.now(timezone.utc)
         )
         db.add(access_audit)

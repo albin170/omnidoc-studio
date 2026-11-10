@@ -80,7 +80,7 @@ DEFAULT_PLANS = [
         "is_default": False,
         "display_order": 3,
         "upload_limit": 500,
-        "max_file_size_bytes": 100 * 1024 * 1024,
+        "max_file_size_bytes": 150 * 1024 * 1024,
         "storage_quota_bytes": 10 * 1024 * 1024 * 1024, # 10GB
         "monthly_processing_quota": 1500,
         "ocr_quota": 500,
@@ -227,8 +227,10 @@ async def seed_initial_plans_and_features(db: AsyncSession):
 
     try:
         await db.commit()
-    except Exception:
+    except Exception as e:
         await db.rollback()
+        logger.error("Database initialization and seeding failed: %s", e)
+        raise
 
 # Alias for backwards compatibility
 seed_default_saas_data = seed_initial_plans_and_features

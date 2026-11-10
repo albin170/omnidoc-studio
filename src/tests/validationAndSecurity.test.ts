@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import { validateFileFormat, detectFileFormat } from '../services/formatDetector';
 import { escapeHtml } from '../services/converter';
 import { 
@@ -8,6 +10,11 @@ import {
   getUserSession, 
   setUserSession 
 } from '../services/storageService';
+import { 
+  createSecureSession, 
+  verifyAndSanitizeSession, 
+  logoutUser 
+} from '../services/authService';
 import { StoredProject } from '../types';
 
 // In Node.js environment, mock localStorage
@@ -28,6 +35,13 @@ const localStorageMock = {
 
 if (!globalThis.localStorage || typeof globalThis.localStorage.getItem !== 'function') {
   Object.defineProperty(globalThis, 'localStorage', {
+    value: localStorageMock,
+    writable: true,
+  });
+}
+
+if (!globalThis.sessionStorage || typeof globalThis.sessionStorage.getItem !== 'function') {
+  Object.defineProperty(globalThis, 'sessionStorage', {
     value: localStorageMock,
     writable: true,
   });
@@ -295,5 +309,50 @@ describe('Authentication & Authorization Prototype Boundaries', () => {
     expect(active.isAuthenticated).toBe(true);
     expect(active.isLocalPrototype).toBe(true);
     expect(active.role).toBe('user');
+  });
+
+  it('prevents local sandbox sessions from creating or retaining admin role (Section 2.C)', async () => {
+    // Attempt to create a sandbox session with admin role and enterprise tier
+    const session = await createSecureSession('attacker@omnidoc.io', 'Attacker', 'admin' as any, 'enterprise');
+    expect(session.role).toBe('user');
+    expect(session.planTier).toBe('free');
+
+    // Attempt to sanitize a crafted local_sandbox session claiming admin
+    const crafted = {
+      isGuest: false,
+      userEmail: 'crafted@omnidoc.io',
+      userName: 'Crafted Admin',
+      role: 'admin',
+      planTier: 'enterprise',
+      isAuthenticated: true,
+      authSource: 'local_sandbox',
+      issuedAt: Date.now(),
+      expiresAt: Date.now() + 100000,
+    };
+    const sanitized = await verifyAndSanitizeSession(crafted);
+    expect(sanitized.role).toBe('user');
+  });
+
+  it('purges all tokens and device secrets upon logoutUser', async () => {
+    globalThis.localStorage.setItem('omnidoc_backend_jwt', 'fake-jwt-token-value');
+    globalThis.localStorage.setItem('omnidoc_user_auth_v1', JSON.stringify({ isAuthenticated: true }));
+    globalThis.sessionStorage.setItem('omnidoc_device_session_signing_secret', 'secret-val');
+
+    await logoutUser('test@omnidoc.io');
+
+    expect(globalThis.localStorage.getItem('omnidoc_backend_jwt')).toBeNull();
+    expect(globalThis.localStorage.getItem('omnidoc_user_auth_v1')).toBeNull();
+    expect(globalThis.sessionStorage.getItem('omnidoc_device_session_signing_secret')).toBeNull();
+  });
+
+  it('verifies that AuthGateway component source contains zero hardcoded credential pills (P0/P1)', () => {
+    const authGatewayPath = path.resolve(__dirname, '../components/auth/AuthGateway.tsx');
+    const content = fs.readFileSync(authGatewayPath, 'utf-8');
+
+    // Asserts no hardcoded passwords in client-side code
+    expect(content).not.toContain('AdminPass123!');
+    expect(content).not.toContain('UserPass123!');
+    expect(content).not.toContain('admin@omnidoc.io');
+    expect(content).not.toContain('Quick Fill Credentials');
   });
 });

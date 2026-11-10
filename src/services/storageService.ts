@@ -254,7 +254,7 @@ export function getPlanQuota(tier: PlanTier = 'pro'): PlanQuota {
     default:
       return {
         tier: 'pro',
-        maxFileSizeBytes: 150 * 1024 * 1024, // 150 MB
+        maxFileSizeBytes: 150 * 1024 * 1024, // 150 MB (synchronized with backend plan)
         maxFilesPerBatch: 50,
         unlimitedOcr: true,
         canExportHighRes: true,

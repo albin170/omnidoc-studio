@@ -101,15 +101,19 @@ def check_rate_limit(key: str, max_requests: int, window_seconds: int) -> None:
 
 def rate_limiter(max_requests: int, window_seconds: int):
     async def dependency(request: Request):
-        # Extract client IP supporting reverse proxies (Render, Vercel, Cloudflare)
+        # Only trust forwarded headers if incoming connection is from a configured trusted proxy or TRUST_PROXY_HEADERS is enabled
+        client_host = request.client.host if request.client else None
         forwarded = request.headers.get("x-forwarded-for")
         cf_ip = request.headers.get("cf-connecting-ip")
-        if forwarded:
+
+        is_trusted_proxy = settings.TRUST_PROXY_HEADERS or (client_host and client_host in settings.TRUSTED_PROXIES)
+
+        if is_trusted_proxy and forwarded:
             client_ip = forwarded.split(",")[0].strip()
-        elif cf_ip:
+        elif is_trusted_proxy and cf_ip:
             client_ip = cf_ip.strip()
-        elif request.client:
-            client_ip = request.client.host
+        elif client_host:
+            client_ip = client_host
         else:
             client_ip = "unknown_client"
 

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import smtplib
 from email.mime.text import MIMEText
@@ -9,11 +10,32 @@ logger = logging.getLogger("omnidoc.email")
 
 class EmailService:
     @staticmethod
-    def send_password_reset_email(to_email: str, raw_token: str) -> bool:
+    def _send_smtp_sync(to_email: str, subject: str, body_text: str, body_html: str) -> bool:
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_EMAIL}>"
+            msg["To"] = to_email
+            msg.attach(MIMEText(body_text, "plain"))
+            msg.attach(MIMEText(body_html, "html"))
+
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.send_message(msg)
+
+            logger.info("Password reset email sent to %s via SMTP", to_email)
+            return True
+        except Exception as e:
+            logger.error("Failed to send password reset email via SMTP: %s", e)
+            return False
+
+    @staticmethod
+    async def send_password_reset_email(to_email: str, raw_token: str) -> bool:
         """
         Dispatches password reset instructions containing single-use cryptographic token.
-        If SMTP server is configured, sends via SMTP with TLS.
-        Otherwise, in development/testing, safely logs dispatch without exposing credentials.
+        Uses asynchronous thread execution to avoid blocking the event loop (Section 5.A).
+        In production, requires real configured SMTP and fails if delivery fails.
         """
         reset_link = f"{settings.FRONTEND_URL}/#reset-password?token={raw_token}"
         subject = "OmniDoc Studio — Password Reset Instructions"
@@ -46,26 +68,14 @@ class EmailService:
         </html>
         """
 
+        is_prod = settings.ENVIRONMENT.lower() in ("production", "prod")
+
         if settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD:
-            try:
-                msg = MIMEMultipart("alternative")
-                msg["Subject"] = subject
-                msg["From"] = f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_EMAIL}>"
-                msg["To"] = to_email
-                msg.attach(MIMEText(body_text, "plain"))
-                msg.attach(MIMEText(body_html, "html"))
-
-                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-                    server.starttls()
-                    server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                    server.send_message(msg)
-
-                logger.info("Password reset email sent to %s via SMTP", to_email)
-                return True
-            except Exception as e:
-                logger.error("Failed to send password reset email via SMTP: %s", e)
-                return False
+            return await asyncio.to_thread(EmailService._send_smtp_sync, to_email, subject, body_text, body_html)
         else:
+            if is_prod:
+                logger.error("Production email failure: SMTP provider is not configured.")
+                return False
             logger.info("SMTP not configured; simulated email dispatch for %s (token length: %d)", to_email, len(raw_token))
             return True
 
