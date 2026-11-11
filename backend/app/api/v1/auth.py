@@ -2,6 +2,7 @@ import uuid
 import json
 import secrets
 import hashlib
+import logging
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
@@ -35,6 +36,8 @@ from app.schemas.auth import (
     CURRENT_PRIVACY_VERSION,
     CURRENT_AI_CONSENT_VERSION,
 )
+
+logger = logging.getLogger("omnidoc.auth")
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -443,9 +446,10 @@ async def logout(
         await db.commit()
     except Exception as e:
         await db.rollback()
+        logger.error("Revocation database error: %s", str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Revocation database error: {e}"
+            detail="Failed to revoke session due to an internal server error."
         )
 
     return {
