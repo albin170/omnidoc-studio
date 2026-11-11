@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { ConversionHistoryItem, FileFormat, StoredProject, WorkspaceTab } from '../../types';
 import { detectFileFormat, formatFileSize } from '../../services/formatDetector';
-import { omnidocClient } from '../../sdk/omnidocClient';
+import { omniDocClient } from '../../sdk/omnidocClient';
 import { getBrowserStorageEstimate, getUserSession } from '../../services/storageService';
 
 interface DashboardProps {
@@ -122,8 +122,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
       // If user is authenticated with a backend JWT, query the real cloud endpoint /api/v1/users/me/usage
       if (session.isAuthenticated && session.jwtToken) {
         try {
-          omnidocClient.setToken(session.jwtToken);
-          const usage = await omnidocClient.getMyUsage();
+          omniDocClient.setToken(session.jwtToken);
+          const usage = await omniDocClient.getMyUsage();
           if (isMounted && usage && typeof usage.storage_used_bytes === 'number') {
             setStorageUsed(usage.storage_used_bytes);
             setStorageTotal(usage.storage_quota_bytes || (100 * 1024 * 1024 * 1024));

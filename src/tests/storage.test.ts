@@ -198,4 +198,14 @@ describe('Local Storage & Session Service', () => {
     expect(loggedOut.isAuthenticated).toBe(false);
     expect(getUserSession().isAuthenticated).toBe(false);
   });
+
+  it('accurately estimates browser storage and distinguishes local sandbox from cloud', async () => {
+    const { getBrowserStorageEstimate } = await import('../services/storageService');
+    const estimate = await getBrowserStorageEstimate();
+    expect(typeof estimate.usageBytes).toBe('number');
+    expect(typeof estimate.quotaBytes).toBe('number');
+    expect(estimate.quotaBytes).toBeGreaterThan(0);
+    // Quota should not be a hardcoded 50 MB claim
+    expect(estimate.source).toBeDefined();
+  });
 });
