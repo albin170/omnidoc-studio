@@ -677,15 +677,20 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
           textToRedact: a.text,
         });
       });
-      textEditsArray.filter((e) => e.isRedaction || e.isDeleted).forEach((e) => {
-        redactionTargets.push({
-          pageNumber: e.pageIndex + 1,
-          x: e.pdfX,
-          y: e.pdfY,
-          width: e.width,
-          height: e.height,
-          textToRedact: e.originalText,
-        });
+      // Collect all text edits that replace, delete, or redact existing text
+      textEditsArray.forEach((e) => {
+        if (e.originalText && e.originalText.trim().length > 0) {
+          if (e.isDeleted || e.isRedaction || e.newText !== e.originalText) {
+            redactionTargets.push({
+              pageNumber: e.pageIndex + 1,
+              x: e.pdfX,
+              y: e.pdfY,
+              width: e.width,
+              height: e.height,
+              textToRedact: e.originalText.trim(),
+            });
+          }
+        }
       });
 
       let zeroLeakVerified = false;
@@ -694,6 +699,9 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
         const sanitizationResult = await sanitizeAndRedactPdf(modifiedBytes, redactionTargets);
         modifiedBytes = sanitizationResult.pdfBytes;
         zeroLeakVerified = !sanitizationResult.report.residualTextFound;
+        if (sanitizationResult.report.residualTextFound) {
+          console.warn('Residual text detection warning:', sanitizationResult.report.residualMatches);
+        }
       }
 
       // Post-save verification: Reopen and check structural integrity (Module 4A)

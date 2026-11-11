@@ -41,9 +41,14 @@ function stringToHex(str: string): string {
 }
 
 /**
- * Safely scrub text and hex patterns from decompressed content stream
+ * Safely scrub text and hex patterns from decompressed content stream.
+ * Handles:
+ * 1. Plain literal strings: (ABC123) Tj
+ * 2. Escaped literal strings: \(, \), \\
+ * 3. Hex-encoded strings: <414243313233> Tj
+ * 4. Segmented kerning arrays: [ (ABC) -10 (123) ] TJ
  */
-function scrubContentStream(streamText: string, targetWords: string[]): string {
+export function scrubContentStream(streamText: string, targetWords: string[]): string {
   let result = streamText;
   for (const word of targetWords) {
     if (!word || word.trim().length === 0) continue;
@@ -52,6 +57,13 @@ function scrubContentStream(streamText: string, targetWords: string[]): string {
     // 1. Literal string match: (targetWord) or inside Tj / TJ
     const literalPattern = new RegExp(cleanWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
     result = result.replace(literalPattern, ' '.repeat(cleanWord.length));
+
+    // 1b. Handle PDF string escapes: parens \( and \)
+    if (cleanWord.includes('(') || cleanWord.includes(')')) {
+      const escapedWord = cleanWord.replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+      const escapedPattern = new RegExp(escapedWord.replace(/[.*+?^${}|[\]\\]/g, '\\$&'), 'gi');
+      result = result.replace(escapedPattern, ' '.repeat(escapedWord.length));
+    }
 
     // 2. Hex encoded match: <434F4E46...>
     const hexPatternUpper = stringToHex(cleanWord);
@@ -64,8 +76,126 @@ function scrubContentStream(streamText: string, targetWords: string[]): string {
     if (result.includes(hexPatternLower)) {
       result = result.split(hexPatternLower).join(hexReplacement);
     }
+
+    // 3. TJ kerning array match: e.g. [ (pass) 10 (word) ] TJ
+    const tjRegex = /\[\s*([\s\S]*?)\s*\]\s*TJ/gi;
+    result = result.replace(tjRegex, (fullMatch, tjInner) => {
+      let combined = '';
+      const strLiterals: string[] = [];
+      const literalMatches = tjInner.matchAll(/\(([^)]*)\)/g);
+      for (const m of literalMatches) {
+        combined += m[1];
+        strLiterals.push(m[1]);
+      }
+      if (combined.toLowerCase().includes(cleanWord.toLowerCase())) {
+        let replacedInner = tjInner;
+        for (const lit of strLiterals) {
+          if (cleanWord.toLowerCase().includes(lit.toLowerCase()) || lit.toLowerCase().includes(cleanWord.toLowerCase())) {
+            replacedInner = replacedInner.replace(`(${lit})`, `(${' '.repeat(lit.length)})`);
+          }
+        }
+        return `[ ${replacedInner} ] TJ`;
+      }
+      return fullMatch;
+    });
   }
   return result;
+}
+
+/**
+ * Scrub page content streams AND Form XObjects on the page.
+ */
+export function scrubPageStreamsAndXObjects(
+  page: any,
+  words: string[],
+  pdfDoc: PDFDocument
+): number {
+  if (!words || words.length === 0) return 0;
+  let scrubbedCount = 0;
+
+  const processStreamRef = (ref: PDFRef) => {
+    try {
+      const stream = pdfDoc.context.lookup(ref) as any;
+      if (stream && stream.getContents) {
+        const rawBytes = stream.getContents();
+        const filter = stream.dict?.get(PDFName.of('Filter'));
+        let streamText = '';
+        let isFlate = false;
+
+        if (filter && filter.toString().includes('FlateDecode')) {
+          isFlate = true;
+          try {
+            const inflated = pako.inflate(rawBytes);
+            streamText = new TextDecoder('latin1').decode(inflated);
+          } catch {
+            streamText = new TextDecoder('latin1').decode(rawBytes);
+          }
+        } else {
+          streamText = new TextDecoder('latin1').decode(rawBytes);
+        }
+
+        const scrubbed = scrubContentStream(streamText, words);
+        if (scrubbed !== streamText) {
+          const newStream = isFlate
+            ? pdfDoc.context.flateStream(new TextEncoder().encode(scrubbed))
+            : pdfDoc.context.stream(new TextEncoder().encode(scrubbed));
+
+          if (stream.dict) {
+            const entries = stream.dict.entries();
+            for (const [k, v] of entries) {
+              if (k.toString() !== '/Length' && k.toString() !== '/Filter') {
+                newStream.dict.set(k, v);
+              }
+            }
+          }
+          pdfDoc.context.assign(ref, newStream);
+          scrubbedCount++;
+        }
+      }
+    } catch (e) {
+      console.warn('Process stream ref failed:', e);
+    }
+  };
+
+  // 1. Process page /Contents
+  try {
+    const contentsObj = page.node.Contents();
+    if (contentsObj) {
+      if (contentsObj instanceof PDFRef) {
+        processStreamRef(contentsObj);
+      } else if ((contentsObj as any).asArray) {
+        for (const item of (contentsObj as any).asArray()) {
+          if (item instanceof PDFRef) processStreamRef(item);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Scrub page contents error:', err);
+  }
+
+  // 2. Process Form XObjects inside page /Resources -> /XObject
+  try {
+    const resources = page.node.Resources();
+    if (resources) {
+      const xobjDict = resources.lookup(PDFName.of('XObject'));
+      if (xobjDict && (xobjDict as any).dict) {
+        for (const key of (xobjDict as any).dict.keys()) {
+          const xobjRef = (xobjDict as any).dict.get(key);
+          if (xobjRef instanceof PDFRef) {
+            const xobj = pdfDoc.context.lookup(xobjRef) as any;
+            const subtype = xobj?.dict?.get(PDFName.of('Subtype'));
+            if (subtype && subtype.toString().includes('Form')) {
+              processStreamRef(xobjRef);
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Scrub XObjects error:', err);
+  }
+
+  return scrubbedCount;
 }
 
 /**
@@ -118,53 +248,9 @@ export async function sanitizeAndRedactPdf(
       .map((r) => r.textToRedact?.trim())
       .filter((w): w is string => Boolean(w && w.length > 0));
 
-    // Decompress and scrub content streams
+    // Decompress and scrub content streams & Form XObjects
     if (wordsToScrubOnPage.length > 0) {
-      try {
-        const contentsObj = page.node.Contents();
-        if (contentsObj) {
-          const refsToProcess: PDFRef[] = [];
-          if (contentsObj instanceof PDFRef) {
-            refsToProcess.push(contentsObj);
-          } else if ((contentsObj as any).asArray) {
-            for (const item of (contentsObj as any).asArray()) {
-              if (item instanceof PDFRef) refsToProcess.push(item);
-            }
-          }
-
-          for (const ref of refsToProcess) {
-            const stream = pdfDoc.context.lookup(ref) as any;
-            if (stream && stream.getContents) {
-              const rawBytes = stream.getContents();
-              const filter = stream.dict.get(PDFName.of('Filter'));
-              let streamText = '';
-              let isFlate = false;
-
-              if (filter && filter.toString().includes('FlateDecode')) {
-                isFlate = true;
-                try {
-                  const inflated = pako.inflate(rawBytes);
-                  streamText = new TextDecoder('latin1').decode(inflated);
-                } catch {
-                  streamText = new TextDecoder('latin1').decode(rawBytes);
-                }
-              } else {
-                streamText = new TextDecoder('latin1').decode(rawBytes);
-              }
-
-              const scrubbed = scrubContentStream(streamText, wordsToScrubOnPage);
-              if (scrubbed !== streamText) {
-                const newStream = isFlate
-                  ? pdfDoc.context.flateStream(new TextEncoder().encode(scrubbed))
-                  : pdfDoc.context.stream(new TextEncoder().encode(scrubbed));
-                pdfDoc.context.assign(ref, newStream);
-              }
-            }
-          }
-        }
-      } catch (streamErr) {
-        console.warn('Failed to scrub content stream:', streamErr);
-      }
+      scrubPageStreamsAndXObjects(page, wordsToScrubOnPage, pdfDoc);
     }
 
     // Scrub annotations intersecting redactions or remove entirely if requested

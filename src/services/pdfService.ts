@@ -1,6 +1,7 @@
 import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFAnnotation, PdfTextEdit, PdfTextItem } from '../types';
+import { scrubPageStreamsAndXObjects } from './pdfSanitizerService';
 
 // Configure pdfjs worker for Vite
 try {
@@ -416,6 +417,14 @@ export async function applyPdfModifications(
       const page = pages[edit.pageIndex];
 
       const isRedact = edit.isRedaction || false;
+      const isDelete = edit.isDeleted || false;
+
+      // CRITICAL P0 SECURITY FIX (BUG 1):
+      // Purge original text from underlying page content streams AND Form XObjects FIRST.
+      // Merely drawing a rectangle over text leaves the original text extractable.
+      if (edit.originalText && edit.originalText.trim().length > 0) {
+        scrubPageStreamsAndXObjects(page, [edit.originalText.trim()], pdfDoc);
+      }
 
       // Opaque background rectangle wiping original text (white for edit/delete, black for redact)
       page.drawRectangle({
@@ -427,8 +436,8 @@ export async function applyPdfModifications(
         opacity: 1.0,
       });
 
-      // Render replacement text
-      if (!edit.isDeleted && !isRedact && edit.newText && edit.newText.trim().length > 0) {
+      // Render replacement text ONLY for active replacements (not deleted, not redacted)
+      if (!isDelete && !isRedact && edit.newText && edit.newText.trim().length > 0) {
         const chosenFont = selectFont(edit.fontFamily, edit.fontWeight, edit.fontStyle);
         const fontSize = edit.fontSize || 12;
         let drawX = edit.pdfX;
@@ -506,7 +515,10 @@ export async function applyPdfModifications(
         opacity: ann.opacity ?? 1,
       });
     } else if (ann.type === 'redact') {
-      // True secure blackout box
+      // True secure blackout box: purge text from stream if provided
+      if (ann.text && ann.text.trim().length > 0) {
+        scrubPageStreamsAndXObjects(page, [ann.text.trim()], pdfDoc);
+      }
       page.drawRectangle({
         x: ann.x,
         y: pdfY - (ann.height || 20),

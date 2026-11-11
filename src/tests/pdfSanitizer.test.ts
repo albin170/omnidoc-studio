@@ -83,4 +83,93 @@ describe('Verified PDF Content Sanitization & Redaction Engine', () => {
     expect(result.report.isSanitized).toBe(false);
     expect(result.report.residualMatches.length).toBeGreaterThan(0);
   });
+
+  it('purges original text from underlying content stream during text replacement', async () => {
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const page = doc.addPage([600, 400]);
+    page.drawText('Account record: My password is ABC123 in private vault.', {
+      x: 50,
+      y: 300,
+      size: 14,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    const bytes = await doc.save();
+
+    // Import applyPdfModifications
+    const { applyPdfModifications } = await import('../services/pdfService');
+
+    // Perform text replacement: "ABC123" -> "[REDACTED]"
+    const modifiedBytes = await applyPdfModifications(bytes, [], {
+      textEdits: [
+        {
+          id: 'edit-1',
+          pageIndex: 0,
+          originalText: 'ABC123',
+          newText: '[REDACTED]',
+          pdfX: 200,
+          pdfY: 300,
+          width: 60,
+          height: 16,
+          isDeleted: false,
+          isRedaction: false,
+        },
+      ],
+    });
+
+    // Verify binary content does not contain the original sensitive string ABC123
+    const textRepr = new TextDecoder('latin1').decode(modifiedBytes);
+    expect(textRepr.includes('ABC123')).toBe(false);
+
+    // Verify with sanitizeAndRedactPdf dual-stage verification
+    const sanitizationCheck = await sanitizeAndRedactPdf(modifiedBytes, [
+      {
+        pageNumber: 1,
+        x: 200,
+        y: 300,
+        width: 60,
+        height: 16,
+        textToRedact: 'ABC123',
+      },
+    ]);
+
+    expect(sanitizationCheck.report.residualTextFound).toBe(false);
+    expect(sanitizationCheck.report.isSanitized).toBe(true);
+  });
+
+  it('purges original text from content stream during text deletion', async () => {
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const page = doc.addPage([600, 400]);
+    page.drawText('Confidential Salary: 175000 USD Annual', {
+      x: 50,
+      y: 300,
+      size: 14,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    const bytes = await doc.save();
+
+    const { applyPdfModifications } = await import('../services/pdfService');
+
+    const modifiedBytes = await applyPdfModifications(bytes, [], {
+      textEdits: [
+        {
+          id: 'del-1',
+          pageIndex: 0,
+          originalText: '175000',
+          newText: '',
+          pdfX: 180,
+          pdfY: 300,
+          width: 50,
+          height: 16,
+          isDeleted: true,
+        },
+      ],
+    });
+
+    const textRepr = new TextDecoder('latin1').decode(modifiedBytes);
+    expect(textRepr.includes('175000')).toBe(false);
+  });
 });
