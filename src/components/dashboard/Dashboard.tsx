@@ -189,55 +189,108 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* ========================================================================= */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-[rgba(255, 255, 255,0.12)]">
         {/* Search Input Bar (Liquid Glass Pill Style) */}
-        <div
+        <button
+          type="button"
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-3 px-4 py-2 rounded-full lg-input hover:border-[#38BDF8]/50 text-xs cursor-pointer transition-all w-full sm:w-80 text-[#A7B8CA] hover:text-[#F5FAFF] group shadow-inner"
-          title="Press Ctrl+K to search anything"
+          className="flex items-center gap-3 px-4 py-2 rounded-full lg-input hover:border-[#38BDF8]/50 text-xs cursor-pointer transition-all w-full sm:w-80 text-[#A7B8CA] hover:text-[#F5FAFF] group shadow-inner text-left focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+          title="Press Ctrl+K to search workspace"
+          aria-label="Search Workspace (Press Ctrl+K)"
         >
           <Search className="w-4 h-4 text-[#A7B8CA] group-hover:text-[#38BDF8] transition-colors shrink-0" />
           <span className="flex-1 font-medium text-[13px] text-[#A7B8CA]/90">Search workspace...</span>
           <kbd className="px-2 py-0.5 rounded-md bg-white/10 border border-white/10 text-[10px] font-mono font-bold text-[#F5FAFF]">
             Ctrl + K
           </kbd>
-        </div>
+        </button>
 
         {/* Right Controls: Notifications, Moon, Upgrade Button & Avatar */}
-        <div className="flex items-center gap-3 self-end sm:self-auto">
-          {/* Notification Bell */}
-          <button
-            onClick={() => setActiveTab('projects')}
-            className="w-10 h-10 rounded-full lg-secondary flex items-center justify-center text-[#A7B8CA] hover:text-[#F5FAFF] transition-all relative cursor-pointer"
-            title="Projects & Notifications"
-          >
-            <Bell className="w-4 h-4" />
-            {recentProjects.length > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#38BDF8] ring-2 ring-[#070B13] animate-pulse" />
-            )}
-          </button>
+        <div className="flex items-center gap-3 self-end sm:self-auto relative">
+          {/* Notification Bell with Real Popover */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="w-10 h-10 rounded-full lg-secondary flex items-center justify-center text-[#A7B8CA] hover:text-[#F5FAFF] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+              title="Notifications"
+              aria-label="View workspace notifications"
+            >
+              <Bell className="w-4 h-4" />
+            </button>
 
-          {/* Theme Indicator */}
-          <button
-            className="w-10 h-10 rounded-full lg-secondary flex items-center justify-center text-[#A7B8CA] hover:text-[#F5FAFF] transition-all cursor-pointer"
-            title="Theme: Floating Liquid Glass"
+            {/* Notification Dropdown Popover */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 rounded-2xl glass-crystal border border-white/20 p-4 shadow-2xl z-50 flex flex-col gap-2 text-xs animate-fade-in">
+                <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                  <span className="font-bold text-[#F5FAFF]">Notifications</span>
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="p-1 text-[#A7B8CA] hover:text-white rounded-lg hover:bg-white/10"
+                    aria-label="Close notifications"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="py-2 space-y-2">
+                  <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-[#F5FAFF]">Workspace Active</p>
+                      <p className="text-[11px] text-[#A7B8CA]">Red–Blue Floating Liquid Glass environment ready.</p>
+                    </div>
+                  </div>
+                  {cloudOffline && (
+                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-amber-200">
+                      <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-white">Cloud Storage Offline</p>
+                        <p className="text-[11px] text-amber-200/80">Using local browser sandbox for document processing.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-[#73869A]">
+                  <span>Status: Operational</span>
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="text-[#38BDF8] hover:underline cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Theme Indicator (Non-interactive truth badge) */}
+          <div
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full lg-secondary border border-white/10 text-xs text-[#A7B8CA] select-none"
+            title="Active Theme: Red-Blue Floating Liquid Glass"
           >
-            <Moon className="w-4 h-4 text-[#38BDF8]" />
-          </button>
+            <Moon className="w-3.5 h-3.5 text-[#38BDF8]" />
+            <span className="text-[11px] font-semibold text-[#F5FAFF] hidden lg:inline">Liquid Glass</span>
+          </div>
 
           {/* Upgrade Liquid Glass Button */}
           <button
+            type="button"
             onClick={() => setActiveTab('pricing')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FF3366] hover:from-[#FF6688] hover:to-[#38BDF8] text-[#070B13] text-xs font-extrabold shadow-[0_4px_20px_rgba(56, 189, 248,0.3)] transition-all cursor-pointer hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FF3366] hover:from-[#FF6688] hover:to-[#38BDF8] text-[#070B13] text-xs font-extrabold shadow-[0_4px_20px_rgba(56, 189, 248,0.3)] transition-all cursor-pointer hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
             title="Upgrade to Pro Plan"
+            aria-label="Upgrade to Pro Plan"
           >
             <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
             <span>Upgrade</span>
           </button>
 
-          {/* Avatar Profile */}
-          <div
+          {/* Avatar Profile: Semantic Accessible Button */}
+          <button
+            type="button"
             onClick={onOpenUserPanel}
-            className="cursor-pointer transition-transform hover:scale-105"
-            title="Account Profile"
+            className="rounded-full cursor-pointer transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#38BDF8] focus:ring-offset-2 focus:ring-offset-[#03050C]"
+            title="Account Profile & Settings"
+            aria-label="Open Account Profile and Settings"
           >
             {avatarUrl ? (
               <img src={avatarUrl} alt={userName} className="w-9 h-9 rounded-full object-cover ring-2 ring-[#38BDF8]/50 shadow-md" />
@@ -246,14 +299,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {userName ? userName[0].toUpperCase() : 'A'}
               </div>
             )}
-          </div>
+          </button>
 
           {/* Quick Sign Out / Logout */}
           {onLogout && (
             <button
+              type="button"
               onClick={onLogout}
-              className="w-9 h-9 rounded-full lg-secondary hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-300 flex items-center justify-center text-[#A7B8CA] transition-all cursor-pointer shadow-sm ml-1"
+              className="w-9 h-9 rounded-full lg-secondary hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-300 flex items-center justify-center text-[#A7B8CA] transition-all cursor-pointer shadow-sm ml-1 focus:outline-none focus:ring-2 focus:ring-rose-500"
               title="Sign Out of OmniDoc Studio"
+              aria-label="Sign Out of OmniDoc Studio"
             >
               <LogOut className="w-4 h-4 text-rose-400" />
             </button>
@@ -483,10 +538,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 shrink-0 ${
               storageSource === 'cloud'
                 ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-                : 'bg-gradient-to-r from-[#FF3366]/20 to-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30'
+                : cloudOffline
+                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                  : 'bg-gradient-to-r from-[#FF3366]/20 to-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30'
             }`}>
               {storageSource === 'cloud' ? <Database className="w-2.5 h-2.5" /> : <HardDrive className="w-2.5 h-2.5" />}
-              <span>{storageSource === 'cloud' ? 'Cloud' : 'Sandbox'}</span>
+              <span>{storageSource === 'cloud' ? 'Cloud Vault' : cloudOffline ? 'Offline Sandbox' : 'Local Sandbox'}</span>
             </span>
           </div>
 
@@ -532,14 +589,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {formatFileSize(usedBytes)}
               </div>
               <div className="text-[11px] text-[#A7B8CA] mt-0.5 truncate">
-                of {formatFileSize(quotaBytes)} quota
+                of {formatFileSize(quotaBytes)} {storageSource === 'cloud' ? 'cloud quota' : 'storage limit'}
               </div>
             </div>
           </div>
 
           <div className="pt-2 border-t border-[rgba(255,255,255,0.1)] flex items-center justify-between text-[11px] text-[#A7B8CA]">
-            <span className="truncate">{storageSource === 'cloud' ? 'Supabase Storage' : 'Local IndexedDB'}</span>
-            <span className="text-emerald-400 font-semibold shrink-0 ml-1">Active</span>
+            <span className="truncate">
+              {storageSource === 'cloud'
+                ? 'Backend Vault Storage'
+                : cloudOffline
+                  ? 'Browser Sandbox (Server Offline)'
+                  : 'Browser Storage Sandbox'}
+            </span>
+            <span className={`font-semibold shrink-0 ml-1 ${cloudOffline ? 'text-amber-400' : 'text-emerald-400'}`}>
+              {cloudOffline ? 'Offline' : 'Active'}
+            </span>
           </div>
         </div>
 
