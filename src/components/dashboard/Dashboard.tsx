@@ -105,38 +105,55 @@ export const Dashboard: React.FC<DashboardProps> = ({
   // Only display real recent projects, no fake sample documents
   const displayDocuments = recentProjects.length > 0 ? recentProjects.slice(0, 4) : [];
 
-  // Fetch actual storage usage from backend
+  // Storage states: strictly differentiates real backend cloud usage from local browser sandbox
   const [storageUsed, setStorageUsed] = useState<number | null>(null);
   const [storageTotal, setStorageTotal] = useState<number | null>(null);
   const [storageLoading, setStorageLoading] = useState<boolean>(true);
   const [storageSource, setStorageSource] = useState<'cloud' | 'local'>('local');
+  const [cloudOffline, setCloudOffline] = useState<boolean>(false);
+  const [showNotifications, setShowNotifications] = useState<boolean>(false);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchStorage = async () => {
-      try {
-        const resp = await fetch('/api/v1/user/portal', { credentials: 'include' });
-        if (!resp.ok) throw new Error('Portal API offline');
-        const data = await resp.json();
-        if (typeof data.storage_used_bytes === 'number') {
-          setStorageUsed(data.storage_used_bytes);
-          setStorageTotal(data.storage_quota_bytes || (100 * 1024 * 1024 * 1024));
-          setStorageSource('cloud');
+      setStorageLoading(true);
+      const session = getUserSession();
+
+      // If user is authenticated with a backend JWT, query the real cloud endpoint /api/v1/users/me/usage
+      if (session.isAuthenticated && session.jwtToken) {
+        try {
+          omnidocClient.setToken(session.jwtToken);
+          const usage = await omnidocClient.getMyUsage();
+          if (isMounted && usage && typeof usage.storage_used_bytes === 'number') {
+            setStorageUsed(usage.storage_used_bytes);
+            setStorageTotal(usage.storage_quota_bytes || (100 * 1024 * 1024 * 1024));
+            setStorageSource('cloud');
+            setCloudOffline(false);
+            setStorageLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.warn('Backend /users/me/usage query failed or offline:', err);
+          if (isMounted) setCloudOffline(true);
         }
-      } catch {
-        // Fallback to local storage computation
-        const localBytes = recentProjects.reduce((acc, p) => acc + (p.sizeBytes || 0), 0);
-        setStorageUsed(localBytes);
-        setStorageTotal(50 * 1024 * 1024); // 50MB browser sandbox limit
+      }
+
+      // Local / Offline Sandbox storage estimation via standard StorageManager API
+      const localEstimate = await getBrowserStorageEstimate();
+      if (isMounted) {
+        setStorageUsed(localEstimate.usageBytes);
+        setStorageTotal(localEstimate.quotaBytes);
         setStorageSource('local');
-      } finally {
         setStorageLoading(false);
       }
     };
+
     fetchStorage();
+    return () => { isMounted = false; };
   }, [recentProjects]);
 
   const usedBytes = storageUsed ?? recentProjects.reduce((acc, p) => acc + (p.sizeBytes || 0), 0);
-  const quotaBytes = storageTotal ?? (50 * 1024 * 1024);
+  const quotaBytes = storageTotal ?? (100 * 1024 * 1024);
   const storagePercentage = Math.min(100, Math.round((usedBytes / Math.max(quotaBytes, 1)) * 100));
   const storageRadius = 38;
   const storageCircumference = 2 * Math.PI * storageRadius;
