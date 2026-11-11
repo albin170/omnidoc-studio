@@ -54,14 +54,16 @@ interface SheetStudioProps {
 }
 
 const DEFAULT_SHEET_NAME = 'Sheet1';
-const INITIAL_DEMO_DATA: (string | number)[][] = [
-  ['Product', 'Sales', 'Growth', 'Status'],
-  ['Analytics', 12500, '12.5%', 'Active'],
-  ['Automation', 9800, '8.7%', 'Active'],
-  ['Design Tools', 7600, '15.2%', 'Active'],
-  ['Marketing', 11200, '10.1%', 'Pending'],
-  ['Enterprise Licenses', 32000, '18.4%', 'Active'],
-  ['Cloud Storage', 14500, '9.2%', 'Active'],
+
+const createEmptyGrid = (rows = 30, cols = 15): (string | number)[][] =>
+  Array.from({ length: rows }, () => Array.from({ length: cols }, () => ''));
+
+export const SAMPLE_WORKBOOK_DATA: (string | number)[][] = [
+  ['Category', 'Q1 Target', 'Q1 Actual', 'Variance', 'Status'],
+  ['Operations', 12500, 11800, '=C2-B2', 'On Track'],
+  ['Development', 35000, 36200, '=C3-B3', 'Exceeded'],
+  ['Support', 8400, 8100, '=C4-B4', 'On Track'],
+  ['Marketing', 15000, 14200, '=C5-B5', 'Under'],
 ];
 
 export const SheetStudio: React.FC<SheetStudioProps> = ({
@@ -71,29 +73,22 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
 }) => {
   const [sheetTitle, setSheetTitle] = useState(initialTitle || 'Excel Sheets');
 
-  // Multi-sheet State with Sheet1, Sheet2, Sheet3
-  const [sheetOrder, setSheetOrder] = useState<string[]>(['Sheet1', 'Sheet2', 'Sheet3']);
+  // Multi-sheet State: clean blank workbook defaults to 1 sheet with empty grid
+  const [sheetOrder, setSheetOrder] = useState<string[]>(['Sheet1']);
   const [activeSheetName, setActiveSheetName] = useState<string>('Sheet1');
-  const [sheets, setSheets] = useState<Record<string, (string | number)[][]>>({
-    Sheet1: initialData || INITIAL_DEMO_DATA,
-    Sheet2: [
-      ['Metric', 'Target', 'Actual', 'Status'],
-      ['Revenue', 100000, 105000, 'Active'],
-      ['Signups', 5000, 4850, 'Pending'],
-    ],
-    Sheet3: [
-      ['Region', 'Manager', 'Quota', 'Status'],
-      ['North America', 'Sarah C.', 150000, 'Active'],
-      ['EMEA', 'Marcus K.', 120000, 'Active'],
-    ],
+  const [sheets, setSheets] = useState<Record<string, (string | number)[][]>>(() => {
+    if (initialData && initialData.length > 0) {
+      return { Sheet1: initialData };
+    }
+    return { Sheet1: createEmptyGrid(30, 15) };
   });
 
   // Cell Formatting Dictionary: sheetName -> 'r_c' -> CellStyle
   const [cellStyles, setCellStyles] = useState<Record<string, Record<string, CellStyle>>>({});
 
   // Active cell & formula input
-  const [selectedCell, setSelectedCell] = useState<{ r: number; c: number }>({ r: 1, c: 0 });
-  const [formulaInput, setFormulaInput] = useState<string>('Analytics');
+  const [selectedCell, setSelectedCell] = useState<{ r: number; c: number }>({ r: 0, c: 0 });
+  const [formulaInput, setFormulaInput] = useState<string>('');
   const [isExporting, setIsExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
@@ -380,6 +375,19 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
     }
   };
 
+  const handleLoadSampleTemplate = () => {
+    setHistory((prev) => [...prev, gridData]);
+    setSheets({
+      Sheet1: SAMPLE_WORKBOOK_DATA,
+    });
+    setSheetOrder(['Sheet1']);
+    setActiveSheetName('Sheet1');
+    setSheetTitle('Financial Projections (Sample)');
+    setSelectedCell({ r: 1, c: 1 });
+    setFormulaInput(String(SAMPLE_WORKBOOK_DATA[1]?.[1] || ''));
+    confetti({ particleCount: 30, spread: 50 });
+  };
+
   // Export handlers
   const handleExportXlsx = () => {
     const blob = exportMultiSheetWorkbookToBlob(sheets, sheetOrder);
@@ -486,6 +494,15 @@ export const SheetStudio: React.FC<SheetStudioProps> = ({
 
         {/* Right side controls */}
         <div className="flex items-center gap-2.5">
+          <button
+            onClick={handleLoadSampleTemplate}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl glass-card hover:border-[#38BDF8]/50 text-xs text-[#A7B8CA] hover:text-[#38BDF8] cursor-pointer transition-all"
+            title="Load sample financial workbook"
+          >
+            <TableIcon className="w-3.5 h-3.5 text-[#38BDF8]" />
+            <span className="hidden sm:inline">Sample</span>
+          </button>
+
           <label className="p-2 rounded-xl glass-card hover:border-emerald-400/50 text-[#A7B8CA] hover:text-[#F5FAFF] cursor-pointer transition-all" title="Import Workbook">
             <Upload className="w-4 h-4 text-emerald-400" />
             <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportFile} />
