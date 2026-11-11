@@ -21,11 +21,15 @@ import {
   LogOut,
   Plus,
   Database,
-  CloudCheck,
-  HardDrive
+  HardDrive,
+  CheckCircle2,
+  AlertCircle,
+  X
 } from 'lucide-react';
 import { ConversionHistoryItem, FileFormat, StoredProject, WorkspaceTab } from '../../types';
 import { detectFileFormat, formatFileSize } from '../../services/formatDetector';
+import { omnidocClient } from '../../sdk/omnidocClient';
+import { getBrowserStorageEstimate, getUserSession } from '../../services/storageService';
 
 interface DashboardProps {
   onOpenFileInEditor: (file: File, format: FileFormat, targetTab?: WorkspaceTab) => void;

@@ -291,6 +291,45 @@ export function revokeBlobUrl(url: string | null | undefined): void {
   }
 }
 
+export interface BrowserStorageEstimate {
+  usageBytes: number;
+  quotaBytes: number;
+  isEstimated: boolean;
+  source: 'navigator.storage' | 'indexeddb_fallback';
+}
+
+/**
+ * Returns accurate browser storage estimation via standard StorageManager API when available,
+ * with fallback to local project calculation. Clearly distinguishes local sandbox storage from cloud.
+ */
+export async function getBrowserStorageEstimate(): Promise<BrowserStorageEstimate> {
+  if (typeof navigator !== 'undefined' && navigator.storage && typeof navigator.storage.estimate === 'function') {
+    try {
+      const estimate = await navigator.storage.estimate();
+      if (typeof estimate.usage === 'number' && typeof estimate.quota === 'number') {
+        return {
+          usageBytes: estimate.usage,
+          quotaBytes: estimate.quota,
+          isEstimated: true,
+          source: 'navigator.storage',
+        };
+      }
+    } catch (e) {
+      console.warn('navigator.storage.estimate() unavailable or restricted:', e);
+    }
+  }
+
+  // Graceful fallback: calculate total size of stored local projects
+  const projects = getStoredProjects();
+  const localBytes = projects.reduce((acc, p) => acc + (p.sizeBytes || 0), 0);
+  return {
+    usageBytes: localBytes,
+    quotaBytes: 100 * 1024 * 1024, // 100 MB fallback baseline
+    isEstimated: false,
+    source: 'indexeddb_fallback',
+  };
+}
+
 /**
  * Log out user: sets isAuthenticated: false and updates storage
  */
