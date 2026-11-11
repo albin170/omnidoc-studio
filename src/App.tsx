@@ -577,11 +577,13 @@ export const App: React.FC = () => {
   return (
     /* Full-Screen, 100% Viewport App Shell — Liquid Glass */
     <div className="w-full h-screen min-h-screen m-0 p-0 overflow-hidden flex flex-col md:flex-row bg-[#03050C] text-[#F5FAFF] select-none relative font-sans">
-      {/* Deep Spatial Background — Red & Blue Translucent Ambient Halos */}
+      {/* Deep Spatial Background — Red & Blue Translucent Ambient Halos with High-Contrast Vignette */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="ambient-glow-1 absolute -top-40 -left-40 w-[620px] h-[620px] rounded-full bg-[#FF3366]/14 blur-[180px]" />
-        <div className="ambient-glow-2 absolute top-1/3 -right-40 w-[580px] h-[580px] rounded-full bg-[#38BDF8]/15 blur-[200px]" />
-        <div className="ambient-glow-3 absolute -bottom-40 left-1/3 w-[520px] h-[520px] rounded-full bg-[#2563EB]/14 blur-[190px]" />
+        <div className="ambient-glow-1 absolute -top-32 -left-32 w-[540px] h-[540px] rounded-full bg-[#FF3366]/20 blur-[130px]" />
+        <div className="ambient-glow-2 absolute top-1/4 -right-32 w-[520px] h-[520px] rounded-full bg-[#38BDF8]/20 blur-[140px]" />
+        <div className="ambient-glow-3 absolute -bottom-32 left-1/4 w-[480px] h-[480px] rounded-full bg-[#2563EB]/18 blur-[130px]" />
+        {/* Dark Obsidian Spatial Vignette prevents faded haze */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(3,5,12,0.85)_100%)] pointer-events-none" />
       </div>
 
       {/* Global Window Drag-and-Drop Listener */}

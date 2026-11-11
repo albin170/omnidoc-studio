@@ -370,8 +370,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 4. LOWER 3-SECTION GRID: Recent Documents, Storage Overview & Quick Access */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left Column (6 cols): Recent Documents */}
-        <div className="lg:col-span-6 lg-secondary rounded-2xl p-5 border border-[rgba(255, 255, 255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
+        {/* Left Column (6 cols on xl, 12 cols on lg): Recent Documents */}
+        <div className="lg:col-span-12 xl:col-span-6 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
           <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Recent Documents</h2>
             <button
@@ -423,7 +423,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       if (found) onLoadProject(found);
                       else setActiveTab(isPdf ? 'pdf' : isDocx ? 'docx' : 'sheets');
                     }}
-                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(255, 255, 255,0.12)] transition-all cursor-pointer group"
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(255,255,255,0.12)] transition-all cursor-pointer group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${iconBg}`}>
@@ -455,9 +455,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
           )}
         </div>
 
-        {/* Center Column (3 cols): Storage Overview Radial Chart */}
-        <div className="lg:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255, 255, 255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
-          <div className="pb-2 border-b border-[rgba(255, 255, 255,0.1)] flex items-center justify-between gap-1">
+        {/* Center Column (3 cols on xl, 6 cols on lg): Storage Overview Radial Chart */}
+        <div className="lg:col-span-6 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
+          <div className="pb-2 border-b border-[rgba(255,255,255,0.1)] flex items-center justify-between gap-1">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display truncate">Storage Usage</h2>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 shrink-0 ${
               storageSource === 'cloud'
@@ -469,21 +469,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-center justify-center gap-4 py-3 text-center sm:text-left lg:text-center xl:text-left">
+          <div className="flex flex-col sm:flex-row xl:flex-col 2xl:flex-row items-center justify-center gap-4 py-3 text-center sm:text-left xl:text-center 2xl:text-left">
             {/* Circular Gauge Ring */}
-            <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
-              <svg className="w-full h-full transform -rotate-90">
+            <div className="relative w-22 h-22 flex items-center justify-center shrink-0">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 88 88">
                 <circle
-                  cx="48"
-                  cy="48"
+                  cx="44"
+                  cy="44"
                   r={storageRadius}
                   stroke="rgba(255, 255, 255, 0.08)"
                   strokeWidth="8"
                   fill="transparent"
                 />
                 <circle
-                  cx="48"
-                  cy="48"
+                  cx="44"
+                  cy="44"
                   r={storageRadius}
                   stroke="url(#storageRedBlueGrad)"
                   strokeWidth="8"
@@ -506,7 +506,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             {/* Storage Legend with honest numbers */}
-            <div className="min-w-0">
+            <div className="min-w-0 flex flex-col items-center sm:items-start xl:items-center 2xl:items-start">
               <div className="text-xs font-bold text-[#F5FAFF] truncate">
                 {formatFileSize(usedBytes)}
               </div>
@@ -516,15 +516,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[rgba(255, 255, 255,0.1)] flex items-center justify-between text-[11px] text-[#A7B8CA]">
+          <div className="pt-2 border-t border-[rgba(255,255,255,0.1)] flex items-center justify-between text-[11px] text-[#A7B8CA]">
             <span className="truncate">{storageSource === 'cloud' ? 'Supabase Storage' : 'Local IndexedDB'}</span>
             <span className="text-emerald-400 font-semibold shrink-0 ml-1">Active</span>
           </div>
         </div>
 
-        {/* Right Column (3 cols): Quick Access */}
-        <div className="lg:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255, 255, 255,0.14)] flex flex-col justify-between space-y-3 min-w-0">
-          <div className="pb-2 border-b border-[rgba(255, 255, 255,0.1)]">
+        {/* Right Column (3 cols on xl, 6 cols on lg): Quick Access */}
+        <div className="lg:col-span-6 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-3 min-w-0">
+          <div className="pb-2 border-b border-[rgba(255,255,255,0.1)]">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Quick Access</h2>
           </div>
 
@@ -574,7 +574,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Settings */}
             <div
               onClick={onOpenSettings || (() => setActiveTab('settings'))}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(255, 255, 255,0.12)] transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(255,255,255,0.12)] transition-all cursor-pointer group"
             >
               <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
                 <SettingsIcon className="w-4 h-4" />

@@ -360,7 +360,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                   onClick={() => setMode('signin')}
                   className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
                     mode === 'signin'
-                      ? 'bg-gradient-to-r from-[#FF3366] to-[#2563EB] text-white font-black shadow-sm'
+                      ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-black shadow-[0_0_15px_rgba(255,51,102,0.4)]'
                       : 'text-[#A7B8CA] hover:text-white'
                   }`}
                 >
@@ -371,7 +371,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                   onClick={() => setMode('signup')}
                   className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
                     mode === 'signup'
-                      ? 'bg-gradient-to-r from-[#FF3366] to-[#2563EB] text-white font-black shadow-sm'
+                      ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-black shadow-[0_0_15px_rgba(255,51,102,0.4)]'
                       : 'text-[#A7B8CA] hover:text-white'
                   }`}
                 >
