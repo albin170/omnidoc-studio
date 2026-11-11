@@ -444,7 +444,7 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
             </button>
           </div>
 
-          {/* Queue Items matching reference (Annual_Report.pdf, Design.png, Budget.xlsx) */}
+          {/* Real Conversion Queue Items */}
           <div className="space-y-3 my-2">
             {jobs.length > 0 ? (
               jobs.slice(0, 3).map((job) => (
@@ -479,34 +479,16 @@ export const ConversionHub: React.FC<ConversionHubProps> = ({
                 </div>
               ))
             ) : (
-              /* High fidelity demo items matching the reference screenshot */
-              <>
-                <div className="p-2.5 rounded-xl glass-input space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-[#F5FAFF] truncate max-w-[160px]">Annual_Report.pdf</span>
-                    <span className="text-[10px] text-[#38BDF8] font-bold">Converting... 68%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#38BDF8] to-[#38BDF8] rounded-full w-[68%] animate-shimmer" />
-                  </div>
+              /* Honest empty state when no jobs are queued */
+              <div className="py-6 px-3 flex flex-col items-center justify-center text-center space-y-2 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
+                <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center text-[#A7B8CA]">
+                  <Clock className="w-4 h-4 text-[#38BDF8]" />
                 </div>
-
-                <div className="p-2.5 rounded-xl glass-input flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-[#A7B8CA]" />
-                    <span className="font-medium text-[#F5FAFF]">Design.png</span>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-[#A7B8CA] font-bold">Queued</span>
-                </div>
-
-                <div className="p-2.5 rounded-xl glass-input flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="font-medium text-[#F5FAFF]">Budget.xlsx</span>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">Completed</span>
-                </div>
-              </>
+                <p className="text-xs font-semibold text-[#F5FAFF]">No conversion jobs in queue</p>
+                <p className="text-[11px] text-[#73869A] max-w-[200px]">
+                  Add documents above to begin batch conversion with format verification.
+                </p>
+              </div>
             )}
           </div>
 
