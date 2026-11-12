@@ -1,4 +1,5 @@
-# Render configuration using Supabase as database and storage provider
+# Render configuration using Supabase as database and storage provider.
+# Set the three sync:false values in the Render dashboard; never commit their values.
 services:
   - type: web
     name: omnidoc-fastapi-backend
@@ -12,18 +13,18 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: SECRET_KEY
-        value: "omnidoc_prod_sec_key_d92f8a1103c8479e2bc91e7041a384f5_supabase_ready"
+        sync: false
       - key: CORS_ORIGINS
         value: "https://omnidoc-studio-jet.vercel.app,http://localhost:5173"
       - key: DATABASE_URL
-        value: "postgresql+asyncpg://postgres:OmniDoc_Db_2026_SecureKey!@db.kflqymlcrtqepwjeulpb.supabase.co:5432/postgres"
+        sync: false
       - key: STORAGE_PROVIDER
-        value: "supabase"
+        value: supabase
       - key: SUPABASE_URL
         value: "https://kflqymlcrtqepwjeulpb.supabase.co"
       - key: SUPABASE_SERVICE_ROLE_KEY
-        value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbHF5bWxjcnRxZXB3amV1bHBiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDMwNDI3MywiZXhwIjoyMTA5ODgwMjczfQ.-hrU9vqXaPVsf9PwBVNCefQjWIpL_Rfm5RGUftsS7i8"
+        sync: false
       - key: SUPABASE_BUCKET_NAME
-        value: "documents"
+        value: documents
       - key: ENABLE_STRIPE
         value: "false"
