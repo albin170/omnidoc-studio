@@ -326,7 +326,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {onOpenAi && (
                 <button
                   onClick={onOpenAi}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#38BDF8]/12 hover:bg-[#38BDF8]/22 text-[#38BDF8] border border-[#38BDF8]/30 hover:border-[#38BDF8]/55 hover:shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all cursor-pointer"
                   title="AI Document Assistant"
                 >
                   <Sparkles className="w-3.5 h-3.5 mb-0.5 text-[#38BDF8]" />
@@ -336,7 +336,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {onOpenDiff && (
                 <button
                   onClick={onOpenDiff}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#FF3366]/10 hover:bg-[#FF3366]/20 text-[#FF3366] border border-[#FF3366]/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#FF3366]/12 hover:bg-[#FF3366]/22 text-[#FF3366] border border-[#FF3366]/30 hover:border-[#FF3366]/55 hover:shadow-[0_0_15px_rgba(255,51,102,0.25)] transition-all cursor-pointer"
                   title="Document Comparison (Diff)"
                 >
                   <GitCompare className="w-3.5 h-3.5 mb-0.5 text-[#FF3366]" />
@@ -346,7 +346,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {onOpenBatch && (
                 <button
                   onClick={onOpenBatch}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#2563EB]/10 hover:bg-[#2563EB]/20 text-[#38BDF8] border border-[#2563EB]/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#38BDF8]/10 hover:bg-[#38BDF8]/20 text-[#7DD3FC] border border-[#38BDF8]/25 hover:border-[#38BDF8]/50 hover:shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all cursor-pointer"
                   title="Batch Convert & ZIP"
                 >
                   <Layers className="w-3.5 h-3.5 mb-0.5 text-[#38BDF8]" />
@@ -356,27 +356,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {onOpenForensics && (
                 <button
                   onClick={onOpenForensics}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#FF3366]/12 hover:bg-[#FF3366]/22 text-[#FF6688] border border-[#FF3366]/30 hover:border-[#FF3366]/55 hover:shadow-[0_0_15px_rgba(255,51,102,0.25)] transition-all cursor-pointer"
                   title="Document Forensics & Threat Lab"
                 >
-                  <Binary className="w-3.5 h-3.5 mb-0.5 text-amber-400" />
+                  <Binary className="w-3.5 h-3.5 mb-0.5 text-[#FF6688]" />
                   <span className="text-[9px] font-bold">Forensics</span>
                 </button>
               )}
               {onOpenLineage && (
                 <button
                   onClick={onOpenLineage}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-teal-400/10 hover:bg-teal-400/20 text-teal-300 border border-teal-400/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#38BDF8]/12 hover:bg-[#38BDF8]/22 text-[#7DD3FC] border border-[#38BDF8]/30 hover:border-[#38BDF8]/55 hover:shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all cursor-pointer"
                   title="Document Data Lineage"
                 >
-                  <GitCommit className="w-3.5 h-3.5 mb-0.5 text-teal-400" />
+                  <GitCommit className="w-3.5 h-3.5 mb-0.5 text-[#7DD3FC]" />
                   <span className="text-[9px] font-bold">Lineage</span>
                 </button>
               )}
               {onOpenReceipts && (
                 <button
                   onClick={onOpenReceipts}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-gradient-to-tr from-[#FF3366]/10 to-[#38BDF8]/10 hover:bg-white/10 text-[#38BDF8] border border-white/15 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-gradient-to-tr from-[#FF3366]/12 to-[#38BDF8]/12 hover:from-[#FF3366]/22 hover:to-[#38BDF8]/22 text-[#F5FAFF] border border-white/20 hover:border-white/40 hover:shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all cursor-pointer"
                   title="Transformation Receipts & Certs"
                 >
                   <Boxes className="w-3.5 h-3.5 mb-0.5 text-[#FF3366]" />
@@ -386,7 +386,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {onOpenPrivacy && (
                 <button
                   onClick={onOpenPrivacy}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#FF3366]/15 hover:bg-[#FF3366]/25 text-[#FF3366] border border-[#FF3366]/30 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#FF3366]/14 hover:bg-[#FF3366]/25 text-[#FF3366] border border-[#FF3366]/35 hover:border-[#FF3366]/60 hover:shadow-[0_0_15px_rgba(255,51,102,0.3)] transition-all cursor-pointer"
                   title="Privacy Guardian & Verified Redaction"
                 >
                   <ShieldAlert className="w-3.5 h-3.5 mb-0.5 text-[#FF3366]" />
@@ -396,20 +396,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {onOpenWhatIf && (
                 <button
                   onClick={onOpenWhatIf}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-sky-400/10 hover:bg-sky-400/20 text-sky-300 border border-sky-400/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-[#38BDF8]/12 hover:bg-[#38BDF8]/22 text-[#38BDF8] border border-[#38BDF8]/30 hover:border-[#38BDF8]/55 hover:shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all cursor-pointer"
                   title="Document What-If Simulator"
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5 mb-0.5 text-sky-400" />
+                  <SlidersHorizontal className="w-3.5 h-3.5 mb-0.5 text-[#38BDF8]" />
                   <span className="text-[9px] font-bold">What-If</span>
                 </button>
               )}
               {onOpenCollab && (
                 <button
                   onClick={onOpenCollab}
-                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-emerald-400/10 hover:bg-emerald-400/20 text-emerald-300 border border-emerald-400/25 transition-all cursor-pointer"
+                  className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-gradient-to-tr from-[#FF3366]/10 to-[#38BDF8]/12 hover:from-[#FF3366]/20 hover:to-[#38BDF8]/22 text-[#7DD3FC] border border-white/18 hover:border-white/40 hover:shadow-[0_0_15px_rgba(255,51,102,0.2)] transition-all cursor-pointer"
                   title="Team Workspace & Review Comments"
                 >
-                  <Users className="w-3.5 h-3.5 mb-0.5 text-emerald-400" />
+                  <Users className="w-3.5 h-3.5 mb-0.5 text-[#38BDF8]" />
                   <span className="text-[9px] font-bold">Teams</span>
                 </button>
               )}

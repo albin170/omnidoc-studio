@@ -126,12 +126,12 @@ select:-webkit-autofill::first-line {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   7 DISTINCT GLASSMORPHISM MATERIAL STYLES
+   7 DISTINCT GLASSMORPHISM MATERIAL STYLES (FLOATING LIQUID GLASS)
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── A. LIQUID GLASS (.glass-liquid / .lg-liquid / .lg-liquid-6) ──
-   For: Main dashboard cards, floating navigation, main panels, hero sections.
-   Refraction-inspired gradients, red-blue edge dispersion, deep smooth shadows.
+/* ── A. LIQUID GLASS 6 & HIGH-TIER LIQUID SURFACES ─────────────
+   For: Main hero cards, auth dialog, high-elevation panels, featured workspaces.
+   Deep dark obsidian base, high-saturation red-blue edge dispersion, specular rim.
 */
 .glass-liquid,
 .lg-liquid,
@@ -140,24 +140,26 @@ select:-webkit-autofill::first-line {
 .lg-primary {
   background: linear-gradient(
     135deg,
-    rgba(255, 51, 102, 0.09) 0%,
-    rgba(10, 16, 32, 0.82) 38%,
-    rgba(56, 189, 248, 0.09) 100%
-  ), rgba(6, 10, 22, 0.90);
-  backdrop-filter: blur(36px) saturate(200%);
-  -webkit-backdrop-filter: blur(36px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+    rgba(255, 51, 102, 0.12) 0%,
+    rgba(8, 13, 28, 0.88) 40%,
+    rgba(56, 189, 248, 0.12) 100%
+  ), rgba(3, 6, 16, 0.94);
+  backdrop-filter: blur(38px) saturate(210%);
+  -webkit-backdrop-filter: blur(38px) saturate(210%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: var(--radius-xl);
   box-shadow:
-    0 25px 65px -15px rgba(0, 0, 0, 0.90),
-    0 0 35px -8px rgba(255, 51, 102, 0.20),
-    0 0 35px -8px rgba(56, 189, 248, 0.20),
-    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.40),
-    inset 0 0 0 1px rgba(56, 189, 248, 0.12);
+    0 30px 80px -15px rgba(0, 0, 0, 0.95),
+    0 0 40px -10px rgba(255, 51, 102, 0.24),
+    0 0 40px -10px rgba(56, 189, 248, 0.24),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.50),
+    inset 0 0 0 1px rgba(56, 189, 248, 0.14);
   position: relative;
 }
 
 .glass-liquid::before,
+.lg-liquid-6::before,
+.liquid-glass-6::before,
 .lg-primary::before {
   content: '';
   position: absolute;
@@ -165,30 +167,91 @@ select:-webkit-autofill::first-line {
   border-radius: inherit;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    transparent 30%
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 35%
   );
   pointer-events: none;
 }
 
-/* ── B. FROSTED GLASS (.glass-frosted) ──────────────────────────
-   For: Settings, forms, tables, document sidebars, inspector controls.
-   Translucent matte, high text readability, soft white rim.
+/* ── A.1 LIQUID GLASS 5 (Modals & Intermediate Dialogs) ──────── */
+.lg-liquid-5 {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 51, 102, 0.10) 0%,
+    rgba(8, 14, 28, 0.88) 42%,
+    rgba(56, 189, 248, 0.10) 100%
+  ), rgba(4, 7, 18, 0.92);
+  backdrop-filter: blur(34px) saturate(190%);
+  -webkit-backdrop-filter: blur(34px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 25px 65px -12px rgba(0, 0, 0, 0.92),
+    0 0 32px -8px rgba(255, 51, 102, 0.20),
+    0 0 32px -8px rgba(56, 189, 248, 0.20),
+    inset 0 1.4px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 0 0 1px rgba(56, 189, 248, 0.10);
+  position: relative;
+}
+
+/* ── A.2 LIQUID GLASS 3 & 4 (Quick Action Cards & Interactive Tiles) ─ */
+.lg-liquid-4,
+.lg-liquid-3 {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 51, 102, 0.08) 0%,
+    rgba(7, 12, 26, 0.86) 45%,
+    rgba(56, 189, 248, 0.08) 100%
+  ), rgba(4, 7, 16, 0.90);
+  backdrop-filter: blur(28px) saturate(185%);
+  -webkit-backdrop-filter: blur(28px) saturate(185%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 18px 45px -10px rgba(0, 0, 0, 0.85),
+    0 0 25px -8px rgba(56, 189, 248, 0.15),
+    inset 0 1.2px 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 0 0 1px rgba(56, 189, 248, 0.08);
+  position: relative;
+  transition: all var(--duration-normal) var(--ease-out-expo);
+}
+
+.lg-liquid-3:hover,
+.lg-liquid-4:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 51, 102, 0.14) 0%,
+    rgba(10, 16, 34, 0.90) 45%,
+    rgba(56, 189, 248, 0.14) 100%
+  ), rgba(6, 10, 22, 0.94);
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.50);
+  box-shadow:
+    0 26px 65px -10px rgba(0, 0, 0, 0.94),
+    0 0 35px -5px rgba(255, 51, 102, 0.30),
+    0 0 35px -5px rgba(56, 189, 248, 0.30),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.50);
+}
+
+/* ── B. FROSTED GLASS & SIDEBAR (.glass-frosted / .lg-sidebar) ─
+   Deep dark translucent obsidian, crisp right edge, high text clarity.
 */
 .glass-frosted,
 .lg-sidebar,
 .glass-sidebar {
   background: linear-gradient(
     180deg,
-    rgba(8, 14, 28, 0.88) 0%,
-    rgba(6, 10, 20, 0.92) 100%
+    rgba(7, 11, 22, 0.96) 0%,
+    rgba(3, 6, 14, 0.98) 50%,
+    rgba(5, 9, 18, 0.96) 100%
   );
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(36px) saturate(200%);
+  -webkit-backdrop-filter: blur(36px) saturate(200%);
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow:
-    0 12px 32px 0 rgba(0, 0, 0, 0.65),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.18);
+    12px 0 45px -10px rgba(0, 0, 0, 0.88),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.20),
+    inset -1px 0 0 0 rgba(56, 189, 248, 0.12);
 }
 
 /* ── C. CRYSTAL GLASS (.glass-crystal) ──────────────────────────
@@ -220,17 +283,18 @@ select:-webkit-autofill::first-line {
 .glass-card {
   background: linear-gradient(
     135deg,
-    rgba(255, 51, 102, 0.05) 0%,
-    rgba(10, 16, 32, 0.78) 45%,
-    rgba(56, 189, 248, 0.05) 100%
-  );
-  backdrop-filter: blur(24px) saturate(170%);
-  -webkit-backdrop-filter: blur(24px) saturate(170%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+    rgba(255, 51, 102, 0.08) 0%,
+    rgba(7, 12, 24, 0.88) 42%,
+    rgba(56, 189, 248, 0.08) 100%
+  ), rgba(3, 6, 15, 0.92);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: var(--radius-lg);
   box-shadow:
-    0 16px 40px -10px rgba(0, 0, 0, 0.75),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+    0 20px 50px -12px rgba(0, 0, 0, 0.88),
+    0 0 25px -8px rgba(56, 189, 248, 0.15),
+    inset 0 1.2px 1px 0 rgba(255, 255, 255, 0.38),
     inset 0 0 0 1px rgba(56, 189, 248, 0.08);
   transition: all var(--duration-normal) var(--ease-out-expo);
 }
@@ -240,17 +304,17 @@ select:-webkit-autofill::first-line {
 .glass-card-hover:hover {
   background: linear-gradient(
     135deg,
-    rgba(255, 51, 102, 0.09) 0%,
-    rgba(14, 22, 44, 0.86) 45%,
-    rgba(56, 189, 248, 0.09) 100%
-  );
-  border-color: rgba(56, 189, 248, 0.45);
+    rgba(255, 51, 102, 0.14) 0%,
+    rgba(10, 16, 32, 0.92) 42%,
+    rgba(56, 189, 248, 0.14) 100%
+  ), rgba(5, 9, 20, 0.95);
+  border-color: rgba(56, 189, 248, 0.50);
   transform: translateY(-3px);
   box-shadow:
-    0 22px 55px -10px rgba(0, 0, 0, 0.85),
-    0 0 35px -5px rgba(255, 51, 102, 0.24),
-    0 0 35px -5px rgba(56, 189, 248, 0.24),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.40);
+    0 26px 60px -10px rgba(0, 0, 0, 0.92),
+    0 0 35px -5px rgba(255, 51, 102, 0.28),
+    0 0 35px -5px rgba(56, 189, 248, 0.28),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.50);
 }
 
 /* ── E. IRIDESCENT GLASS (.glass-iridescent) ────────────────────

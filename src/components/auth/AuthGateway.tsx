@@ -360,7 +360,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                   onClick={() => setMode('signin')}
                   className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
                     mode === 'signin'
-                      ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-black shadow-[0_0_15px_rgba(255,51,102,0.4)]'
+                      ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-black shadow-[0_0_18px_rgba(255,51,102,0.45),0_0_18px_rgba(56,189,248,0.3)] border border-white/30'
                       : 'text-[#A7B8CA] hover:text-white'
                   }`}
                 >
@@ -371,7 +371,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                   onClick={() => setMode('signup')}
                   className={`px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
                     mode === 'signup'
-                      ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-black shadow-[0_0_15px_rgba(255,51,102,0.4)]'
+                      ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-black shadow-[0_0_18px_rgba(255,51,102,0.45),0_0_18px_rgba(56,189,248,0.3)] border border-white/30'
                       : 'text-[#A7B8CA] hover:text-white'
                   }`}
                 >
@@ -495,10 +495,10 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full py-3 rounded-xl font-bold text-xs shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer mt-4 ${
+                  className={`w-full py-3.5 rounded-xl font-extrabold text-xs tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer mt-4 active:scale-[0.99] ${
                     mode === 'admin'
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-amber-500/25 hover:from-amber-400 hover:to-amber-500'
-                      : 'lg-btn-primary'
+                      ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-black shadow-amber-500/30 hover:from-amber-400 hover:to-amber-500 border border-amber-300/40'
+                      : 'bg-gradient-to-r from-[#FF3366] via-[#E11D48] to-[#38BDF8] hover:from-[#FF4D7D] hover:via-[#FF3366] hover:to-[#50C8FF] text-white shadow-[0_10px_35px_rgba(255,51,102,0.4),0_10px_35px_rgba(56,189,248,0.3)] border border-white/30'
                   }`}
                 >
                   {isLoading ? (
@@ -629,7 +629,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                 <button
                   type="submit"
                   disabled={isLoading || !termsAccepted || !privacyAccepted || !aiConsent}
-                  className="w-full py-3 rounded-xl lg-btn-primary flex items-center justify-center gap-2 transition-all cursor-pointer mt-2 disabled:opacity-50"
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#FF3366] via-[#E11D48] to-[#38BDF8] hover:from-[#FF4D7D] hover:via-[#FF3366] hover:to-[#50C8FF] text-white font-extrabold text-xs tracking-wide shadow-[0_10px_35px_rgba(255,51,102,0.4),0_10px_35px_rgba(56,189,248,0.3)] border border-white/30 flex items-center justify-center gap-2 transition-all cursor-pointer mt-2 disabled:opacity-40 active:scale-[0.99]"
                 >
                   {isLoading ? (
                     <>
@@ -653,7 +653,7 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
             <button
               type="button"
               onClick={handleGuestEntry}
-              className="px-4 py-2 rounded-xl lg-secondary text-[#F5FAFF] font-bold transition-all cursor-pointer flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-white/[0.07] to-white/[0.04] hover:from-white/[0.14] hover:to-white/[0.08] text-[#F5FAFF] font-bold border border-white/20 hover:border-[#38BDF8]/50 shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all cursor-pointer flex items-center gap-1.5"
             >
               <span>Instant Guest Mode (No Sign Up)</span>
               <ArrowRight className="w-3.5 h-3.5 text-[#38BDF8]" />

@@ -501,12 +501,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Card 3: Work with Excel */}
         <div
           onClick={() => setActiveTab('sheets')}
-          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-emerald-400/60 group relative overflow-hidden"
+          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-[#38BDF8]/60 group relative overflow-hidden"
         >
-          <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-110 transition-all">
+          <div className="w-11 h-11 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] mb-4 group-hover:scale-110 lg-glow-blue transition-all">
             <Table className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-emerald-300 transition-colors font-display">
+          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors font-display">
             Work with Excel
           </h3>
           <p className="text-xs text-[#A7B8CA] mt-1">Analyze &amp; Calculate</p>
@@ -530,9 +530,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* ========================================================================= */}
       {/* 4. LOWER 3-SECTION GRID: Recent Documents, Storage Overview & Quick Access */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-5 items-stretch">
         {/* Left Column: Recent Documents */}
-        <div className="md:col-span-2 xl:col-span-6 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
+        <div className="col-span-1 md:col-span-2 xl:col-span-6 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-4 min-w-0">
           <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Recent Documents</h2>
             <button
@@ -617,7 +617,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Center Column: Storage Overview Radial Chart */}
-        <div className="md:col-span-1 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-4 min-w-0 min-w-[260px]">
+        <div className="col-span-1 md:col-span-1 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-4 min-w-[260px]">
           <div className="pb-2 border-b border-[rgba(255,255,255,0.1)] flex items-center justify-between gap-1">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display truncate">Storage Usage</h2>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 shrink-0 ${
@@ -694,7 +694,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Right Column: Quick Access */}
-        <div className="md:col-span-1 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-3 min-w-0 min-w-[260px]">
+        <div className="col-span-1 md:col-span-1 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-3 min-w-[260px]">
           <div className="pb-2 border-b border-[rgba(255,255,255,0.1)]">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Quick Access</h2>
           </div>
@@ -745,12 +745,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Settings */}
             <div
               onClick={onOpenSettings || (() => setActiveTab('settings'))}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(255,255,255,0.12)] transition-all cursor-pointer group"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[#38BDF8]/30 transition-all cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center shrink-0">
                 <SettingsIcon className="w-4 h-4" />
               </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-emerald-300 transition-colors flex-1 truncate">
+              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors flex-1 truncate">
                 Settings &amp; Keys
               </span>
               <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
