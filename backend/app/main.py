@@ -25,6 +25,8 @@ from app.api.v1 import (
     plans,
     user_portal,
     billing,
+    messages,
+    announcements,
 )
 
 logger = logging.getLogger("omnidoc")
@@ -107,6 +109,8 @@ app.include_router(simulation.router, prefix=settings.API_V1_STR)
 app.include_router(plans.router, prefix=settings.API_V1_STR)
 app.include_router(user_portal.router, prefix=settings.API_V1_STR)
 app.include_router(billing.router, prefix=settings.API_V1_STR)
+app.include_router(messages.router, prefix=settings.API_V1_STR)
+app.include_router(announcements.router, prefix=settings.API_V1_STR)
 
 @app.get("/health", tags=["Health"])
 @app.get("/healthz", tags=["Health"]) 

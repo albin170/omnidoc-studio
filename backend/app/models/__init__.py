@@ -18,6 +18,8 @@ from app.models.subscription_management import (
 )
 from app.models.password_reset import PasswordResetToken
 from app.models.revocation import RevokedToken
+from app.models.message import Message
+from app.models.announcement import Announcement, AnnouncementRead
 
 __all__ = [
     "Organization",
@@ -40,4 +42,7 @@ __all__ = [
     "AdminViewSessionModel",
     "PasswordResetToken",
     "RevokedToken",
+    "Message",
+    "Announcement",
+    "AnnouncementRead",
 ]
