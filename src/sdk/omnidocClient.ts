@@ -1,6 +1,12 @@
 import {
   AutonomousJob,
-  ProcessingMode
+  ProcessingMode,
+  DirectMessage,
+  DirectMessageCreate,
+  DirectMessageListResponse,
+  Announcement,
+  AnnouncementCreate,
+  AnnouncementListResponse,
 } from '../types';
 
 export interface OmniDocClientConfig {
@@ -452,6 +458,24 @@ export class OmniDocApiClient {
     return res.json();
   }
 
+  public async saveAdminUserOverrides(userId: string, data: any): Promise<any> {
+    const payload = {
+      feature_overrides: data.overrides || [],
+      custom_storage_quota_bytes: data.storage_quota_bytes,
+      admin_notes: data.admin_notes,
+    };
+    const res = await fetch(`${this.baseUrl}/admin/users/${userId}/entitlements`, {
+      method: 'PUT',
+      headers: this.headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `User overrides save failed: ${res.statusText}`);
+    }
+    return res.json();
+  }
+
   public async getAdminPlans(): Promise<any[]> {
     const res = await fetch(`${this.baseUrl}/admin/plans`, { headers: this.headers });
     if (!res.ok) throw new Error(`Failed to load plans: ${res.statusText}`);
@@ -623,6 +647,157 @@ export class OmniDocApiClient {
       headers: this.headers,
     });
     if (!res.ok) throw new Error(`Cancel job failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  // --- Direct Messaging Methods ---
+
+  public async sendDirectMessage(payload: DirectMessageCreate): Promise<DirectMessage> {
+    const res = await fetch(`${this.baseUrl}/messages/send`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to send direct message: ${res.statusText}`);
+    }
+    return res.json();
+  }
+
+  public async getMyInbox(params: { include_archived?: boolean; search?: string; page?: number; limit?: number } = {}): Promise<DirectMessageListResponse> {
+    const q = new URLSearchParams();
+    if (params.include_archived !== undefined) q.set('include_archived', String(params.include_archived));
+    if (params.search) q.set('search', params.search);
+    if (params.page) q.set('page', String(params.page));
+    if (params.limit) q.set('limit', String(params.limit));
+
+    const res = await fetch(`${this.baseUrl}/messages/inbox?${q.toString()}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load inbox: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getMessage(messageId: string): Promise<DirectMessage> {
+    const res = await fetch(`${this.baseUrl}/messages/${encodeURIComponent(messageId)}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load message: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async markMessageRead(messageId: string): Promise<DirectMessage> {
+    const res = await fetch(`${this.baseUrl}/messages/${encodeURIComponent(messageId)}/read`, {
+      method: 'PATCH',
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to mark message as read: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async archiveMessage(messageId: string): Promise<DirectMessage> {
+    const res = await fetch(`${this.baseUrl}/messages/${encodeURIComponent(messageId)}/archive`, {
+      method: 'PATCH',
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to archive message: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async replyToMessage(messageId: string, body: string): Promise<DirectMessage> {
+    const res = await fetch(`${this.baseUrl}/messages/${encodeURIComponent(messageId)}/reply`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({ body }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to reply: ${res.statusText}`);
+    }
+    return res.json();
+  }
+
+  public async getAdminMessageHistory(params: { recipient_id?: string; search?: string; page?: number; limit?: number } = {}): Promise<DirectMessageListResponse> {
+    const q = new URLSearchParams();
+    if (params.recipient_id) q.set('recipient_id', params.recipient_id);
+    if (params.search) q.set('search', params.search);
+    if (params.page) q.set('page', String(params.page));
+    if (params.limit) q.set('limit', String(params.limit));
+
+    const res = await fetch(`${this.baseUrl}/messages/admin/history?${q.toString()}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load admin message history: ${res.statusText}`);
+    return res.json();
+  }
+
+  // --- Announcement Methods ---
+
+  public async createAnnouncement(payload: AnnouncementCreate): Promise<Announcement> {
+    const res = await fetch(`${this.baseUrl}/announcements`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to create announcement: ${res.statusText}`);
+    }
+    return res.json();
+  }
+
+  public async updateAnnouncement(id: string, payload: Partial<AnnouncementCreate>): Promise<Announcement> {
+    const res = await fetch(`${this.baseUrl}/announcements/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: this.headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`Failed to update announcement: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async archiveAnnouncement(id: string): Promise<{ status: string; id: string }> {
+    const res = await fetch(`${this.baseUrl}/announcements/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to archive announcement: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getAdminAnnouncements(params: { include_archived?: boolean; page?: number; limit?: number } = {}): Promise<AnnouncementListResponse> {
+    const q = new URLSearchParams();
+    if (params.include_archived !== undefined) q.set('include_archived', String(params.include_archived));
+    if (params.page) q.set('page', String(params.page));
+    if (params.limit) q.set('limit', String(params.limit));
+
+    const res = await fetch(`${this.baseUrl}/announcements/admin?${q.toString()}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load admin announcements: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async getActiveAnnouncements(params: { include_dismissed?: boolean } = {}): Promise<AnnouncementListResponse> {
+    const q = new URLSearchParams();
+    if (params.include_dismissed !== undefined) q.set('include_dismissed', String(params.include_dismissed));
+
+    const res = await fetch(`${this.baseUrl}/announcements/active?${q.toString()}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to load active announcements: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async markAnnouncementRead(id: string): Promise<{ status: string }> {
+    const res = await fetch(`${this.baseUrl}/announcements/${encodeURIComponent(id)}/read`, {
+      method: 'POST',
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to mark announcement as read: ${res.statusText}`);
+    return res.json();
+  }
+
+  public async dismissAnnouncement(id: string): Promise<{ status: string }> {
+    const res = await fetch(`${this.baseUrl}/announcements/${encodeURIComponent(id)}/dismiss`, {
+      method: 'POST',
+      headers: this.headers,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to dismiss announcement: ${res.statusText}`);
+    }
     return res.json();
   }
 }

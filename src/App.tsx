@@ -138,7 +138,7 @@ export const App: React.FC = () => {
       const path = window.location.pathname.toLowerCase();
       if (hash.includes('pricing') || path.includes('/pricing')) {
         setActiveTab('pricing');
-      } else if ((hash.includes('admin') || path.includes('/admin')) && userSession.role === 'admin') {
+      } else if ((hash.includes('admin') || path.includes('/admin')) && (userSession.role === 'admin' || userSession.role === 'superadmin')) {
         setActiveTab('admin');
       }
     }
@@ -746,7 +746,7 @@ export const App: React.FC = () => {
                 <option value="projects" className="bg-[#0B1420] text-white">Projects</option>
                 <option value="pricing" className="bg-[#0B1420] text-white">Pricing &amp; Plans</option>
                 <option value="settings" className="bg-[#0B1420] text-white">Settings &amp; Environment</option>
-                {userSession.role === 'admin' && (
+                {(userSession.role === 'admin' || userSession.role === 'superadmin') && (
                   <option value="admin" className="bg-[#11152A] text-white">Admin Console</option>
                 )}
               </select>

@@ -161,7 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Settings & Privacy',
       icon: Settings,
     },
-    ...(userRole === 'admin'
+    ...(userRole === 'admin' || userRole === 'superadmin'
       ? [
         {
           tab: 'admin' as WorkspaceTab,

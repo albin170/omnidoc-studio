@@ -99,6 +99,7 @@ export function recordAuditLog(
   details: string,
   severity: 'info' | 'warn' | 'critical' = 'info'
 ): void {
+  if (typeof localStorage === 'undefined') return;
   try {
     const raw = localStorage.getItem(AUDIT_LOGS_KEY);
     const logs: AuditLogEntry[] = raw ? JSON.parse(raw) : [];
@@ -118,6 +119,7 @@ export function recordAuditLog(
 }
 
 export function getAuditLogs(): AuditLogEntry[] {
+  if (typeof localStorage === 'undefined') return [];
   try {
     const raw = localStorage.getItem(AUDIT_LOGS_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -387,12 +389,12 @@ export async function authorizeUserAction(
     return { allowed: false, reason: 'Authentication required. Please sign in.' };
   }
 
-  if (requiredRole === 'admin' && verified.role !== 'admin') {
+  if (requiredRole === 'admin' && verified.role !== 'admin' && verified.role !== 'superadmin') {
     recordAuditLog('UNAUTHORIZED_ACCESS_BLOCKED', verified.userEmail || '', 'Admin role required', 'warn');
     return { allowed: false, reason: 'Forbidden: Administrator privileges required.' };
   }
 
-  if (requiredRole === 'staff' && verified.role !== 'admin' && verified.role !== 'staff') {
+  if (requiredRole === 'staff' && verified.role !== 'admin' && verified.role !== 'superadmin' && verified.role !== 'staff') {
     return { allowed: false, reason: 'Forbidden: Staff privileges required.' };
   }
 

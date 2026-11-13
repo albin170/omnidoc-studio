@@ -517,4 +517,73 @@ export interface TransformationReceipt {
   verified?: boolean;
 }
 
+// Feature 7: Direct Admin-to-User Messages
+export interface DirectMessage {
+  id: string;
+  sender_user_id: string;
+  sender_name?: string | null;
+  sender_email?: string | null;
+  recipient_user_id: string;
+  recipient_name?: string | null;
+  recipient_email?: string | null;
+  subject: string;
+  body: string;
+  priority: 'normal' | 'important' | 'urgent';
+  status: 'sent' | 'delivered' | 'archived';
+  created_at: string;
+  read_at?: string | null;
+  archived_at?: string | null;
+}
+
+export interface DirectMessageCreate {
+  recipient_user_id: string;
+  subject: string;
+  body: string;
+  priority?: 'normal' | 'important' | 'urgent';
+}
+
+export interface DirectMessageListResponse {
+  items: DirectMessage[];
+  total: number;
+  unread_count: number;
+  page: number;
+  limit: number;
+}
+
+// Feature 8: System & Targeted Announcements
+export interface Announcement {
+  id: string;
+  title: string;
+  body: string;
+  priority: 'informational' | 'important' | 'critical';
+  audience_type: 'all' | 'plan' | 'role' | 'user';
+  audience_reference?: string | null;
+  created_by?: string | null;
+  creator_name?: string | null;
+  created_at: string;
+  published_at?: string | null;
+  expires_at?: string | null;
+  is_published: boolean;
+  is_archived: boolean;
+  is_read?: boolean;
+  is_dismissed?: boolean;
+  read_count?: number;
+}
+
+export interface AnnouncementCreate {
+  title: string;
+  body: string;
+  priority?: 'informational' | 'important' | 'critical';
+  audience_type?: 'all' | 'plan' | 'role' | 'user';
+  audience_reference?: string | null;
+  expires_at?: string | null;
+  is_published?: boolean;
+}
+
+export interface AnnouncementListResponse {
+  items: Announcement[];
+  total: number;
+}
+
+
 

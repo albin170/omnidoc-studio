@@ -5,7 +5,7 @@ const STORAGE_HISTORY_KEY = 'omnidoc_history_v1';
 const STORAGE_AUTH_KEY = 'omnidoc_user_auth_v1';
 
 export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
-export type UserRole = 'user' | 'admin' | 'staff' | 'guest';
+export type UserRole = 'user' | 'admin' | 'superadmin' | 'staff' | 'guest';
 
 export interface UserSession {
   isGuest: boolean;

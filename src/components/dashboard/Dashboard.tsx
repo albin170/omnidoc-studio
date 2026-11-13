@@ -26,7 +26,7 @@ import {
   AlertCircle,
   X
 } from 'lucide-react';
-import { ConversionHistoryItem, FileFormat, StoredProject, WorkspaceTab } from '../../types';
+import { ConversionHistoryItem, FileFormat, StoredProject, WorkspaceTab, Announcement } from '../../types';
 import { detectFileFormat, formatFileSize } from '../../services/formatDetector';
 import { omniDocClient } from '../../sdk/omnidocClient';
 import { getBrowserStorageEstimate, getUserSession } from '../../services/storageService';
@@ -112,6 +112,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [storageSource, setStorageSource] = useState<'cloud' | 'local'>('local');
   const [cloudOffline, setCloudOffline] = useState<boolean>(false);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -148,7 +149,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
       }
     };
 
+    const fetchAnnouncements = async () => {
+      try {
+        const res = await omniDocClient.getActiveAnnouncements();
+        if (isMounted && res && res.items) {
+          setAnnouncements(res.items);
+        }
+      } catch (e) {
+        // Non-blocking in offline mode
+      }
+    };
+
     fetchStorage();
+    fetchAnnouncements();
     return () => { isMounted = false; };
   }, [recentProjects]);
 
@@ -317,6 +330,78 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* ========================================================================= */}
+      {/* 1.5 ACTIVE ANNOUNCEMENT BANNER                                           */}
+      {/* ========================================================================= */}
+      {announcements.length > 0 && (
+        <div className={`p-4 rounded-2xl border transition-all animate-fade-in flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+          announcements[0].priority === 'critical'
+            ? 'border-[#FF3366]/50 bg-gradient-to-r from-[#FF3366]/20 via-[#0a0f1d] to-[#FF3366]/10 text-rose-200 shadow-lg shadow-[#FF3366]/20 ring-1 ring-[#FF3366]/40'
+            : announcements[0].priority === 'important'
+              ? 'border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-[#0a0f1d] to-amber-500/5 text-amber-200'
+              : 'border-[#38BDF8]/40 bg-gradient-to-r from-[#38BDF8]/15 via-[#0a0f1d] to-[#38BDF8]/5 text-sky-200'
+        }`}>
+          <div className="flex items-start gap-3 min-w-0">
+            <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${
+              announcements[0].priority === 'critical'
+                ? 'bg-[#FF3366]/25 text-[#FF3366] animate-pulse'
+                : announcements[0].priority === 'important'
+                  ? 'bg-amber-500/25 text-amber-400'
+                  : 'bg-[#38BDF8]/25 text-[#38BDF8]'
+            }`}>
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                  announcements[0].priority === 'critical'
+                    ? 'bg-[#FF3366] text-white shadow-xs'
+                    : announcements[0].priority === 'important'
+                      ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40'
+                      : 'bg-[#38BDF8]/30 text-[#38BDF8] border border-[#38BDF8]/40'
+                }`}>
+                  {announcements[0].priority}
+                </span>
+                <h3 className="text-xs sm:text-sm font-bold text-[#F5FAFF] truncate font-display">
+                  {announcements[0].title}
+                </h3>
+              </div>
+              <p className="text-xs text-[#A7B8CA] mt-1 line-clamp-2 leading-relaxed">
+                {announcements[0].body}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+            {onOpenUserPanel && (
+              <button
+                onClick={onOpenUserPanel}
+                className="text-xs font-semibold text-[#38BDF8] hover:text-white px-3 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white/15 transition-all cursor-pointer flex items-center gap-1"
+              >
+                <span>View All</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {announcements[0].priority !== 'critical' && (
+              <button
+                onClick={async () => {
+                  try {
+                    await omniDocClient.dismissAnnouncement(announcements[0].id);
+                    setAnnouncements((prev) => prev.filter((a) => a.id !== announcements[0].id));
+                  } catch (e) {
+                    console.warn('Failed to dismiss:', e);
+                  }
+                }}
+                className="p-1.5 rounded-lg text-[#A7B8CA] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                title="Dismiss notification"
+                aria-label="Dismiss notification"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* 2. HERO WELCOME SECTION WITH MASTER LIQUID GLASS EFFECT 6                 */}
       {/* ========================================================================= */}
       <div className="relative rounded-[28px] p-6 md:p-8 overflow-hidden lg-liquid-6 border border-white/15 shadow-[0_25px_65px_rgba(0,0,0,0.85)] flex flex-col md:flex-row items-center justify-between gap-6">
@@ -445,9 +530,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* ========================================================================= */}
       {/* 4. LOWER 3-SECTION GRID: Recent Documents, Storage Overview & Quick Access */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left Column (6 cols on xl, 12 cols on lg): Recent Documents */}
-        <div className="lg:col-span-12 xl:col-span-6 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-5">
+        {/* Left Column: Recent Documents */}
+        <div className="md:col-span-2 xl:col-span-6 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
           <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Recent Documents</h2>
             <button
@@ -531,8 +616,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
           )}
         </div>
 
-        {/* Center Column (3 cols on xl, 6 cols on lg): Storage Overview Radial Chart */}
-        <div className="lg:col-span-6 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-4 min-w-0">
+        {/* Center Column: Storage Overview Radial Chart */}
+        <div className="md:col-span-1 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-4 min-w-0 min-w-[260px]">
           <div className="pb-2 border-b border-[rgba(255,255,255,0.1)] flex items-center justify-between gap-1">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display truncate">Storage Usage</h2>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 shrink-0 ${
@@ -608,8 +693,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
 
-        {/* Right Column (3 cols on xl, 6 cols on lg): Quick Access */}
-        <div className="lg:col-span-6 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-3 min-w-0">
+        {/* Right Column: Quick Access */}
+        <div className="md:col-span-1 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-[rgba(255,255,255,0.14)] flex flex-col justify-between space-y-3 min-w-0 min-w-[260px]">
           <div className="pb-2 border-b border-[rgba(255,255,255,0.1)]">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Quick Access</h2>
           </div>
