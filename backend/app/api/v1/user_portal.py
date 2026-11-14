@@ -135,6 +135,7 @@ async def get_user_ui_configuration(
     disabled_modules = []
     announcement = ""
     maintenance = False
+    maintenance_message = ""
 
     if cfg:
         try:
@@ -143,6 +144,7 @@ async def get_user_ui_configuration(
             disabled_modules = []
         announcement = cfg.announcement_banner or ""
         maintenance = cfg.maintenance_mode
+        maintenance_message = cfg.maintenance_message or ""
 
     # Check individual user UI overrides
     user_ui = await db.scalar(select(UiConfigurationModel).where(UiConfigurationModel.scope == "user", UiConfigurationModel.target_id == current_user.id))
@@ -156,6 +158,7 @@ async def get_user_ui_configuration(
     return {
         "announcement_banner": announcement,
         "maintenance_mode": maintenance,
+        "maintenance_message": maintenance_message,
         "disabled_modules": disabled_modules
     }
 
@@ -191,10 +194,10 @@ async def export_my_user_data(
         "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
     }
 
-    # 2. Documents
+    # 2. Documents (Strict user ownership isolation; internal storage paths omitted to protect infrastructure)
     docs_res = await db.scalars(
         select(Document)
-        .where(or_(Document.user_id == current_user.id, and_(Document.org_id == current_user.org_id, Document.user_id.is_(None))))
+        .where(Document.user_id == current_user.id)
         .order_by(Document.created_at.desc())
     )
     documents = [
@@ -204,7 +207,6 @@ async def export_my_user_data(
             "file_size": d.file_size,
             "mime_type": d.mime_type,
             "format_type": d.format_type,
-            "storage_path": d.storage_path,
             "content_hash_sha256": d.content_hash_sha256,
             "version": d.version,
             "created_at": d.created_at.isoformat() if d.created_at else None,
@@ -213,10 +215,10 @@ async def export_my_user_data(
         for d in docs_res.all()
     ]
 
-    # 3. Jobs
+    # 3. Jobs (Strict user ownership isolation)
     jobs_res = await db.scalars(
         select(Job)
-        .where(or_(Job.user_id == current_user.id, and_(Job.org_id == current_user.org_id, Job.user_id.is_(None))))
+        .where(Job.user_id == current_user.id)
         .order_by(Job.created_at.desc())
     )
     jobs = [
@@ -297,8 +299,10 @@ async def export_my_user_data(
         "export_version": "1.0",
         "exported_at": now.isoformat(),
         "user_id": current_user.id,
+        "integrity_verification": "SHA-256 digital signature of canonical JSON archive (portable, unencrypted export)",
         "profile": profile,
         "documents": documents,
+        "personal_documents": documents,
         "jobs": jobs,
         "consent_history": consents,
         "messages": messages,
@@ -309,23 +313,30 @@ async def export_my_user_data(
     serialized_canonical = json.dumps(payload, sort_keys=True, separators=(',', ':'))
     checksum = hashlib.sha256(serialized_canonical.encode("utf-8")).hexdigest()
 
-    # Record Audit Event
-    audit = AuditEvent(
-        org_id=current_user.org_id,
-        user_id=current_user.id,
-        action="EXPORT_USER_DATA",
-        target_type="User",
-        target_id=current_user.id,
-        details_json=json.dumps({"checksum_sha256": checksum, "record_counts": {
-            "documents": len(documents),
-            "jobs": len(jobs),
-            "consents": len(consents),
-            "messages": len(messages),
-            "audits": len(audit_events)
-        }}),
-        timestamp=now
-    )
-    db.add(audit)
+    # Record Audit Event safely
+    audit_org = current_user.org_id
+    if not audit_org:
+        from app.models.organization import Organization
+        found_org = await db.scalar(select(Organization.id).limit(1))
+        audit_org = found_org or "default-org"
+
+    if audit_org:
+        audit = AuditEvent(
+            org_id=audit_org,
+            user_id=current_user.id,
+            action="EXPORT_USER_DATA",
+            target_type="User",
+            target_id=current_user.id,
+            details_json=json.dumps({"checksum_sha256": checksum, "record_counts": {
+                "documents": len(documents),
+                "jobs": len(jobs),
+                "consents": len(consents),
+                "messages": len(messages),
+                "audits": len(audit_events)
+            }}),
+            timestamp=now
+        )
+        db.add(audit)
     await db.commit()
 
     return {

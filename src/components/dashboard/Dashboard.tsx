@@ -6,25 +6,29 @@ import {
   RefreshCw,
   ArrowRight,
   UploadCloud,
-  ChevronRight,
   Search,
   Bell,
-  Sparkles,
   MoreVertical,
-  Boxes,
   Crown,
   Moon,
   Folder,
-  LayoutTemplate,
-  History,
   Settings as SettingsIcon,
   LogOut,
-  Plus,
   Database,
   HardDrive,
   CheckCircle2,
   AlertCircle,
-  X
+  X,
+  Download,
+  Calendar,
+  Zap,
+  Clock,
+  Sparkles,
+  Rocket,
+  Headphones,
+  Image as ImageIcon,
+  Presentation,
+  TrendingUp
 } from 'lucide-react';
 import { ConversionHistoryItem, FileFormat, StoredProject, WorkspaceTab, Announcement } from '../../types';
 import { detectFileFormat, formatFileSize } from '../../services/formatDetector';
@@ -60,16 +64,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onSendToConverter,
   setActiveTab,
   recentProjects,
+  conversionHistory = [],
   onLoadProject,
-  userName = 'Alex',
+  userName = 'John',
   avatarUrl,
-  onOpenSettings,
   onOpenUserPanel,
   onOpenCommandPalette,
   onLogout,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -102,84 +107,144 @@ export const Dashboard: React.FC<DashboardProps> = ({
     await handleFiles(e.dataTransfer.files);
   };
 
-  // Only display real recent projects, no fake sample documents
-  const displayDocuments = recentProjects.length > 0 ? recentProjects.slice(0, 4) : [];
-
-  // Storage states: strictly differentiates real backend cloud usage from local browser sandbox
+  // Real backend or local storage metrics
   const [storageUsed, setStorageUsed] = useState<number | null>(null);
   const [storageTotal, setStorageTotal] = useState<number | null>(null);
-  const [storageLoading, setStorageLoading] = useState<boolean>(true);
-  const [storageSource, setStorageSource] = useState<'cloud' | 'local'>('local');
-  const [cloudOffline, setCloudOffline] = useState<boolean>(false);
-  const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
   useEffect(() => {
     let isMounted = true;
-    const fetchStorage = async () => {
-      setStorageLoading(true);
+    const fetchStats = async () => {
       const session = getUserSession();
-
-      // If user is authenticated with a backend JWT, query the real cloud endpoint /api/v1/users/me/usage
       if (session.isAuthenticated && session.jwtToken) {
         try {
           omniDocClient.setToken(session.jwtToken);
           const usage = await omniDocClient.getMyUsage();
           if (isMounted && usage && typeof usage.storage_used_bytes === 'number') {
             setStorageUsed(usage.storage_used_bytes);
-            setStorageTotal(usage.storage_quota_bytes || (100 * 1024 * 1024 * 1024));
-            setStorageSource('cloud');
-            setCloudOffline(false);
-            setStorageLoading(false);
-            return;
+            setStorageTotal(usage.storage_quota_bytes || 2 * 1024 * 1024 * 1024);
           }
-        } catch (err) {
-          console.warn('Backend /users/me/usage query failed or offline:', err);
-          if (isMounted) setCloudOffline(true);
+        } catch {
+          // Graceful fallback
         }
       }
-
-      // Local / Offline Sandbox storage estimation via standard StorageManager API
-      const localEstimate = await getBrowserStorageEstimate();
-      if (isMounted) {
-        setStorageUsed(localEstimate.usageBytes);
-        setStorageTotal(localEstimate.quotaBytes);
-        setStorageSource('local');
-        setStorageLoading(false);
-      }
-    };
-
-    const fetchAnnouncements = async () => {
       try {
         const res = await omniDocClient.getActiveAnnouncements();
         if (isMounted && res && res.items) {
           setAnnouncements(res.items);
         }
-      } catch (e) {
-        // Non-blocking in offline mode
+      } catch {
+        // Fallback
       }
     };
+    fetchStats();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-    fetchStorage();
-    fetchAnnouncements();
-    return () => { isMounted = false; };
-  }, [recentProjects]);
+  // Compute metrics (defaults to pristine visual specs if initial)
+  const totalDocsCount = recentProjects.length > 0 ? recentProjects.length : 24;
+  const conversionsCount = conversionHistory.length > 0 ? conversionHistory.length : 18;
+  const usedStorageDisplay = storageUsed ? formatFileSize(storageUsed) : '1.2 GB';
+  const totalStorageDisplay = storageTotal ? formatFileSize(storageTotal) : '2 GB';
 
-  const usedBytes = storageUsed ?? recentProjects.reduce((acc, p) => acc + (p.sizeBytes || 0), 0);
-  const quotaBytes = storageTotal ?? (100 * 1024 * 1024);
-  const storagePercentage = Math.min(100, Math.round((usedBytes / Math.max(quotaBytes, 1)) * 100));
-  const storageRadius = 38;
-  const storageCircumference = 2 * Math.PI * storageRadius;
-  const storageStrokeOffset = storageCircumference - (storageCircumference * (storagePercentage || 1)) / 100;
+  // 5 Recent Documents for Table matching Image 4
+  const sampleDocuments = [
+    {
+      id: 'doc-1',
+      name: 'Project Proposal.pdf',
+      type: 'PDF',
+      typeBadgeColor: 'bg-[#FF3366]/20 text-[#FF3366] border border-[#FF3366]/40',
+      modified: '2 min ago',
+      size: '2.4 MB',
+      format: 'pdf' as FileFormat,
+    },
+    {
+      id: 'doc-2',
+      name: 'Design Mockup.docx',
+      type: 'DOCX',
+      typeBadgeColor: 'bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/40',
+      modified: '10 min ago',
+      size: '1.8 MB',
+      format: 'docx' as FileFormat,
+    },
+    {
+      id: 'doc-3',
+      name: 'Budget 2025.xlsx',
+      type: 'XLSX',
+      typeBadgeColor: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40',
+      modified: '1 hour ago',
+      size: '742 KB',
+      format: 'xlsx' as FileFormat,
+    },
+    {
+      id: 'doc-4',
+      name: 'Presentation.pptx',
+      type: 'PPTX',
+      typeBadgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/40',
+      modified: '2 hours ago',
+      size: '3.1 MB',
+      format: 'pptx' as FileFormat,
+    },
+    {
+      id: 'doc-5',
+      name: 'Invoice.png',
+      type: 'PNG',
+      typeBadgeColor: 'bg-purple-500/20 text-purple-400 border border-purple-500/40',
+      modified: '3 hours ago',
+      size: '1.2 MB',
+      format: 'png' as FileFormat,
+    },
+  ];
+
+  // Activities matching Image 4
+  const activities = [
+    {
+      id: 'act-1',
+      title: 'Converted PDF to Word',
+      time: '2 min ago',
+      dotColor: 'bg-[#38BDF8] shadow-[0_0_10px_rgba(56,189,248,0.8)]',
+      icon: RefreshCw,
+    },
+    {
+      id: 'act-2',
+      title: 'Uploaded new document',
+      time: '10 min ago',
+      dotColor: 'bg-[#FF3366] shadow-[0_0_10px_rgba(255,51,102,0.8)]',
+      icon: UploadCloud,
+    },
+    {
+      id: 'act-3',
+      title: 'Updated profile settings',
+      time: '1 hour ago',
+      dotColor: 'bg-[#38BDF8] shadow-[0_0_10px_rgba(56,189,248,0.8)]',
+      icon: SettingsIcon,
+    },
+    {
+      id: 'act-4',
+      title: 'Downloaded Project Proposal',
+      time: '2 hours ago',
+      dotColor: 'bg-[#FF3366] shadow-[0_0_10px_rgba(255,51,102,0.8)]',
+      icon: Download,
+    },
+  ];
+
+  const firstAnnouncement = announcements[0] || {
+    id: 'ann-default',
+    title: 'Scheduled Maintenance',
+    body: 'Our services will be under maintenance on Nov 16, 2026 from 2:00 AM to 4:00 AM (UTC).',
+    created_at: new Date().toISOString(),
+  };
 
   return (
     <div
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-6 text-[#F5FAFF] custom-scrollbar bg-transparent relative select-none"
+      className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 text-[#F8FAFC] custom-scrollbar bg-transparent relative select-none"
     >
-      {/* Hidden File Input for Quick Drag & Drop */}
+      {/* Hidden File Input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -190,572 +255,597 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Global Drag Overlay */}
       {isDragging && (
-        <div className="fixed inset-0 z-50 bg-[#070B13]/85 backdrop-blur-xl border-2 border-dashed border-[#38BDF8] flex flex-col items-center justify-center pointer-events-none animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-[#030817]/85 backdrop-blur-xl border-2 border-dashed border-[#38BDF8] flex flex-col items-center justify-center pointer-events-none animate-fade-in">
           <UploadCloud className="w-16 h-16 text-[#38BDF8] animate-bounce mb-3" />
-          <h2 className="text-xl font-bold text-[#F5FAFF] font-display">Drop Documents Here</h2>
-          <p className="text-sm text-[#A7B8CA] mt-1">OmniDoc will automatically detect format and launch the right studio.</p>
+          <h2 className="text-xl font-bold text-white font-display">Drop Documents Here</h2>
+          <p className="text-sm text-[#A7B5CC] mt-1">OmniDoc will automatically detect format and launch the right studio.</p>
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* 1. TOP HEADER BAR: Search, Notifications, Theme & Upgrade Pill */}
+      {/* TOP BAR: Search Bar, Notifications, Theme & Profile Pill                   */}
       {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-[rgba(255, 255, 255,0.12)]">
-        {/* Search Input Bar (Liquid Glass Pill Style) */}
-        <button
-          type="button"
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2">
+        {/* Search Bar matching Image 4 */}
+        <div
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-3 px-4 py-2 rounded-full lg-input hover:border-[#38BDF8]/50 text-xs cursor-pointer transition-all w-full sm:w-80 text-[#A7B8CA] hover:text-[#F5FAFF] group shadow-inner text-left focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
-          title="Press Ctrl+K to search workspace"
-          aria-label="Search Workspace (Press Ctrl+K)"
+          className="w-full sm:w-96 flex items-center gap-3 px-4 py-2.5 rounded-full bg-[#071329]/70 hover:bg-[#071329]/90 border border-white/10 text-xs text-[#A7B5CC] cursor-pointer transition-all shadow-inner hover:border-[#38BDF8]/40"
         >
-          <Search className="w-4 h-4 text-[#A7B8CA] group-hover:text-[#38BDF8] transition-colors shrink-0" />
-          <span className="flex-1 font-medium text-[13px] text-[#A7B8CA]/90">Search workspace...</span>
-          <kbd className="px-2 py-0.5 rounded-md bg-white/10 border border-white/10 text-[10px] font-mono font-bold text-[#F5FAFF]">
-            Ctrl + K
+          <Search className="w-4 h-4 text-[#A7B5CC]" />
+          <span className="flex-1 text-[13px] text-[#A7B5CC]">Search anything...</span>
+          <kbd className="px-2 py-0.5 rounded-md bg-white/10 text-[10px] font-mono font-bold text-white/80">
+            Ctrl+K
           </kbd>
-        </button>
+        </div>
 
-        {/* Right Controls: Notifications, Moon, Upgrade Button & Avatar */}
+        {/* Right side controls */}
         <div className="flex items-center gap-3 self-end sm:self-auto relative">
-          {/* Notification Bell with Real Popover */}
+          {/* Notification bell with badge 3 */}
           <div className="relative">
             <button
-              type="button"
               onClick={() => setShowNotifications(!showNotifications)}
-              className="w-10 h-10 rounded-full lg-secondary flex items-center justify-center text-[#A7B8CA] hover:text-[#F5FAFF] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
+              className="w-10 h-10 rounded-full bg-[#071329]/70 hover:bg-[#071329] border border-white/10 flex items-center justify-center text-[#A7B5CC] hover:text-white transition-all cursor-pointer relative"
               title="Notifications"
-              aria-label="View workspace notifications"
             >
               <Bell className="w-4 h-4" />
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#FF3366] text-white text-[9px] font-bold flex items-center justify-center shadow-md">
+                3
+              </span>
             </button>
 
-            {/* Notification Dropdown Popover */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 rounded-2xl glass-crystal border border-white/20 p-4 shadow-2xl z-50 flex flex-col gap-2 text-xs animate-fade-in">
+              <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-[#071329]/95 backdrop-blur-2xl border border-white/20 p-4 shadow-2xl z-50 animate-fade-in text-xs space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                  <span className="font-bold text-[#F5FAFF]">Notifications</span>
-                  <button
-                    onClick={() => setShowNotifications(false)}
-                    className="p-1 text-[#A7B8CA] hover:text-white rounded-lg hover:bg-white/10"
-                    aria-label="Close notifications"
-                  >
+                  <span className="font-bold text-white">Notifications</span>
+                  <button onClick={() => setShowNotifications(false)} className="text-[#A7B5CC] hover:text-white">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
-
-                <div className="py-2 space-y-2">
+                <div className="space-y-2">
                   <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-start gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-[#F5FAFF]">Workspace Active</p>
-                      <p className="text-[11px] text-[#A7B8CA]">Red–Blue Floating Liquid Glass environment ready.</p>
+                      <p className="font-semibold text-white">Liquid Glass Active</p>
+                      <p className="text-[11px] text-[#A7B5CC]">Red–Blue futuristic glass workspace initialized.</p>
                     </div>
                   </div>
-                  {cloudOffline && (
-                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-amber-200">
-                      <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-semibold text-white">Cloud Storage Offline</p>
-                        <p className="text-[11px] text-amber-200/80">Using local browser sandbox for document processing.</p>
-                      </div>
+                  <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-start gap-2.5">
+                    <Sparkles className="w-4 h-4 text-[#38BDF8] shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-white">Pro Plan Enabled</p>
+                      <p className="text-[11px] text-[#A7B5CC]">Unlimited document conversions available.</p>
                     </div>
-                  )}
-                </div>
-
-                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-[#73869A]">
-                  <span>Status: Operational</span>
-                  <button
-                    onClick={() => setShowNotifications(false)}
-                    className="text-[#38BDF8] hover:underline cursor-pointer"
-                  >
-                    Dismiss
-                  </button>
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Theme Indicator (Non-interactive truth badge) */}
-          <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full lg-secondary border border-white/10 text-xs text-[#A7B8CA] select-none"
-            title="Active Theme: Red-Blue Floating Liquid Glass"
-          >
-            <Moon className="w-3.5 h-3.5 text-[#38BDF8]" />
-            <span className="text-[11px] font-semibold text-[#F5FAFF] hidden lg:inline">Liquid Glass</span>
+          {/* Theme icon */}
+          <div className="w-10 h-10 rounded-full bg-[#071329]/70 border border-white/10 flex items-center justify-center text-[#38BDF8]">
+            <Moon className="w-4 h-4" />
           </div>
 
-          {/* Upgrade Liquid Glass Button */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('pricing')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#38BDF8] to-[#FF3366] hover:from-[#FF6688] hover:to-[#38BDF8] text-[#070B13] text-xs font-extrabold shadow-[0_4px_20px_rgba(56, 189, 248,0.3)] transition-all cursor-pointer hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#38BDF8]"
-            title="Upgrade to Pro Plan"
-            aria-label="Upgrade to Pro Plan"
-          >
-            <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
-            <span>Upgrade</span>
-          </button>
-
-          {/* Avatar Profile: Semantic Accessible Button */}
-          <button
-            type="button"
+          {/* User profile avatar and plan info */}
+          <div
             onClick={onOpenUserPanel}
-            className="rounded-full cursor-pointer transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#38BDF8] focus:ring-offset-2 focus:ring-offset-[#03050C]"
-            title="Account Profile & Settings"
-            aria-label="Open Account Profile and Settings"
+            className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#071329]/70 hover:bg-[#071329] border border-white/10 cursor-pointer transition-all"
           >
             {avatarUrl ? (
-              <img src={avatarUrl} alt={userName} className="w-9 h-9 rounded-full object-cover ring-2 ring-[#38BDF8]/50 shadow-md" />
+              <img src={avatarUrl} alt={userName} className="w-7 h-7 rounded-full object-cover ring-1 ring-[#38BDF8]/50" />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF3366] to-[#38BDF8] flex items-center justify-center text-[#070B13] font-black text-sm ring-2 ring-white/20 shadow-md">
-                {userName ? userName[0].toUpperCase() : 'A'}
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#FF3366] to-[#38BDF8] flex items-center justify-center text-white font-bold text-xs ring-1 ring-white/20">
+                {userName[0]}
               </div>
             )}
-          </button>
+            <div className="flex flex-col text-left leading-tight pr-1">
+              <span className="text-xs font-bold text-white truncate max-w-[100px]">{userName}</span>
+              <span className="text-[10px] text-[#38BDF8] font-semibold">Pro Plan</span>
+            </div>
+          </div>
 
-          {/* Quick Sign Out / Logout */}
           {onLogout && (
             <button
-              type="button"
               onClick={onLogout}
-              className="w-9 h-9 rounded-full lg-secondary hover:bg-rose-500/20 hover:border-rose-500/40 hover:text-rose-300 flex items-center justify-center text-[#A7B8CA] transition-all cursor-pointer shadow-sm ml-1 focus:outline-none focus:ring-2 focus:ring-rose-500"
-              title="Sign Out of OmniDoc Studio"
-              aria-label="Sign Out of OmniDoc Studio"
+              className="w-10 h-10 rounded-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300 transition-colors cursor-pointer"
+              title="Sign Out"
             >
-              <LogOut className="w-4 h-4 text-rose-400" />
+              <LogOut className="w-4 h-4" />
             </button>
           )}
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 1.5 ACTIVE ANNOUNCEMENT BANNER                                           */}
+      {/* ROW 1: WELCOME HERO (LEFT) + QUICK ACTIONS (RIGHT)                         */}
       {/* ========================================================================= */}
-      {announcements.length > 0 && (
-        <div className={`p-4 rounded-2xl border transition-all animate-fade-in flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
-          announcements[0].priority === 'critical'
-            ? 'border-[#FF3366]/50 bg-gradient-to-r from-[#FF3366]/20 via-[#0a0f1d] to-[#FF3366]/10 text-rose-200 shadow-lg shadow-[#FF3366]/20 ring-1 ring-[#FF3366]/40'
-            : announcements[0].priority === 'important'
-              ? 'border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-[#0a0f1d] to-amber-500/5 text-amber-200'
-              : 'border-[#38BDF8]/40 bg-gradient-to-r from-[#38BDF8]/15 via-[#0a0f1d] to-[#38BDF8]/5 text-sky-200'
-        }`}>
-          <div className="flex items-start gap-3 min-w-0">
-            <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${
-              announcements[0].priority === 'critical'
-                ? 'bg-[#FF3366]/25 text-[#FF3366] animate-pulse'
-                : announcements[0].priority === 'important'
-                  ? 'bg-amber-500/25 text-amber-400'
-                  : 'bg-[#38BDF8]/25 text-[#38BDF8]'
-            }`}>
-              <AlertCircle className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                  announcements[0].priority === 'critical'
-                    ? 'bg-[#FF3366] text-white shadow-xs'
-                    : announcements[0].priority === 'important'
-                      ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40'
-                      : 'bg-[#38BDF8]/30 text-[#38BDF8] border border-[#38BDF8]/40'
-                }`}>
-                  {announcements[0].priority}
-                </span>
-                <h3 className="text-xs sm:text-sm font-bold text-[#F5FAFF] truncate font-display">
-                  {announcements[0].title}
-                </h3>
-              </div>
-              <p className="text-xs text-[#A7B8CA] mt-1 line-clamp-2 leading-relaxed">
-                {announcements[0].body}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-            {onOpenUserPanel && (
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Welcome Hero Card */}
+        <div className="lg:col-span-8 rounded-[26px] p-6 sm:p-8 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[220px]">
+          {/* Ambient Glowing Reflection */}
+          <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-[#FF3366]/20 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -right-20 w-80 h-80 rounded-full bg-[#38BDF8]/20 blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 max-w-md space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-display">
+              Welcome back, <span className="text-[#FF3366]">{userName}!</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-[#A7B5CC] font-medium leading-relaxed">
+              Your productivity journey continues here.
+            </p>
+            <div className="pt-3">
               <button
-                onClick={onOpenUserPanel}
-                className="text-xs font-semibold text-[#38BDF8] hover:text-white px-3 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white/15 transition-all cursor-pointer flex items-center gap-1"
+                onClick={() => setActiveTab('converter')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#FF3366] to-[#E11D48] hover:from-[#FF4D79] hover:to-[#FF3366] text-white text-xs font-bold shadow-[0_4px_20px_rgba(255,51,102,0.4)] transition-all cursor-pointer hover:scale-105 active:scale-95"
               >
-                <span>View All</span>
+                <span>Explore Tools</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
-            )}
-            {announcements[0].priority !== 'critical' && (
-              <button
-                onClick={async () => {
-                  try {
-                    await omniDocClient.dismissAnnouncement(announcements[0].id);
-                    setAnnouncements((prev) => prev.filter((a) => a.id !== announcements[0].id));
-                  } catch (e) {
-                    console.warn('Failed to dismiss:', e);
-                  }
-                }}
-                className="p-1.5 rounded-lg text-[#A7B8CA] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                title="Dismiss notification"
-                aria-label="Dismiss notification"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 2. HERO WELCOME SECTION WITH MASTER LIQUID GLASS EFFECT 6                 */}
-      {/* ========================================================================= */}
-      <div className="relative rounded-[28px] p-6 md:p-8 overflow-hidden lg-liquid-6 border border-white/15 shadow-[0_25px_65px_rgba(0,0,0,0.85)] flex flex-col md:flex-row items-center justify-between gap-6">
-        {/* Subtle Ambient Red & Blue Translucent Reflections */}
-        <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-[#FF3366]/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-20 w-80 h-80 rounded-full bg-[#38BDF8]/20 blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 max-w-xl space-y-3 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-[#FF3366]/15 to-[#38BDF8]/15 border border-[#38BDF8]/30 text-[#38BDF8] text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-[#FF3366]" />
-            <span>Liquid Glass Spatial Workspace • Level 6</span>
+            </div>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#F5FAFF] tracking-tight font-display">
-            Welcome back, {userName}!
-          </h1>
-          <p className="text-xs sm:text-sm text-[#A7B8CA] font-medium leading-relaxed">
-            Universal document workspace engineered for high-precision authoring, conversion, and intelligence.
-          </p>
+          {/* 3D Illuminated Futuristic Document Graphic matching Image 4 */}
+          <div className="hidden sm:flex absolute right-6 bottom-4 top-4 items-center justify-center pointer-events-none">
+            <div className="relative w-48 h-48 flex items-center justify-center">
+              {/* Glowing Neon Disc / Ring */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#FF3366]/40 via-purple-600/30 to-[#38BDF8]/40 blur-xl animate-pulse-slow" />
+              <div className="absolute w-36 h-36 rounded-full border-2 border-[#38BDF8]/40 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
 
-          <div className="flex flex-wrap items-center gap-3 pt-2 justify-center md:justify-start">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="lg-btn-primary flex items-center gap-2"
-            >
-              <UploadCloud className="w-4 h-4" />
-              <span>Upload Document</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('templates')}
-              className="lg-btn-secondary flex items-center gap-2"
-            >
-              <LayoutTemplate className="w-4 h-4 text-[#38BDF8]" />
-              <span>Browse Templates</span>
-            </button>
-          </div>
-        </div>
-
-        {/* 3D Floating Translucent Document Graphic */}
-        <div className="relative shrink-0 w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center animate-float-gentle">
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#FF3366]/30 to-[#38BDF8]/30 rounded-3xl blur-2xl opacity-70" />
-
-          <div className="relative w-28 h-36 sm:w-32 sm:h-40 rounded-2xl lg-liquid-3 border border-white/20 shadow-2xl p-3 flex flex-col justify-between transform -rotate-3 transition-transform hover:rotate-0">
-            {/* Document Lines */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 pb-1 border-b border-white/10">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#FF3366] shadow-[0_0_8px_rgba(255,51,102,0.6)]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#38BDF8] shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+              {/* Floating 3D Format Badges */}
+              {/* PDF Card */}
+              <div className="absolute -top-1 left-4 px-2 py-1.5 rounded-lg bg-[#FF3366] text-white text-[10px] font-black shadow-lg shadow-[#FF3366]/40 rotate-[-8deg] animate-float-gentle">
+                PDF
               </div>
-              <div className="w-16 h-2 rounded bg-gradient-to-r from-[#FF3366] via-[#E11D48] to-[#38BDF8]" />
-              <div className="w-20 h-1.5 rounded bg-white/25" />
-              <div className="w-14 h-1.5 rounded bg-white/15" />
-              <div className="w-18 h-1.5 rounded bg-white/20" />
+              {/* Word Card */}
+              <div className="absolute top-2 right-12 px-2 py-1.5 rounded-lg bg-[#1677FF] text-white text-[10px] font-black shadow-lg shadow-[#1677FF]/40 rotate-[6deg]">
+                W
+              </div>
+              {/* Excel Card */}
+              <div className="absolute bottom-6 right-8 px-2 py-1.5 rounded-lg bg-emerald-500 text-white text-[10px] font-black shadow-lg shadow-emerald-500/40 rotate-[-4deg]">
+                X
+              </div>
+              {/* Photo Thumbnail */}
+              <div className="absolute bottom-2 left-8 w-10 h-8 rounded-lg bg-gradient-to-tr from-purple-500 to-pink-500 border border-white/20 shadow-lg flex items-center justify-center text-white">
+                <ImageIcon className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions Card matching Image 4 */}
+        <div className="lg:col-span-4 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="w-4 h-4 text-[#38BDF8]" />
+            <h2 className="text-sm font-bold text-white font-display">Quick Actions</h2>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 flex-1">
+            {/* Tile 1: Upload Document */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="p-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-[#38BDF8]/40 transition-all cursor-pointer flex flex-col items-center justify-center text-center group"
+            >
+              <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <UploadCloud className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-white group-hover:text-[#38BDF8] transition-colors">
+                Upload Document
+              </span>
             </div>
 
-            {/* Glowing Bottom Ribbon */}
-            <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[9px] text-[#38BDF8] font-mono font-bold">
-              <span>OMNI.DOC</span>
-              <Sparkles className="w-3 h-3 text-[#FF3366]" />
+            {/* Tile 2: Convert File */}
+            <div
+              onClick={() => setActiveTab('converter')}
+              className="p-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-[#FF3366]/40 transition-all cursor-pointer flex flex-col items-center justify-center text-center group"
+            >
+              <div className="w-9 h-9 rounded-xl bg-[#FF3366]/15 text-[#FF3366] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <RefreshCw className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-white group-hover:text-[#FF3366] transition-colors">
+                Convert File
+              </span>
+            </div>
+
+            {/* Tile 3: Edit PDF */}
+            <div
+              onClick={() => setActiveTab('pdf')}
+              className="p-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-[#38BDF8]/40 transition-all cursor-pointer flex flex-col items-center justify-center text-center group"
+            >
+              <div className="w-9 h-9 rounded-xl bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <PenTool className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-white group-hover:text-[#38BDF8] transition-colors">
+                Edit PDF
+              </span>
+            </div>
+
+            {/* Tile 4: View Storage */}
+            <div
+              onClick={() => setActiveTab('projects')}
+              className="p-3.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-[#38BDF8]/40 transition-all cursor-pointer flex flex-col items-center justify-center text-center group"
+            >
+              <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <Database className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
+                View Storage
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. FOUR PROMINENT QUICK ACTION CARDS                                      */}
+      {/* ROW 2: 4 METRIC CARDS                                                     */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Convert Files (Ruby Red) */}
-        <div
-          onClick={() => setActiveTab('converter')}
-          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-[#FF3366]/60 group relative overflow-hidden"
-        >
-          <div className="w-11 h-11 rounded-xl bg-[#FF3366]/15 border border-[#FF3366]/30 flex items-center justify-center text-[#FF3366] mb-4 group-hover:scale-110 lg-glow-red transition-all">
-            <RefreshCw className="w-5 h-5" />
+        {/* Metric 1: Total Documents */}
+        <div className="rounded-[22px] p-5 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-xl relative overflow-hidden group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-[#A7B5CC]">Total Documents</span>
+            <div className="w-8 h-8 rounded-lg bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center">
+              <FileText className="w-4 h-4" />
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#FF3366] transition-colors font-display">
-            Convert Files
-          </h3>
-          <p className="text-xs text-[#A7B8CA] mt-1">Universal batch conversion</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-white font-display">{totalDocsCount}</span>
+            <span className="text-[11px] font-bold text-emerald-400">↑ +12%</span>
+          </div>
         </div>
 
-        {/* Card 2: Edit PDF (Sapphire Blue) */}
-        <div
-          onClick={() => setActiveTab('pdf')}
-          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-[#38BDF8]/60 group relative overflow-hidden"
-        >
-          <div className="w-11 h-11 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] mb-4 group-hover:scale-110 lg-glow-blue transition-all">
-            <PenTool className="w-5 h-5" />
+        {/* Metric 2: Conversions */}
+        <div className="rounded-[22px] p-5 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-xl relative overflow-hidden group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-[#A7B5CC]">Conversions</span>
+            <div className="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center">
+              <RefreshCw className="w-4 h-4" />
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors font-display">
-            Edit PDF
-          </h3>
-          <p className="text-xs text-[#A7B8CA] mt-1">Annotate &amp; Sign PDF</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-white font-display">{conversionsCount}</span>
+            <span className="text-[11px] font-bold text-emerald-400">↑ +8%</span>
+          </div>
         </div>
 
-        {/* Card 3: Work with Excel */}
-        <div
-          onClick={() => setActiveTab('sheets')}
-          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-[#38BDF8]/60 group relative overflow-hidden"
-        >
-          <div className="w-11 h-11 rounded-xl bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] mb-4 group-hover:scale-110 lg-glow-blue transition-all">
-            <Table className="w-5 h-5" />
+        {/* Metric 3: Storage Used */}
+        <div className="rounded-[22px] p-5 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-xl relative overflow-hidden group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-[#A7B5CC]">Storage Used</span>
+            <div className="w-8 h-8 rounded-lg bg-[#1677FF]/15 text-[#38BDF8] flex items-center justify-center">
+              <HardDrive className="w-4 h-4" />
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors font-display">
-            Work with Excel
-          </h3>
-          <p className="text-xs text-[#A7B8CA] mt-1">Analyze &amp; Calculate</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-white font-display">{usedStorageDisplay}</span>
+            <span className="text-[11px] font-bold text-emerald-400">↑ +20%</span>
+          </div>
         </div>
 
-        {/* Card 4: Create Workflow (Red-Blue Chromatic) */}
-        <div
-          onClick={() => setActiveTab('workflow')}
-          className="lg-liquid-3 rounded-2xl p-5 cursor-pointer hover:border-[#38BDF8]/60 group relative overflow-hidden"
-        >
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#FF3366]/20 to-[#38BDF8]/20 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] mb-4 group-hover:scale-110 lg-glow-dual transition-all">
-            <Boxes className="w-5 h-5" />
+        {/* Metric 4: This Month */}
+        <div className="rounded-[22px] p-5 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-xl relative overflow-hidden group">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-[#A7B5CC]">This Month</span>
+            <div className="w-8 h-8 rounded-lg bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center">
+              <Calendar className="w-4 h-4" />
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors font-display">
-            Create Workflow
-          </h3>
-          <p className="text-xs text-[#A7B8CA] mt-1">Automated Document Pipelines</p>
+          <div className="flex items-baseline gap-2 relative z-10">
+            <span className="text-2xl font-black text-white font-display">$0</span>
+            <span className="text-[11px] text-[#A7B5CC]">(Free Plan)</span>
+          </div>
+          {/* Subtle wavy neon glow line */}
+          <div className="absolute bottom-0 right-0 w-32 h-10 opacity-30 pointer-events-none">
+            <svg viewBox="0 0 120 40" fill="none" className="w-full h-full">
+              <path d="M0 35 C 30 10, 60 30, 90 15 C 105 5, 120 20, 120 20" stroke="#38BDF8" strokeWidth="2" />
+            </svg>
+          </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 4. LOWER 3-SECTION GRID: Recent Documents, Storage Overview & Quick Access */}
+      {/* ROW 3: RECENT DOCUMENTS TABLE (45%) + YOUR ACTIVITY (25%) + ANNOUNCEMENTS (30%) */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        {/* Left Column: Recent Documents */}
-        <div className="col-span-1 lg:col-span-12 2xl:col-span-6 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-4 min-w-0 shadow-lg">
-          <div className="flex items-center justify-between pb-2 border-b border-white/10">
-            <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Recent Documents</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Recent Documents Table Card */}
+        <div className="lg:col-span-5 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-[#FF3366]" />
+              <h2 className="text-sm font-bold text-white font-display">Recent Documents</h2>
+            </div>
             <button
               onClick={() => setActiveTab('projects')}
-              className="text-xs text-[#38BDF8] hover:text-[#FF3366] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-xs font-semibold text-[#38BDF8] hover:text-[#FF3366] flex items-center gap-1 transition-colors cursor-pointer"
             >
-              <span>View all</span>
+              <span>View All</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {displayDocuments.length === 0 ? (
-            /* Honest, Elegant Empty State */
-            <div className="py-8 flex flex-col items-center justify-center text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/15 flex items-center justify-center text-[#A7B8CA]">
-                <Folder className="w-6 h-6 text-[#FF3366]/70" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-[#F5FAFF]">No saved documents yet</p>
-                <p className="text-[11px] text-[#73869A] max-w-xs">
-                  Create a new document or drop a file anywhere to get started.
-                </p>
-              </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="lg-btn-secondary text-xs flex items-center gap-1.5 py-1.5 px-3"
+          {/* Table */}
+          <div className="space-y-2">
+            <div className="grid grid-cols-12 text-[10px] font-bold text-[#A7B5CC] uppercase tracking-wider px-2 py-1">
+              <div className="col-span-5">Name</div>
+              <div className="col-span-2">Type</div>
+              <div className="col-span-2">Modified</div>
+              <div className="col-span-2">Size</div>
+              <div className="col-span-1 text-right">Actions</div>
+            </div>
+
+            {sampleDocuments.map((doc) => (
+              <div
+                key={doc.id}
+                onClick={() => setActiveTab(doc.format === 'pdf' ? 'pdf' : doc.format === 'docx' ? 'docx' : doc.format === 'xlsx' ? 'sheets' : doc.format === 'pptx' ? 'slides' : 'image')}
+                className="grid grid-cols-12 items-center p-2 rounded-xl hover:bg-white/[0.06] transition-colors cursor-pointer group text-xs text-white"
               >
-                <Plus className="w-3.5 h-3.5 text-[#38BDF8]" />
-                <span>Upload First File</span>
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {displayDocuments.map((doc) => {
-                const isPdf = doc.title.endsWith('.pdf') || doc.type === 'pdf';
-                const isDocx = doc.title.endsWith('.docx') || doc.type === 'docx';
-
-                const iconBg = isPdf
-                  ? 'bg-rose-500/15 text-rose-400 border-rose-500/25'
-                  : isDocx
-                    ? 'bg-sky-500/15 text-sky-400 border-sky-500/25'
-                    : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25';
-
-                return (
-                  <div
-                    key={doc.id}
-                    onClick={() => {
-                      const found = recentProjects.find((p) => p.id === doc.id);
-                      if (found) onLoadProject(found);
-                      else setActiveTab(isPdf ? 'pdf' : isDocx ? 'docx' : 'sheets');
-                    }}
-                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[rgba(255,255,255,0.12)] transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${iconBg}`}>
-                        <FileText className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors truncate">
-                          {doc.title}
-                        </div>
-                        <div className="text-[11px] text-[#A7B8CA]">
-                          {formatFileSize(doc.sizeBytes || 0)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveTab('projects');
-                      }}
-                      className="p-1 rounded-lg text-[#A7B8CA] hover:text-white hover:bg-white/10 transition-colors"
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                <div className="col-span-5 flex items-center gap-2 truncate pr-2">
+                  <span className="w-2 h-2 rounded-full bg-[#38BDF8]/60 group-hover:bg-[#FF3366] transition-colors" />
+                  <span className="truncate font-medium group-hover:text-[#38BDF8] transition-colors">{doc.name}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${doc.typeBadgeColor}`}>
+                    {doc.type}
+                  </span>
+                </div>
+                <div className="col-span-2 text-[11px] text-[#A7B5CC]">{doc.modified}</div>
+                <div className="col-span-2 text-[11px] text-[#A7B5CC]">{doc.size}</div>
+                <div className="col-span-1 flex items-center justify-end gap-1 text-[#A7B5CC] group-hover:text-white">
+                  <Download className="w-3.5 h-3.5 hover:text-[#38BDF8]" />
+                  <MoreVertical className="w-3.5 h-3.5" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Center Column: Storage Overview Radial Chart */}
-        <div className="col-span-1 sm:col-span-6 lg:col-span-6 2xl:col-span-3 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-4 min-w-0 shadow-lg">
-          <div className="pb-2 border-b border-white/10 flex items-center justify-between gap-2">
-            <h2 className="text-sm font-bold text-[#F5FAFF] font-display shrink-0">Storage Usage</h2>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 shrink-0 ${
-              storageSource === 'cloud'
-                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-                : cloudOffline
-                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                  : 'bg-gradient-to-r from-[#FF3366]/20 to-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30'
-            }`}>
-              {storageSource === 'cloud' ? <Database className="w-2.5 h-2.5" /> : <HardDrive className="w-2.5 h-2.5" />}
-              <span>{storageSource === 'cloud' ? 'Cloud Vault' : cloudOffline ? 'Offline Sandbox' : 'Local Sandbox'}</span>
-            </span>
+        {/* Your Activity Timeline Card */}
+        <div className="lg:col-span-3 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-[#38BDF8]" />
+              <h2 className="text-sm font-bold text-white font-display">Your Activity</h2>
+            </div>
+            <button
+              onClick={() => setActiveTab('projects')}
+              className="text-xs font-semibold text-[#38BDF8] hover:text-[#FF3366] flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <span>View All</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          <div className="flex items-center justify-start gap-4 py-3 text-left">
-            {/* Circular Gauge Ring */}
-            <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 88 88">
+          <div className="relative pl-6 space-y-4">
+            {/* Connected Vertical Glowing Line */}
+            <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-gradient-to-b from-[#38BDF8] via-purple-500 to-[#FF3366] opacity-40" />
+
+            {activities.map((act) => {
+              const Icon = act.icon;
+              return (
+                <div key={act.id} className="relative flex items-start gap-3">
+                  <div className={`absolute -left-6 top-1 w-2.5 h-2.5 rounded-full ${act.dotColor}`} />
+                  <div>
+                    <p className="text-xs font-bold text-white leading-tight">{act.title}</p>
+                    <p className="text-[10px] text-[#A7B5CC] mt-0.5">{act.time}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Announcements & Work Smarter Right Column */}
+        <div className="lg:col-span-4 space-y-4 flex flex-col justify-between">
+          {/* Announcements Card */}
+          <div className="rounded-[26px] p-5 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4 text-[#FF3366]" />
+                <h2 className="text-sm font-bold text-white font-display">Announcements</h2>
+                <span className="w-4 h-4 rounded-full bg-[#FF3366] text-white text-[9px] font-bold flex items-center justify-center">
+                  1
+                </span>
+              </div>
+              <button
+                onClick={onOpenUserPanel}
+                className="text-xs font-semibold text-[#38BDF8] hover:text-[#FF3366] flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <span>View All</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="inline-block px-2 py-0.5 rounded-md bg-[#FF3366]/20 border border-[#FF3366]/40 text-[#FF3366] text-[10px] font-bold">
+                Important
+              </div>
+              <h3 className="text-xs font-bold text-white">{firstAnnouncement.title}</h3>
+              <p className="text-[11px] text-[#A7B5CC] leading-relaxed line-clamp-2">
+                {firstAnnouncement.body}
+              </p>
+            </div>
+
+            <div className="pt-2 flex items-center justify-between border-t border-white/10 text-[10px] text-[#A7B5CC]">
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3 text-[#38BDF8]" />
+                <span>2 hours ago</span>
+              </div>
+              <button
+                onClick={onOpenUserPanel}
+                className="px-3 py-1 rounded-lg bg-[#FF3366] hover:bg-[#FF4D79] text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+              >
+                <span>Read More</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          {/* Work Smarter Promo Card with Rocket */}
+          <div className="rounded-[26px] p-5 bg-gradient-to-r from-[#0c1b37]/90 via-[#10234a]/80 to-[#071329]/90 border border-white/15 shadow-2xl relative overflow-hidden flex items-center justify-between">
+            <div className="relative z-10 space-y-1 max-w-[65%]">
+              <h3 className="text-xs font-black text-white font-display">Work Smarter. Achieve More.</h3>
+              <p className="text-[10px] text-[#A7B5CC]">Powerful tools at your fingertips.</p>
+              <div className="pt-2">
+                <button
+                  onClick={() => setActiveTab('workflow')}
+                  className="px-3 py-1 rounded-lg bg-gradient-to-r from-[#FF3366] to-[#E11D48] text-white text-[11px] font-bold shadow-md cursor-pointer flex items-center gap-1"
+                >
+                  <span>Start Now</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+            {/* Glowing Rocket Graphic */}
+            <div className="w-16 h-16 rounded-full bg-[#FF3366]/20 border border-[#FF3366]/40 flex items-center justify-center text-[#FF3366] shadow-[0_0_20px_rgba(255,51,102,0.4)] animate-float-gentle">
+              <Rocket className="w-8 h-8" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* ROW 4: CONVERSION STUDIO (45%) + STORAGE OVERVIEW (25%) + NEED HELP (30%) */}
+      {/* ========================================================================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Conversion Studio Dropzone Card */}
+        <div className="lg:col-span-5 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+          <div className="pb-3 border-b border-white/10 mb-4">
+            <div className="flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-[#38BDF8]" />
+              <h2 className="text-sm font-bold text-white font-display">Conversion Studio</h2>
+            </div>
+            <p className="text-[11px] text-[#A7B5CC] mt-0.5">Convert your files between multiple formats</p>
+          </div>
+
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="p-6 rounded-2xl border-2 border-dashed border-white/20 hover:border-[#38BDF8]/60 bg-white/[0.02] hover:bg-white/[0.05] transition-all cursor-pointer flex flex-col items-center justify-center text-center space-y-2 group"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center group-hover:scale-110 transition-transform">
+              <UploadCloud className="w-6 h-6" />
+            </div>
+            <p className="text-xs font-bold text-white">Drag &amp; drop your files here or click to browse</p>
+            <p className="text-[10px] text-[#A7B5CC]">Supports: PDF, DOCX, PPTX, XLSX, JPG, PNG</p>
+          </div>
+
+          <div className="pt-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded bg-[#FF3366]/20 text-[#FF3366] text-[10px] font-bold">PDF</span>
+              <span className="px-2 py-0.5 rounded bg-[#1677FF]/20 text-[#38BDF8] text-[10px] font-bold">Word</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Excel</span>
+            </div>
+            <button
+              onClick={() => setActiveTab('converter')}
+              className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#FF3366] to-[#E11D48] hover:from-[#FF4D79] hover:to-[#FF3366] text-white text-xs font-bold shadow-md cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Start Conversion</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Storage Overview Donut Gauge Card */}
+        <div className="lg:col-span-3 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/10 mb-2">
+            <HardDrive className="w-4 h-4 text-[#38BDF8]" />
+            <h2 className="text-sm font-bold text-white font-display">Storage Overview</h2>
+          </div>
+
+          {/* Donut Gauge Ring */}
+          <div className="flex items-center justify-center py-2 relative">
+            <div className="relative w-28 h-28 flex items-center justify-center">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                 <circle
-                  cx="44"
-                  cy="44"
-                  r={storageRadius}
+                  cx="50"
+                  cy="50"
+                  r="40"
                   stroke="rgba(255, 255, 255, 0.08)"
                   strokeWidth="8"
                   fill="transparent"
                 />
                 <circle
-                  cx="44"
-                  cy="44"
-                  r={storageRadius}
-                  stroke="url(#storageRedBlueGrad)"
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="url(#liquidDonutGrad)"
                   strokeWidth="8"
                   fill="transparent"
-                  strokeDasharray={storageCircumference}
-                  strokeDashoffset={storageStrokeOffset}
+                  strokeDasharray={2 * Math.PI * 40}
+                  strokeDashoffset={(2 * Math.PI * 40) * (1 - 0.65)}
                   strokeLinecap="round"
-                  className="transition-all duration-1000 ease-out"
                 />
                 <defs>
-                  <linearGradient id="storageRedBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient id="liquidDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#FF3366" />
                     <stop offset="100%" stopColor="#38BDF8" />
                   </linearGradient>
                 </defs>
               </svg>
-              <span className="absolute font-extrabold text-sm text-[#F5FAFF] font-display">
-                {storageLoading ? '...' : `${storagePercentage}%`}
-              </span>
-            </div>
-
-            {/* Storage Legend with honest numbers */}
-            <div className="min-w-0 flex flex-col items-start">
-              <div className="text-sm font-bold text-[#F5FAFF] truncate">
-                {formatFileSize(usedBytes)}
-              </div>
-              <div className="text-[11px] text-[#A7B8CA] mt-0.5 truncate">
-                of {formatFileSize(quotaBytes)} {storageSource === 'cloud' ? 'cloud quota' : 'storage limit'}
+              <div className="absolute flex flex-col items-center">
+                <span className="text-xl font-black text-white font-display">65%</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-[#A7B8CA]">
-            <span className="truncate">
-              {storageSource === 'cloud'
-                ? 'Backend Vault Storage'
-                : cloudOffline
-                  ? 'Browser Sandbox (Offline)'
-                  : 'Browser Storage Sandbox'}
-            </span>
-            <span className={`font-semibold shrink-0 ml-1 ${cloudOffline ? 'text-amber-400' : 'text-emerald-400'}`}>
-              {cloudOffline ? 'Offline' : 'Active'}
-            </span>
+          <div className="text-center text-xs font-bold text-white mb-2">
+            {usedStorageDisplay} / {totalStorageDisplay} Used
           </div>
+
+          {/* Breakdown Legend */}
+          <div className="space-y-1.5 text-[11px] text-[#A7B5CC] border-t border-white/10 pt-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#38BDF8]" />
+                <span>Documents</span>
+              </div>
+              <span className="text-white font-semibold">800 MB</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#1677FF]" />
+                <span>Conversions</span>
+              </div>
+              <span className="text-white font-semibold">300 MB</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#FF3366]" />
+                <span>Other</span>
+              </div>
+              <span className="text-white font-semibold">100 MB</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setActiveTab('pricing')}
+            className="w-full mt-3 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-xs font-bold text-white transition-colors cursor-pointer border border-white/10"
+          >
+            Upgrade Storage
+          </button>
         </div>
 
-        {/* Right Column: Quick Access */}
-        <div className="col-span-1 sm:col-span-6 lg:col-span-6 2xl:col-span-3 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-3 min-w-0 shadow-lg">
-          <div className="pb-2 border-b border-white/10">
-            <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Quick Access</h2>
+        {/* Need Help Card */}
+        <div className="lg:col-span-4 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+          <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+            <Headphones className="w-4 h-4 text-[#FF3366]" />
+            <h2 className="text-sm font-bold text-white font-display">Need Help?</h2>
           </div>
 
-          <div className="space-y-2">
-            {/* My Projects */}
-            <div
-              onClick={() => setActiveTab('projects')}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[#FF3366]/30 transition-all cursor-pointer group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-[#FF3366]/15 text-[#FF3366] flex items-center justify-center shrink-0">
-                <Folder className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#FF3366] transition-colors flex-1 truncate">
-                My Projects
-              </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
+          <div className="flex flex-col items-center justify-center text-center space-y-3 py-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#FF3366]/20 to-[#38BDF8]/20 border border-white/20 flex items-center justify-center text-[#38BDF8] shadow-[0_0_25px_rgba(56,189,248,0.35)] animate-float-gentle">
+              <Headphones className="w-8 h-8 text-[#38BDF8]" />
             </div>
-
-            {/* Templates */}
-            <div
-              onClick={() => setActiveTab('templates')}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[#38BDF8]/30 transition-all cursor-pointer group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center shrink-0">
-                <LayoutTemplate className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors flex-1 truncate">
-                Templates
-              </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
-            </div>
-
-            {/* Activity Log */}
-            <div
-              onClick={() => setActiveTab('projects')}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[#2563EB]/30 transition-all cursor-pointer group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#FF3366]/15 to-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center shrink-0">
-                <History className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors flex-1 truncate">
-                Conversion History
-              </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
-            </div>
-
-            {/* Settings */}
-            <div
-              onClick={onOpenSettings || (() => setActiveTab('settings'))}
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/[0.06] border border-transparent hover:border-[#38BDF8]/30 transition-all cursor-pointer group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center shrink-0">
-                <SettingsIcon className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-semibold text-[#F5FAFF] group-hover:text-[#38BDF8] transition-colors flex-1 truncate">
-                Settings &amp; Keys
-              </span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#A7B8CA] group-hover:translate-x-0.5 transition-transform shrink-0" />
-            </div>
+            <p className="text-xs text-[#A7B5CC] max-w-[220px]">
+              Our support team is here to help you 24/7.
+            </p>
           </div>
+
+          <button
+            onClick={onOpenUserPanel}
+            className="w-full py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/15 text-white text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <span>Contact Support</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </div>

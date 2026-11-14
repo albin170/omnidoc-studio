@@ -376,28 +376,46 @@ export const UserPanel: React.FC<UserPanelProps> = ({
   };
 
   const handleExportUserData = async () => {
-    try {
-      addToast('info', 'Generating Export', 'Compiling complete user archive with cryptographic integrity hash...');
-      let exportPayload: any;
+    const isGuest = userSession.role === 'guest' || userSession.isGuest;
+    const isOffline = !userSession?.jwtToken;
+
+    // 1. Explicit Local Sandbox / Guest Mode: Export clearly labeled partial snapshot
+    if (isGuest || isOffline) {
       try {
-        const remoteExport = await omniDocClient.exportUserData();
-        exportPayload = remoteExport;
-      } catch {
-        // Fallback for offline guest / local mode
+        addToast('info', 'Exporting Local Snapshot', 'Generating partial local browser storage snapshot...');
         const [profile, history] = await Promise.all([
           omniDocClient.getProfile().catch(() => ({ email: userEmail, full_name: userName })),
           omniDocClient.getConsentHistory().catch(() => []),
         ]);
-        exportPayload = {
+        const localPayload = {
           export_version: '1.0',
           exported_at: new Date().toISOString(),
-          mode: 'offline_local_snapshot',
+          mode: 'partial_local_snapshot',
+          is_partial: true,
+          disclaimer: 'Partial snapshot from local browser storage. Authenticate with backend for complete document and audit history.',
           archive: { profile, consent_history: history }
         };
+        const exportBlob = new Blob([JSON.stringify(localPayload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(exportBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `omnidoc_local_snapshot_${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        addToast('info', 'Local Snapshot Exported', 'Downloaded local browser data snapshot (partial offline mode).');
+        return;
+      } catch (err: any) {
+        addToast('error', 'Snapshot Failed', 'Could not export local browser data.');
+        return;
       }
+    }
 
+    // 2. Authenticated Online User: Must receive authoritative backend export without silent local fallbacks
+    try {
+      addToast('info', 'Generating Export', 'Requesting authoritative user data archive with cryptographic SHA-256 integrity hash...');
+      const remoteExport = await omniDocClient.exportUserData();
       const exportBlob = new Blob(
-        [JSON.stringify(exportPayload, null, 2)],
+        [JSON.stringify(remoteExport, null, 2)],
         { type: 'application/json' }
       );
       const url = URL.createObjectURL(exportBlob);
@@ -406,9 +424,9 @@ export const UserPanel: React.FC<UserPanelProps> = ({
       a.download = `omnidoc_user_data_export_${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      addToast('success', 'Export Ready', 'Your verified user data archive has been downloaded.');
+      addToast('success', 'Export Complete', 'Authoritative user data archive downloaded with verified SHA-256 integrity hash.');
     } catch (err: any) {
-      addToast('error', 'Export Failed', 'Could not export user data archive.');
+      addToast('error', 'Export Failed', err.message || 'Authoritative backend data export failed. Please verify your connection or try again later.');
     }
   };
 

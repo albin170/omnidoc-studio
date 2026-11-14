@@ -60,22 +60,27 @@ async def ensure_db_ready():
     _db_initialized = True
     import app.models  # ensure models are registered with Base metadata
     
-    # In development, testing, or sqlite-based runtime, auto-sync tables
-    if settings.ENVIRONMENT.lower() not in ("production", "prod") or "sqlite" in settings.DATABASE_URL:
+    # Safely create any missing database tables (non-destructive CREATE TABLE IF NOT EXISTS)
+    try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+    except Exception as e:
+        logger.warning(f"ensure_db_ready table synchronization warning: {e}")
             
+    try:
         async with AsyncSessionLocal() as session:
             from app.services.seed_data import seed_initial_plans_and_features
             await seed_initial_plans_and_features(session)
             await session.commit()
+    except Exception as e:
+        logger.warning(f"ensure_db_ready seed data initialization warning: {e}")
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     FastAPI dependency yielding exactly one database session per request.
     Ensures safe rollback on exception and reliable closure.
     """
-    if not _db_initialized and (settings.ENVIRONMENT.lower() not in ("production", "prod") or "sqlite" in settings.DATABASE_URL):
+    if not _db_initialized:
         await ensure_db_ready()
     
     session: AsyncSession = AsyncSessionLocal()

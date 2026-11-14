@@ -4,6 +4,8 @@ import logging
 from typing import List, Set, Optional
 from pydantic_settings import BaseSettings
 
+import secrets
+
 # Structured logging configuration
 import logging.config
 from pythonjsonlogger import jsonlogger
@@ -33,7 +35,22 @@ LOGGING_CONFIG = {
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger("omnidoc")
 
+# Ephemeral session secret generated dynamically in-memory for local dev / testing if unset
+_EPHEMERAL_DEV_SECRET = secrets.token_hex(32)
+
+# Deprecated/leaked secret value preserved only for rejection matching and backwards test compatibility
 DEFAULT_DEV_SECRET = "omnidoc_dev_sec_key_d92f8a1103c8479e2bc91e7041a384f5"
+
+KNOWN_COMPROMISED_SECRETS = frozenset([
+    DEFAULT_DEV_SECRET,
+    "omnidoc_prod_sec_key_d92f8a1103c8479e2bc91e7041a384f5_supabase_ready",
+    "secret",
+    "changeme",
+    "supersecret",
+    "default_secret",
+    "testsecret",
+    "devsecret",
+])
 
 class Settings(BaseSettings):
     # Existing fields ... (kept unchanged)
@@ -50,7 +67,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     
     # Security & Tokens
-    SECRET_KEY: str = os.getenv("SECRET_KEY", DEFAULT_DEV_SECRET)
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 24 hours
     
@@ -124,9 +141,13 @@ class Settings(BaseSettings):
             )
 
         if self.ENVIRONMENT.lower() in ("production", "prod"):
-            if not self.SECRET_KEY or self.SECRET_KEY == DEFAULT_DEV_SECRET:
+            if not self.SECRET_KEY:
                 raise ValueError(
-                    "CRITICAL SECURITY CONFIGURATION ERROR: Production mode requires a secure, non-default SECRET_KEY environment variable with at least 32 bytes of entropy."
+                    "CRITICAL SECURITY CONFIGURATION ERROR: Production mode requires a secure, explicitly configured SECRET_KEY environment variable. Fallback secrets are strictly prohibited."
+                )
+            if self.SECRET_KEY.lower() in KNOWN_COMPROMISED_SECRETS or "d92f8a1103c8479e2bc91e7041a384f5" in self.SECRET_KEY:
+                raise ValueError(
+                    "CRITICAL SECURITY CONFIGURATION ERROR: Provided SECRET_KEY matches a known compromised or default value. Production startup rejected."
                 )
             if len(self.SECRET_KEY) < 32:
                 raise ValueError(
@@ -163,7 +184,15 @@ class Settings(BaseSettings):
                     raise ValueError(
                         "CRITICAL CONFIGURATION ERROR: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be configured when STORAGE_PROVIDER=s3 in production."
                     )
+        else:
+            # Safe development / test mode fallback: use memory-only ephemeral secret if unset or compromised
+            if not self.SECRET_KEY or self.SECRET_KEY.lower() in KNOWN_COMPROMISED_SECRETS or "d92f8a1103c8479e2bc91e7041a384f5" in self.SECRET_KEY:
+                self.SECRET_KEY = _EPHEMERAL_DEV_SECRET
 
+
+    def __init__(self, **values):
+        super().__init__(**values)
+        self.validate_production_security()
 
     class Config:
         env_file = ".env"

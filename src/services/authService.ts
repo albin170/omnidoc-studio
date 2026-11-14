@@ -228,12 +228,18 @@ export async function adminLoginWithBackend(
 ): Promise<SecureAuthSession> {
   try {
     const tokenData = await omniDocClient.adminLogin(email, password);
+    const rawRole = (tokenData.role || '').toLowerCase().trim();
+    if (rawRole !== 'admin' && rawRole !== 'superadmin') {
+      throw new Error(`Unauthorized: User does not hold administrative access privileges (received role: ${tokenData.role})`);
+    }
+    const validatedRole: UserRole = rawRole as UserRole;
+
     const now = Date.now();
     const session: SecureAuthSession = {
       isGuest: false,
       userEmail: tokenData.email,
       userName: tokenData.full_name || email.split('@')[0],
-      role: 'admin',
+      role: validatedRole,
       planTier: 'enterprise',
       storageUsedBytes: 0,
       isAuthenticated: true,
@@ -250,7 +256,7 @@ export async function adminLoginWithBackend(
     };
 
     session.signature = await computeSessionSignature(session);
-    recordAuditLog('ADMIN_BACKEND_LOGIN_SUCCESS', session.userEmail || email, 'Administrative console login verified');
+    recordAuditLog('ADMIN_BACKEND_LOGIN_SUCCESS', session.userEmail || email, `Administrative console login verified with role: ${validatedRole}`);
     return session;
   } catch (err: any) {
     recordAuditLog('ADMIN_BACKEND_LOGIN_FAILED', email, err?.message || 'Admin authentication failed', 'warn');

@@ -33,9 +33,11 @@ logger = logging.getLogger("omnidoc")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if not settings.is_vercel:
-        from app.core.database import ensure_db_ready
+    from app.core.database import ensure_db_ready
+    try:
         await ensure_db_ready()
+    except Exception as e:
+        logger.warning(f"Database readiness initialization warning in lifespan: {e}")
     yield
     if not settings.is_vercel:
         await engine.dispose()

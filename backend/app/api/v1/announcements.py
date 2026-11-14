@@ -90,22 +90,29 @@ async def create_announcement(
     )
     db.add(announcement)
 
-    audit = AuditEvent(
-        org_id=admin_user.org_id,
-        user_id=admin_user.id,
-        action="CREATE_ANNOUNCEMENT",
-        target_type="Announcement",
-        target_id=ann_id,
-        details_json=json.dumps({
-            "title": announcement.title,
-            "priority": announcement.priority,
-            "audience_type": announcement.audience_type,
-            "audience_reference": announcement.audience_reference,
-            "is_published": announcement.is_published
-        }),
-        timestamp=now
-    )
-    db.add(audit)
+    audit_org_id = admin_user.org_id
+    if not audit_org_id:
+        from app.models.organization import Organization
+        found_org_id = await db.scalar(select(Organization.id).limit(1))
+        audit_org_id = found_org_id or "default-org"
+
+    if audit_org_id:
+        audit = AuditEvent(
+            org_id=audit_org_id,
+            user_id=admin_user.id,
+            action="CREATE_ANNOUNCEMENT",
+            target_type="Announcement",
+            target_id=ann_id,
+            details_json=json.dumps({
+                "title": announcement.title,
+                "priority": announcement.priority,
+                "audience_type": announcement.audience_type,
+                "audience_reference": announcement.audience_reference,
+                "is_published": announcement.is_published
+            }),
+            timestamp=now
+        )
+        db.add(audit)
 
     await db.commit()
     await db.refresh(announcement)
@@ -150,16 +157,23 @@ async def update_announcement(
     if req.is_archived is not None:
         ann.is_archived = req.is_archived
 
-    audit = AuditEvent(
-        org_id=admin_user.org_id,
-        user_id=admin_user.id,
-        action="UPDATE_ANNOUNCEMENT",
-        target_type="Announcement",
-        target_id=ann.id,
-        details_json=json.dumps({"updated_fields": [k for k, v in req.model_dump().items() if v is not None]}),
-        timestamp=utc_now()
-    )
-    db.add(audit)
+    audit_org_id = admin_user.org_id
+    if not audit_org_id:
+        from app.models.organization import Organization
+        found_org_id = await db.scalar(select(Organization.id).limit(1))
+        audit_org_id = found_org_id or "default-org"
+
+    if audit_org_id:
+        audit = AuditEvent(
+            org_id=audit_org_id,
+            user_id=admin_user.id,
+            action="UPDATE_ANNOUNCEMENT",
+            target_type="Announcement",
+            target_id=ann.id,
+            details_json=json.dumps({"updated_fields": [k for k, v in req.model_dump().items() if v is not None]}),
+            timestamp=utc_now()
+        )
+        db.add(audit)
 
     await db.commit()
     await db.refresh(ann)
@@ -185,16 +199,23 @@ async def delete_or_archive_announcement(
     ann.is_published = False
     ann.is_archived = True
 
-    audit = AuditEvent(
-        org_id=admin_user.org_id,
-        user_id=admin_user.id,
-        action="ARCHIVE_ANNOUNCEMENT",
-        target_type="Announcement",
-        target_id=ann.id,
-        details_json=json.dumps({"title": ann.title}),
-        timestamp=utc_now()
-    )
-    db.add(audit)
+    audit_org_id = admin_user.org_id
+    if not audit_org_id:
+        from app.models.organization import Organization
+        found_org_id = await db.scalar(select(Organization.id).limit(1))
+        audit_org_id = found_org_id or "default-org"
+
+    if audit_org_id:
+        audit = AuditEvent(
+            org_id=audit_org_id,
+            user_id=admin_user.id,
+            action="ARCHIVE_ANNOUNCEMENT",
+            target_type="Announcement",
+            target_id=ann.id,
+            details_json=json.dumps({"title": ann.title}),
+            timestamp=utc_now()
+        )
+        db.add(audit)
 
     await db.commit()
     return {"status": "archived", "id": announcement_id}

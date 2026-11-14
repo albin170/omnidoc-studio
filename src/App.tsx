@@ -65,7 +65,9 @@ import {
   GitCompare,
   Layers,
   LogOut,
-  AlertTriangle
+  AlertTriangle,
+  X,
+  Bell
 } from 'lucide-react';
 import { OmniDocLogo } from './components/common/OmniDocLogo';
 import { useToast } from './services/toastService';
@@ -122,8 +124,10 @@ export const App: React.FC = () => {
   const [uiConfig, setUiConfig] = useState<{
     announcement_banner?: string;
     maintenance_mode?: boolean;
+    maintenance_message?: string;
     disabled_modules?: string[];
   } | null>(null);
+  const [isAnnouncementDismissed, setIsAnnouncementDismissed] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -144,6 +148,16 @@ export const App: React.FC = () => {
       isMounted = false;
     };
   }, [userSession?.jwtToken, userSession?.isGuest]);
+
+  // Enforce Direct Navigation Protection for Disabled Modules
+  useEffect(() => {
+    if (uiConfig?.disabled_modules && uiConfig.disabled_modules.includes(activeTab)) {
+      if (activeTab !== 'dashboard' && activeTab !== 'settings' && activeTab !== 'admin') {
+        setActiveTab('dashboard');
+        addToast('warning', 'Module Unavailable', 'The requested studio module is currently disabled by administrative policy.');
+      }
+    }
+  }, [activeTab, uiConfig?.disabled_modules]);
 
   // URL Path & Hash Route Synchronization (User Portal vs Admin Portal vs Pricing)
   const initialAuthMode = useMemo<'signin' | 'signup' | 'admin'>(() => {
@@ -604,14 +618,14 @@ export const App: React.FC = () => {
 
   return (
     /* Full-Screen, 100% Viewport App Shell — Liquid Glass */
-    <div className="w-full h-screen min-h-screen m-0 p-0 overflow-hidden flex flex-col md:flex-row bg-[#03050C] text-[#F5FAFF] select-none relative font-sans">
+    <div className="w-full h-screen min-h-screen m-0 p-0 overflow-hidden flex flex-col md:flex-row bg-[#030817] text-[#F8FAFC] select-none relative font-sans">
       {/* Deep Spatial Background — Red & Blue Translucent Ambient Halos with High-Contrast Vignette */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="ambient-glow-1 absolute -top-32 -left-32 w-[540px] h-[540px] rounded-full bg-[#FF3366]/20 blur-[130px]" />
-        <div className="ambient-glow-2 absolute top-1/4 -right-32 w-[520px] h-[520px] rounded-full bg-[#38BDF8]/20 blur-[140px]" />
-        <div className="ambient-glow-3 absolute -bottom-32 left-1/4 w-[480px] h-[480px] rounded-full bg-[#2563EB]/18 blur-[130px]" />
-        {/* Dark Obsidian Spatial Vignette prevents faded haze */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(3,5,12,0.85)_100%)] pointer-events-none" />
+        <div className="ambient-glow-1 absolute -top-32 -left-32 w-[580px] h-[580px] rounded-full bg-[#FF3366]/25 blur-[140px]" />
+        <div className="ambient-glow-2 absolute top-1/4 -right-32 w-[600px] h-[600px] rounded-full bg-[#38BDF8]/25 blur-[150px]" />
+        <div className="ambient-glow-3 absolute -bottom-32 left-1/4 w-[520px] h-[520px] rounded-full bg-[#1677FF]/20 blur-[140px]" />
+        {/* Dark Obsidian Spatial Vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(3,8,23,0.85)_100%)] pointer-events-none" />
       </div>
 
       {/* Global Window Drag-and-Drop Listener */}
@@ -686,13 +700,42 @@ export const App: React.FC = () => {
 
       {/* Full-Size Dynamic Workspace Content Area */}
       <main className="flex-1 h-full flex flex-col overflow-hidden relative z-10 bg-transparent">
-        {/* Dynamic Maintenance Mode Banner */}
+        {/* Dynamic Global Administrator Announcement Banner */}
+        {uiConfig?.announcement_banner && uiConfig.announcement_banner.trim() && !isAnnouncementDismissed && (
+          <div className="w-full bg-gradient-to-r from-[#FF3366]/20 via-[#060914] to-[#38BDF8]/20 border-b border-[#38BDF8]/30 px-4 py-2.5 flex items-center justify-between text-xs text-[#F5FAFF] z-50 backdrop-blur-md shrink-0 shadow-lg animate-fade-in">
+            <div className="flex items-center gap-2.5 min-w-0 pr-3">
+              <span className="w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_8px_rgba(56,189,248,0.8)] shrink-0 animate-pulse" />
+              <span className="font-bold text-[#38BDF8] uppercase tracking-wider text-[10px] shrink-0 font-display">
+                Notice
+              </span>
+              <span className="text-xs text-[#F5FAFF] font-medium truncate">
+                {uiConfig.announcement_banner}
+              </span>
+            </div>
+            <button
+              onClick={() => setIsAnnouncementDismissed(true)}
+              className="p-1 rounded-lg hover:bg-white/10 text-[#A7B8CA] hover:text-white transition-colors cursor-pointer shrink-0"
+              title="Dismiss Notice"
+              aria-label="Dismiss Notice"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Dynamic Maintenance Mode Banner using Configured Message */}
         {uiConfig?.maintenance_mode && userSession.role !== 'admin' && userSession.role !== 'superadmin' && (
           <div className="w-full bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-amber-500/20 border-b border-amber-500/40 px-4 py-2.5 flex items-center justify-between text-xs text-amber-200 z-50 backdrop-blur-md shrink-0 shadow-lg">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-              <span className="font-bold">Maintenance Notice:</span>
-              <span>OmniDoc Cloud is performing scheduled background updates. Local studio features remain operational.</span>
+              <span className="font-bold uppercase tracking-wider text-[10px] bg-amber-500/30 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/40">
+                Maintenance Notice
+              </span>
+              <span>
+                {uiConfig.maintenance_message && uiConfig.maintenance_message.trim()
+                  ? uiConfig.maintenance_message
+                  : 'OmniDoc Cloud is performing scheduled background updates. Local studio features remain operational.'}
+              </span>
             </div>
           </div>
         )}

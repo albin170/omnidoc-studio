@@ -11,11 +11,11 @@ export const OmniDocLogo: React.FC<OmniDocLogoProps> = ({
   size = 36,
   className = '',
   showText = false,
-  textColor = 'text-slate-900',
+  textColor = 'text-[#F8FAFC]',
 }) => {
   return (
     <div className={`flex items-center gap-2.5 select-none ${className}`}>
-      {/* Unique Prismatic Multi-Document Nexus SVG Icon */}
+      {/* 3D Faceted Hexagonal Liquid Crystal Prism */}
       <svg
         width={size}
         height={size}
@@ -25,93 +25,89 @@ export const OmniDocLogo: React.FC<OmniDocLogoProps> = ({
         className="shrink-0 transition-transform hover:scale-105 duration-200"
       >
         <defs>
-          <linearGradient id="omniGrad1" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#FF3366" />
-            <stop offset="0.45" stopColor="#E11D48" />
-            <stop offset="1" stopColor="#38BDF8" />
+          <linearGradient id="hexPinkRed" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FF3366" />
+            <stop offset="50%" stopColor="#FF2E5B" />
+            <stop offset="100%" stopColor="#E11D48" />
           </linearGradient>
 
-          <linearGradient id="omniGrad2" x1="12" y1="4" x2="36" y2="40" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#FF2E5B" />
-            <stop offset="1" stopColor="#2563EB" />
+          <linearGradient id="hexCyanBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#38BDF8" />
+            <stop offset="50%" stopColor="#1677FF" />
+            <stop offset="100%" stopColor="#2563EB" />
           </linearGradient>
 
-          <linearGradient id="omniGrad3" x1="4" y1="20" x2="38" y2="44" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#38BDF8" />
-            <stop offset="1" stopColor="#60A5FA" />
+          <linearGradient id="hexPurpleTop" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FF6688" />
+            <stop offset="50%" stopColor="#9B5CFF" />
+            <stop offset="100%" stopColor="#38BDF8" />
           </linearGradient>
 
-          <filter id="omniGlow" x="0" y="0" width="48" height="48" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-            <feGaussianBlur stdDeviation="2.5" result="blur" />
+          <filter id="hexGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </defs>
 
         {/* Ambient Backing Glow */}
-        <rect x="8" y="8" width="32" height="32" rx="10" fill="url(#omniGrad1)" opacity="0.3" filter="url(#omniGlow)" />
+        <path
+          d="M24 4L42 14V34L24 44L6 34V14L24 4Z"
+          fill="url(#hexPinkRed)"
+          opacity="0.25"
+          filter="url(#hexGlow)"
+        />
 
-        {/* Background Document Leaf (Angled 12 deg) */}
-        <rect
-          x="14"
-          y="6"
-          width="24"
-          height="32"
-          rx="6"
-          fill="url(#omniGrad1)"
-          transform="rotate(8 26 22)"
+        {/* Outer Hexagon Outer Segments */}
+        {/* Top/Left Face (Pink/Magenta) */}
+        <path
+          d="M24 4L42 14L34 18.5L24 13L14 18.5L6 14L24 4Z"
+          fill="url(#hexPurpleTop)"
+        />
+        {/* Left Side Face (Hot Pink / Red) */}
+        <path
+          d="M6 14L14 18.5V29.5L6 34V14Z"
+          fill="url(#hexPinkRed)"
+        />
+        {/* Bottom Left Face */}
+        <path
+          d="M6 34L14 29.5L24 35L24 44L6 34Z"
+          fill="url(#hexPinkRed)"
+          opacity="0.9"
+        />
+        {/* Right Side Face (Cyan / Blue) */}
+        <path
+          d="M42 14L42 34L34 29.5V18.5L42 14Z"
+          fill="url(#hexCyanBlue)"
+        />
+        {/* Bottom Right Face */}
+        <path
+          d="M42 34L24 44V35L34 29.5L42 34Z"
+          fill="url(#hexCyanBlue)"
           opacity="0.85"
         />
 
-        {/* Middle Document Leaf (Angled -4 deg) */}
-        <rect
-          x="10"
-          y="8"
-          width="24"
-          height="32"
-          rx="6"
-          fill="url(#omniGrad2)"
-          transform="rotate(-4 22 24)"
-          opacity="0.9"
-        />
-
-        {/* Foreground Primary Document Page with Folded Corner */}
+        {/* Inner Floating Document Core Diamond */}
         <path
-          d="M12 12C12 8.68629 14.6863 6 18 6H28L36 14V36C36 39.3137 33.3137 42 30 42H18C14.6863 42 12 39.3137 12 36V12Z"
-          fill="#ffffff"
-          className="drop-shadow-md"
+          d="M24 16L32 21V27L24 32L16 27V21L24 16Z"
+          fill="#030817"
+          stroke="url(#hexPurpleTop)"
+          strokeWidth="1.5"
         />
 
-        {/* Folded Corner Dog-Ear */}
-        <path
-          d="M28 6V12C28 13.1046 28.8954 14 30 14H36L28 6Z"
-          fill="url(#omniGrad3)"
-        />
-
-        {/* Dynamic Multi-Doc Loop Lines (The "O" Flow) */}
-        <path
-          d="M18 20H28M18 25H30M18 30H25"
-          stroke="url(#omniGrad1)"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
-
-        {/* Central Core Spark Indicator */}
-        <circle cx="30" cy="30" r="3" fill="url(#omniGrad3)" />
+        {/* Central Core Luminescent Node */}
+        <circle cx="24" cy="24" r="2.5" fill="#38BDF8" className="animate-pulse" />
       </svg>
 
-      {/* Optional Brand Typography */}
+      {/* Brand Typography */}
       {showText && (
-        <div className="flex flex-col text-left">
+        <div className="flex flex-col text-left leading-tight">
           <div className="flex items-center gap-1.5">
-            <span className={`font-extrabold text-base tracking-tight font-display ${textColor}`}>
-              OmniDoc
-            </span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#38BDF8]/10 text-[#38BDF8] font-bold border border-[#38BDF8]/20">
-              STUDIO
+            <span className={`font-black text-sm tracking-tight font-display ${textColor}`}>
+              OmniDoc Studio
             </span>
           </div>
-          <span className="text-[10px] text-[#A7B8CA] font-medium leading-none -mt-0.5">
-            Convert, Edit &amp; Create
+          <span className="text-[10px] text-[#A7B5CC] font-medium tracking-wide">
+            Create • Convert • Organize
           </span>
         </div>
       )}
