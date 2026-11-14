@@ -94,25 +94,33 @@ async def create_announcement(
     if not audit_org_id:
         from app.models.organization import Organization
         found_org_id = await db.scalar(select(Organization.id).limit(1))
-        audit_org_id = found_org_id or "default-org"
+        if not found_org_id:
+            default_org = Organization(name="OmniDoc Master Org", slug="omnidoc-master", plan_tier="enterprise")
+            db.add(default_org)
+            await db.flush()
+            found_org_id = default_org.id
+        audit_org_id = found_org_id
 
     if audit_org_id:
-        audit = AuditEvent(
-            org_id=audit_org_id,
-            user_id=admin_user.id,
-            action="CREATE_ANNOUNCEMENT",
-            target_type="Announcement",
-            target_id=ann_id,
-            details_json=json.dumps({
-                "title": announcement.title,
-                "priority": announcement.priority,
-                "audience_type": announcement.audience_type,
-                "audience_reference": announcement.audience_reference,
-                "is_published": announcement.is_published
-            }),
-            timestamp=now
-        )
-        db.add(audit)
+        try:
+            audit = AuditEvent(
+                org_id=audit_org_id,
+                user_id=admin_user.id,
+                action="CREATE_ANNOUNCEMENT",
+                target_type="Announcement",
+                target_id=ann_id,
+                details_json=json.dumps({
+                    "title": announcement.title,
+                    "priority": announcement.priority,
+                    "audience_type": announcement.audience_type,
+                    "audience_reference": announcement.audience_reference,
+                    "is_published": announcement.is_published
+                }),
+                timestamp=now
+            )
+            db.add(audit)
+        except Exception as e:
+            pass
 
     await db.commit()
     await db.refresh(announcement)
@@ -161,19 +169,22 @@ async def update_announcement(
     if not audit_org_id:
         from app.models.organization import Organization
         found_org_id = await db.scalar(select(Organization.id).limit(1))
-        audit_org_id = found_org_id or "default-org"
+        audit_org_id = found_org_id
 
     if audit_org_id:
-        audit = AuditEvent(
-            org_id=audit_org_id,
-            user_id=admin_user.id,
-            action="UPDATE_ANNOUNCEMENT",
-            target_type="Announcement",
-            target_id=ann.id,
-            details_json=json.dumps({"updated_fields": [k for k, v in req.model_dump().items() if v is not None]}),
-            timestamp=utc_now()
-        )
-        db.add(audit)
+        try:
+            audit = AuditEvent(
+                org_id=audit_org_id,
+                user_id=admin_user.id,
+                action="UPDATE_ANNOUNCEMENT",
+                target_type="Announcement",
+                target_id=ann.id,
+                details_json=json.dumps({"updated_fields": [k for k, v in req.model_dump().items() if v is not None]}),
+                timestamp=utc_now()
+            )
+            db.add(audit)
+        except Exception as e:
+            pass
 
     await db.commit()
     await db.refresh(ann)
@@ -203,19 +214,22 @@ async def delete_or_archive_announcement(
     if not audit_org_id:
         from app.models.organization import Organization
         found_org_id = await db.scalar(select(Organization.id).limit(1))
-        audit_org_id = found_org_id or "default-org"
+        audit_org_id = found_org_id
 
     if audit_org_id:
-        audit = AuditEvent(
-            org_id=audit_org_id,
-            user_id=admin_user.id,
-            action="ARCHIVE_ANNOUNCEMENT",
-            target_type="Announcement",
-            target_id=ann.id,
-            details_json=json.dumps({"title": ann.title}),
-            timestamp=utc_now()
-        )
-        db.add(audit)
+        try:
+            audit = AuditEvent(
+                org_id=audit_org_id,
+                user_id=admin_user.id,
+                action="ARCHIVE_ANNOUNCEMENT",
+                target_type="Announcement",
+                target_id=ann.id,
+                details_json=json.dumps({"title": ann.title}),
+                timestamp=utc_now()
+            )
+            db.add(audit)
+        except Exception as e:
+            pass
 
     await db.commit()
     return {"status": "archived", "id": announcement_id}

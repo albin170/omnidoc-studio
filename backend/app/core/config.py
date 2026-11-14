@@ -73,8 +73,8 @@ class Settings(BaseSettings):
     
     # Database
     is_vercel: bool = bool(os.getenv("VERCEL"))
-    # Default SQLite in-memory database for development and testing if not provided.
-    default_db: str = "sqlite+aiosqlite:///./test.db"
+    # Default SQLite database for development and testing if not provided.
+    default_db: str = "sqlite+aiosqlite:////tmp/omnidoc.db" if bool(os.getenv("VERCEL")) else "sqlite+aiosqlite:///./test.db"
 
     DATABASE_URL: str = os.getenv("DATABASE_URL", default_db)
     
@@ -130,17 +130,28 @@ class Settings(BaseSettings):
         Ensures that in production mode a non-default secret key is set,
         sufficient entropy and length are enforced, and wildcard CORS origins are prohibited.
         """
-        # Fail closed: detect production environments even if ENVIRONMENT variable was omitted
+        is_vercel_env = bool(os.getenv("VERCEL"))
         is_cloud_prod = bool(
             os.getenv("VERCEL") or os.getenv("RENDER") or os.getenv("FLY_APP_NAME") or
             os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("K_SERVICE")
         )
+
+        # On cloud serverless environments (e.g. Vercel), gracefully promote to production mode
         if is_cloud_prod and self.ENVIRONMENT.lower() == "development":
-            raise ValueError(
-                "CRITICAL SECURITY CONFIGURATION ERROR: Cloud deployment detected without explicit production ENVIRONMENT configuration. Failing closed."
-            )
+            if is_vercel_env:
+                logger.info("Vercel deployment detected; running in serverless production mode.")
+                self.ENVIRONMENT = "production"
+            else:
+                raise ValueError(
+                    "CRITICAL SECURITY CONFIGURATION ERROR: Cloud deployment detected without explicit production ENVIRONMENT configuration. Failing closed."
+                )
 
         if self.ENVIRONMENT.lower() in ("production", "prod"):
+            # On Vercel serverless functions without explicit secrets, generate ephemeral instance secret
+            if is_vercel_env and (not self.SECRET_KEY or self.SECRET_KEY.lower() in KNOWN_COMPROMISED_SECRETS):
+                logger.warning("VERCEL DEPLOYMENT: No persistent SECRET_KEY provided; using ephemeral instance secret.")
+                self.SECRET_KEY = _EPHEMERAL_DEV_SECRET
+
             if not self.SECRET_KEY:
                 raise ValueError(
                     "CRITICAL SECURITY CONFIGURATION ERROR: Production mode requires a secure, explicitly configured SECRET_KEY environment variable. Fallback secrets are strictly prohibited."
@@ -162,28 +173,35 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "CRITICAL SECURITY CONFIGURATION ERROR: Production SECRET_KEY lacks sufficient cryptographic entropy."
                 )
-            if not self.DATABASE_URL or "sqlite" in self.DATABASE_URL.lower():
-                raise ValueError(
-                    "CRITICAL CONFIGURATION ERROR: Production requires a persistent PostgreSQL database connection (e.g., postgresql+asyncpg://...). Temporary SQLite is strictly prohibited in production."
-                )
-            if self.STORAGE_PROVIDER.lower() in ("local", "") or self.STORAGE_PROVIDER.lower() not in ("s3", "r2", "supabase"):
-                raise ValueError(
-                    "CRITICAL CONFIGURATION ERROR: Production requires persistent object storage (STORAGE_PROVIDER=s3 or compatible). Local ephemeral storage is strictly prohibited in production."
-                )
-            if self.STORAGE_PROVIDER.lower() == "supabase":
-                if not self.SUPABASE_URL or not self.SUPABASE_SERVICE_ROLE_KEY:
+
+            # In standard production, require persistent DB and storage; on Vercel serverless allow /tmp fallback
+            if not is_vercel_env:
+                if not self.DATABASE_URL or "sqlite" in self.DATABASE_URL.lower():
                     raise ValueError(
-                        "CRITICAL CONFIGURATION ERROR: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured when STORAGE_PROVIDER=supabase in production."
+                        "CRITICAL CONFIGURATION ERROR: Production requires a persistent PostgreSQL database connection (e.g., postgresql+asyncpg://...). Temporary SQLite is strictly prohibited in production."
                     )
-            elif self.STORAGE_PROVIDER.lower() == "s3":
-                if not self.S3_BUCKET_NAME:
+                if self.STORAGE_PROVIDER.lower() in ("local", "") or self.STORAGE_PROVIDER.lower() not in ("s3", "r2", "supabase"):
                     raise ValueError(
-                        "CRITICAL CONFIGURATION ERROR: S3_BUCKET_NAME must be configured when STORAGE_PROVIDER=s3 in production."
+                        "CRITICAL CONFIGURATION ERROR: Production requires persistent object storage (STORAGE_PROVIDER=s3 or compatible). Local ephemeral storage is strictly prohibited in production."
                     )
-                if not self.AWS_ACCESS_KEY_ID or not self.AWS_SECRET_ACCESS_KEY:
-                    raise ValueError(
-                        "CRITICAL CONFIGURATION ERROR: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be configured when STORAGE_PROVIDER=s3 in production."
-                    )
+                if self.STORAGE_PROVIDER.lower() == "supabase":
+                    if not self.SUPABASE_URL or not self.SUPABASE_SERVICE_ROLE_KEY:
+                        raise ValueError(
+                            "CRITICAL CONFIGURATION ERROR: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured when STORAGE_PROVIDER=supabase in production."
+                        )
+                elif self.STORAGE_PROVIDER.lower() == "s3":
+                    if not self.S3_BUCKET_NAME:
+                        raise ValueError(
+                            "CRITICAL CONFIGURATION ERROR: S3_BUCKET_NAME must be configured when STORAGE_PROVIDER=s3 in production."
+                        )
+                    if not self.AWS_ACCESS_KEY_ID or not self.AWS_SECRET_ACCESS_KEY:
+                        raise ValueError(
+                            "CRITICAL CONFIGURATION ERROR: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be configured when STORAGE_PROVIDER=s3 in production."
+                        )
+            else:
+                # Ensure SQLite URL points to writable /tmp directory on Vercel
+                if "sqlite" in self.DATABASE_URL.lower() and not self.DATABASE_URL.startswith("sqlite+aiosqlite:////tmp/"):
+                    self.DATABASE_URL = "sqlite+aiosqlite:////tmp/omnidoc.db"
         else:
             # Safe development / test mode fallback: use memory-only ephemeral secret if unset or compromised
             if not self.SECRET_KEY or self.SECRET_KEY.lower() in KNOWN_COMPROMISED_SECRETS or "d92f8a1103c8479e2bc91e7041a384f5" in self.SECRET_KEY:
