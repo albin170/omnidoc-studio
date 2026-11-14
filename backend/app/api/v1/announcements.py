@@ -9,6 +9,7 @@ from sqlalchemy import select, func, or_, and_, update
 from app.core.database import get_db, utc_now
 from app.core.security import get_current_user
 from app.models.user import User
+from app.models.organization import Organization
 from app.models.announcement import Announcement, AnnouncementRead
 from app.models.audit import AuditEvent
 from app.schemas.announcement import (
@@ -89,20 +90,22 @@ async def create_announcement(
         is_archived=False
     )
     db.add(announcement)
+    await db.commit()
+    await db.refresh(announcement)
 
-    audit_org_id = admin_user.org_id
-    if not audit_org_id:
-        from app.models.organization import Organization
-        found_org_id = await db.scalar(select(Organization.id).limit(1))
-        if not found_org_id:
-            default_org = Organization(name="OmniDoc Master Org", slug="omnidoc-master", plan_tier="enterprise")
-            db.add(default_org)
-            await db.flush()
-            found_org_id = default_org.id
-        audit_org_id = found_org_id
+    # Safe asynchronous audit logging without blocking or failing publication
+    try:
+        audit_org_id = admin_user.org_id
+        if not audit_org_id:
+            found_org_id = await db.scalar(select(Organization.id).limit(1))
+            if not found_org_id:
+                default_org = Organization(name="OmniDoc Master Org", slug="omnidoc-master", plan_tier="enterprise")
+                db.add(default_org)
+                await db.flush()
+                found_org_id = default_org.id
+            audit_org_id = found_org_id
 
-    if audit_org_id:
-        try:
+        if audit_org_id:
             audit = AuditEvent(
                 org_id=audit_org_id,
                 user_id=admin_user.id,
@@ -119,11 +122,9 @@ async def create_announcement(
                 timestamp=now
             )
             db.add(audit)
-        except Exception as e:
-            pass
-
-    await db.commit()
-    await db.refresh(announcement)
+            await db.commit()
+    except Exception:
+        await db.rollback()
 
     return _announcement_to_out(announcement, creator=admin_user)
 
@@ -165,14 +166,16 @@ async def update_announcement(
     if req.is_archived is not None:
         ann.is_archived = req.is_archived
 
-    audit_org_id = admin_user.org_id
-    if not audit_org_id:
-        from app.models.organization import Organization
-        found_org_id = await db.scalar(select(Organization.id).limit(1))
-        audit_org_id = found_org_id
+    await db.commit()
+    await db.refresh(ann)
 
-    if audit_org_id:
-        try:
+    try:
+        audit_org_id = admin_user.org_id
+        if not audit_org_id:
+            found_org_id = await db.scalar(select(Organization.id).limit(1))
+            audit_org_id = found_org_id
+
+        if audit_org_id:
             audit = AuditEvent(
                 org_id=audit_org_id,
                 user_id=admin_user.id,
@@ -183,11 +186,9 @@ async def update_announcement(
                 timestamp=utc_now()
             )
             db.add(audit)
-        except Exception as e:
-            pass
-
-    await db.commit()
-    await db.refresh(ann)
+            await db.commit()
+    except Exception:
+        await db.rollback()
 
     return _announcement_to_out(ann, creator=admin_user)
 
@@ -209,15 +210,15 @@ async def delete_or_archive_announcement(
 
     ann.is_published = False
     ann.is_archived = True
+    await db.commit()
 
-    audit_org_id = admin_user.org_id
-    if not audit_org_id:
-        from app.models.organization import Organization
-        found_org_id = await db.scalar(select(Organization.id).limit(1))
-        audit_org_id = found_org_id
+    try:
+        audit_org_id = admin_user.org_id
+        if not audit_org_id:
+            found_org_id = await db.scalar(select(Organization.id).limit(1))
+            audit_org_id = found_org_id
 
-    if audit_org_id:
-        try:
+        if audit_org_id:
             audit = AuditEvent(
                 org_id=audit_org_id,
                 user_id=admin_user.id,
@@ -228,10 +229,10 @@ async def delete_or_archive_announcement(
                 timestamp=utc_now()
             )
             db.add(audit)
-        except Exception as e:
-            pass
+            await db.commit()
+    except Exception:
+        await db.rollback()
 
-    await db.commit()
     return {"status": "archived", "id": announcement_id}
 
 

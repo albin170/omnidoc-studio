@@ -50,14 +50,7 @@ export const Modals: React.FC<ModalsProps> = ({
     onCloseAuth();
   };
 
-  const handleSwitchGuest = () => {
-    onUpdateSession({
-      isGuest: true,
-      userName: 'Guest User',
-      storageUsedBytes: userSession.storageUsedBytes,
-    });
-    onCloseAuth();
-  };
+
 
   return (
     <>
@@ -118,14 +111,7 @@ export const Modals: React.FC<ModalsProps> = ({
               </div>
             </div>
 
-            <div className="pt-2 flex items-center justify-between border-t border-white/10">
-              <button
-                onClick={handleSwitchGuest}
-                className="text-xs text-[#A7B8CA] hover:text-[#38BDF8] transition-colors cursor-pointer"
-              >
-                Use Anonymous Mode
-              </button>
-
+            <div className="pt-2 flex items-center justify-end border-t border-white/10">
               <div className="flex items-center gap-2">
                 <button
                   onClick={onCloseAuth}

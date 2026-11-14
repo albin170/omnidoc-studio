@@ -195,16 +195,24 @@ async def record_admin_audit(
         "new_value": new_value,
         "note": note
     }
-    audit = AuditEvent(
-        org_id=admin.org_id,
-        user_id=admin.id,
-        action=action,
-        target_type=target_type,
-        target_id=target_id,
-        details_json=json.dumps(details),
-        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
-    )
-    db.add(audit)
+    org_id = admin.org_id
+    if not org_id:
+        org_id = await db.scalar(select(Organization.id).limit(1))
+    if not org_id:
+        return
+    try:
+        audit = AuditEvent(
+            org_id=org_id,
+            user_id=admin.id,
+            action=action,
+            target_type=target_type,
+            target_id=target_id,
+            details_json=json.dumps(details),
+            timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
+        )
+        db.add(audit)
+    except Exception:
+        pass
 
 # ===================== 1. Admin Authentication =====================
 

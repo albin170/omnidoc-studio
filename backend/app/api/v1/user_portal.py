@@ -316,9 +316,7 @@ async def export_my_user_data(
     # Record Audit Event safely
     audit_org = current_user.org_id
     if not audit_org:
-        from app.models.organization import Organization
-        found_org = await db.scalar(select(Organization.id).limit(1))
-        audit_org = found_org or "default-org"
+        audit_org = await db.scalar(select(Organization.id).limit(1))
 
     if audit_org:
         audit = AuditEvent(

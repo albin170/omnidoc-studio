@@ -428,16 +428,20 @@ async def logout(
         )
         db.add(revocation)
 
-        audit = AuditEvent(
-            org_id=current_user.org_id,
-            user_id=current_user.id,
-            action="AUTH_LOGOUT",
-            target_type="user",
-            target_id=current_user.id,
-            details_json=json.dumps({"jti": jti}),
-            timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
-        )
-        db.add(audit)
+        org_id = current_user.org_id
+        if not org_id:
+            org_id = await db.scalar(select(Organization.id).limit(1))
+        if org_id:
+            audit = AuditEvent(
+                org_id=org_id,
+                user_id=current_user.id,
+                action="AUTH_LOGOUT",
+                target_type="user",
+                target_id=current_user.id,
+                details_json=json.dumps({"jti": jti}),
+                timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
+            )
+            db.add(audit)
 
         # Safely clean up expired revocation records
         await db.execute(
@@ -496,15 +500,19 @@ async def forgot_password(
         )
         db.add(reset_record)
 
-        audit = AuditEvent(
-            org_id=user.org_id,
-            user_id=user.id,
-            action="AUTH_PASSWORD_RESET_REQUESTED",
-            target_type="user",
-            target_id=user.id,
-            timestamp=now
-        )
-        db.add(audit)
+        org_id = user.org_id
+        if not org_id:
+            org_id = await db.scalar(select(Organization.id).limit(1))
+        if org_id:
+            audit = AuditEvent(
+                org_id=org_id,
+                user_id=user.id,
+                action="AUTH_PASSWORD_RESET_REQUESTED",
+                target_type="user",
+                target_id=user.id,
+                timestamp=now
+            )
+            db.add(audit)
         await db.commit()
 
         # Dispatch reset instructions via configured email service (Section 5.A)
@@ -589,16 +597,20 @@ async def reset_password(
     # Invalidate all prior sessions/tokens for this user via server-controlled session version (Section 2.B)
     user.token_version = (user.token_version or 1) + 1
 
-    audit = AuditEvent(
-        org_id=user.org_id,
-        user_id=user.id,
-        action="AUTH_PASSWORD_RESET_SUCCESS",
-        target_type="user",
-        target_id=user.id,
-        details_json=json.dumps({"token_version": user.token_version}),
-        timestamp=now
-    )
-    db.add(audit)
+    org_id = user.org_id
+    if not org_id:
+        org_id = await db.scalar(select(Organization.id).limit(1))
+    if org_id:
+        audit = AuditEvent(
+            org_id=org_id,
+            user_id=user.id,
+            action="AUTH_PASSWORD_RESET_SUCCESS",
+            target_type="user",
+            target_id=user.id,
+            details_json=json.dumps({"token_version": user.token_version}),
+            timestamp=now
+        )
+        db.add(audit)
     await db.commit()
 
     return {

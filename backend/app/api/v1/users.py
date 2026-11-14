@@ -88,16 +88,20 @@ async def change_password(
         }
     )
 
-    audit = AuditEvent(
-        org_id=current_user.org_id,
-        user_id=current_user.id,
-        action="USER_PASSWORD_CHANGED",
-        target_type="user",
-        target_id=current_user.id,
-        details_json=json.dumps({"token_version": current_user.token_version}),
-        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
-    )
-    db.add(audit)
+    user_audit_org = current_user.org_id
+    if not user_audit_org:
+        user_audit_org = await db.scalar(select(Organization.id).limit(1))
+    if user_audit_org:
+        audit = AuditEvent(
+            org_id=user_audit_org,
+            user_id=current_user.id,
+            action="USER_PASSWORD_CHANGED",
+            target_type="user",
+            target_id=current_user.id,
+            details_json=json.dumps({"token_version": current_user.token_version}),
+            timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
+        )
+        db.add(audit)
     await db.commit()
 
     return {
@@ -154,21 +158,25 @@ async def delete_my_account(
     current_user.full_name = "Purged Account"
     current_user.hashed_password = "ACCOUNT_PURGED"
 
-    audit = AuditEvent(
-        org_id=current_user.org_id,
-        user_id=current_user.id,
-        action="USER_ACCOUNT_PURGED",
-        target_type="user",
-        target_id=current_user.id,
-        details_json=json.dumps({
-            "purged_documents_count": len(user_docs),
-            "purged_files_count": purged_files,
-            "status": "purged_and_anonymized",
-            "timestamp": now.isoformat()
-        }),
-        timestamp=now
-    )
-    db.add(audit)
+    purge_audit_org = current_user.org_id
+    if not purge_audit_org:
+        purge_audit_org = await db.scalar(select(Organization.id).limit(1))
+    if purge_audit_org:
+        audit = AuditEvent(
+            org_id=purge_audit_org,
+            user_id=current_user.id,
+            action="USER_ACCOUNT_PURGED",
+            target_type="user",
+            target_id=current_user.id,
+            details_json=json.dumps({
+                "purged_documents_count": len(user_docs),
+                "purged_files_count": purged_files,
+                "status": "purged_and_anonymized",
+                "timestamp": now.isoformat()
+            }),
+            timestamp=now
+        )
+        db.add(audit)
     await db.commit()
 
     return {

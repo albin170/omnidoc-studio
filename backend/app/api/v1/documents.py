@@ -165,16 +165,20 @@ async def upload_document(
 
         db.add(new_doc)
 
-        audit = AuditEvent(
-            org_id=current_user.org_id,
-            user_id=current_user.id,
-            action="DOCUMENT_UPLOADED",
-            target_type="document",
-            target_id=doc_id,
-            details_json=json.dumps({"filename": filename, "file_size": file_size}),
-            timestamp=datetime.now(timezone.utc).replace(tzinfo=None).replace(tzinfo=None)
-        )
-        db.add(audit)
+        doc_org_id = current_user.org_id
+        if not doc_org_id:
+            doc_org_id = await db.scalar(select(Organization.id).limit(1))
+        if doc_org_id:
+            audit = AuditEvent(
+                org_id=doc_org_id,
+                user_id=current_user.id,
+                action="DOCUMENT_UPLOADED",
+                target_type="document",
+                target_id=doc_id,
+                details_json=json.dumps({"filename": filename, "file_size": file_size}),
+                timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
+            )
+            db.add(audit)
 
         await db.commit()
         await db.refresh(new_doc)
@@ -320,16 +324,20 @@ async def delete_document(
     except Exception as cleanup_err:
         logger.warning("Storage file deletion error during document delete: %s", cleanup_err)
 
-    audit = AuditEvent(
-        org_id=current_user.org_id,
-        user_id=current_user.id,
-        action="DOCUMENT_DELETED",
-        target_type="document",
-        target_id=doc.id,
-        details_json=json.dumps({"filename": doc.filename, "file_size": doc.file_size}),
-        timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
-    )
-    db.add(audit)
+    del_org_id = current_user.org_id or doc.org_id
+    if not del_org_id:
+        del_org_id = await db.scalar(select(Organization.id).limit(1))
+    if del_org_id:
+        audit = AuditEvent(
+            org_id=del_org_id,
+            user_id=current_user.id,
+            action="DOCUMENT_DELETED",
+            target_type="document",
+            target_id=doc.id,
+            details_json=json.dumps({"filename": doc.filename, "file_size": doc.file_size}),
+            timestamp=datetime.now(timezone.utc).replace(tzinfo=None)
+        )
+        db.add(audit)
 
     await db.delete(doc)
     await db.commit()

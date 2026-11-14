@@ -206,24 +206,6 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
     }
   };
 
-  const handleGuestEntry = async () => {
-    setIsLoading(true);
-    try {
-      const guestSession = await createSecureSession(
-        'guest@omnidoc.io',
-        'Guest Architect',
-        'user',
-        'free'
-      );
-      guestSession.isGuest = true;
-      guestSession.rememberMe = false;
-      onAuthenticate(guestSession);
-      addToast('info', 'Guest Mode', 'Guest session active. All local document studios are available.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#03050C]/95 backdrop-blur-2xl overflow-y-auto select-none">
       {/* Dynamic Spatial Ambient Lighting — Red & Blue */}
@@ -645,19 +627,6 @@ export const AuthGateway: React.FC<AuthGatewayProps> = ({ onAuthenticate, initia
                 </button>
               </form>
             )}
-          </div>
-
-          {/* Quick Sandbox / Offline Studio Launch */}
-          <div className="pt-4 mt-3 border-t border-[rgba(255, 255, 255,0.12)] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <span className="text-[#A7B8CA]">Want to test offline first?</span>
-            <button
-              type="button"
-              onClick={handleGuestEntry}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-white/[0.07] to-white/[0.04] hover:from-white/[0.14] hover:to-white/[0.08] text-[#F5FAFF] font-bold border border-white/20 hover:border-[#38BDF8]/50 shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all cursor-pointer flex items-center gap-1.5"
-            >
-              <span>Instant Guest Mode (No Sign Up)</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#38BDF8]" />
-            </button>
           </div>
         </div>
       </div>

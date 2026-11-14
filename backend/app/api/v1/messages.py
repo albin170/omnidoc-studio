@@ -9,6 +9,7 @@ from sqlalchemy import select, func, or_, and_, update
 from app.core.database import get_db, utc_now
 from app.core.security import get_current_user
 from app.models.user import User
+from app.models.organization import Organization
 from app.models.message import Message
 from app.models.audit import AuditEvent
 from app.schemas.message import (
@@ -74,26 +75,35 @@ async def send_direct_message(
         created_at=utc_now()
     )
     db.add(message)
-
-    # 3. Record audit event
-    audit = AuditEvent(
-        org_id=admin_user.org_id,
-        user_id=admin_user.id,
-        action="SEND_DIRECT_MESSAGE",
-        target_type="User",
-        target_id=recipient.id,
-        details_json=json.dumps({
-            "message_id": msg_id,
-            "subject": req.subject.strip(),
-            "priority": req.priority,
-            "recipient_email": recipient.email
-        }),
-        timestamp=utc_now()
-    )
-    db.add(audit)
-
     await db.commit()
     await db.refresh(message)
+
+    # 3. Record audit event safely
+    try:
+        audit_org_id = admin_user.org_id
+        if not audit_org_id:
+            found_org_id = await db.scalar(select(Organization.id).limit(1))
+            audit_org_id = found_org_id
+
+        if audit_org_id:
+            audit = AuditEvent(
+                org_id=audit_org_id,
+                user_id=admin_user.id,
+                action="SEND_DIRECT_MESSAGE",
+                target_type="User",
+                target_id=recipient.id,
+                details_json=json.dumps({
+                    "message_id": msg_id,
+                    "subject": req.subject.strip(),
+                    "priority": req.priority,
+                    "recipient_email": recipient.email
+                }),
+                timestamp=utc_now()
+            )
+            db.add(audit)
+            await db.commit()
+    except Exception:
+        await db.rollback()
 
     return _message_to_out(message, sender=admin_user, recipient=recipient)
 
