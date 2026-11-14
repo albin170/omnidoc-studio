@@ -172,4 +172,38 @@ describe('Verified PDF Content Sanitization & Redaction Engine', () => {
     const textRepr = new TextDecoder('latin1').decode(modifiedBytes);
     expect(textRepr.includes('175000')).toBe(false);
   });
+
+  it('prevents ArrayBuffer detachment during multiple consecutive exports and views', async () => {
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const page = doc.addPage([400, 400]);
+    page.drawText('Detached ArrayBuffer Resilience Test', { x: 50, y: 350, size: 12, font });
+    const savedBytes = await doc.save();
+    const arrayBuffer = savedBytes.buffer.slice(savedBytes.byteOffset, savedBytes.byteOffset + savedBytes.byteLength) as ArrayBuffer;
+
+    const { loadPdfForViewing, applyPdfModifications, verifyPdfIntegrity } = await import('../services/pdfService');
+
+    // 1. Initial load for viewing
+    const pdfJsDoc = await loadPdfForViewing(arrayBuffer);
+    expect(pdfJsDoc.numPages).toBe(1);
+    // Buffer must NOT be detached
+    expect(arrayBuffer.byteLength).toBeGreaterThan(0);
+
+    // 2. Export / modifications on the buffer
+    const modified = await applyPdfModifications(arrayBuffer, []);
+    expect(modified.byteLength).toBeGreaterThan(0);
+    expect(arrayBuffer.byteLength).toBeGreaterThan(0);
+
+    // 3. Blob creation must never throw Construct on detached ArrayBuffer
+    expect(() => new Blob([new Uint8Array(modified)])).not.toThrow();
+
+    // 4. Verify integrity
+    const verify = await verifyPdfIntegrity(modified);
+    expect(verify.valid).toBe(true);
+
+    // 5. Re-load into viewing without detaching
+    const secondViewDoc = await loadPdfForViewing(arrayBuffer);
+    expect(secondViewDoc.numPages).toBe(1);
+    expect(arrayBuffer.byteLength).toBeGreaterThan(0);
+  });
 });

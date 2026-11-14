@@ -18,11 +18,30 @@ export interface PDFPageInfo {
 }
 
 /**
+ * Convert any ArrayBuffer or Uint8Array into a safe, independent Uint8Array clone
+ * Prevents Web Worker ArrayBuffer transfer detachment issues.
+ */
+export function toSafeUint8Array(input: ArrayBuffer | Uint8Array): Uint8Array {
+  if (!input) return new Uint8Array(0);
+  if (input instanceof Uint8Array) {
+    if (input.buffer.byteLength === 0) {
+      throw new Error('PDF data buffer has been detached or cleared.');
+    }
+    return new Uint8Array(input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength));
+  }
+  if (input.byteLength === 0) {
+    throw new Error('PDF ArrayBuffer has been detached or is empty.');
+  }
+  return new Uint8Array(input.slice(0));
+}
+
+/**
  * Load a PDF document for rendering via PDF.js
  */
 export async function loadPdfForViewing(data: ArrayBuffer | Uint8Array) {
   try {
-    const loadingTask = pdfjsLib.getDocument({ data });
+    const dataCopy = toSafeUint8Array(data);
+    const loadingTask = pdfjsLib.getDocument({ data: dataCopy });
     return await loadingTask.promise;
   } catch (err: any) {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
@@ -159,7 +178,7 @@ export async function mergePdfFiles(pdfBuffers: ArrayBuffer[]): Promise<Uint8Arr
   const mergedPdf = await PDFDocument.create();
 
   for (const buffer of pdfBuffers) {
-    const donorPdf = await PDFDocument.load(buffer, { ignoreEncryption: true });
+    const donorPdf = await PDFDocument.load(toSafeUint8Array(buffer), { ignoreEncryption: true });
     const copiedPages = await mergedPdf.copyPages(donorPdf, donorPdf.getPageIndices());
     copiedPages.forEach((page) => mergedPdf.addPage(page));
   }
@@ -175,7 +194,7 @@ export async function splitPdfByRange(
   startPage: number,
   endPage: number
 ): Promise<Uint8Array> {
-  const srcPdf = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const srcPdf = await PDFDocument.load(toSafeUint8Array(pdfBuffer), { ignoreEncryption: true });
   const totalPages = srcPdf.getPageCount();
   const validStart = Math.max(1, startPage);
   const validEnd = Math.min(totalPages, endPage);
@@ -205,7 +224,7 @@ export async function manipulatePdfPages(
   }[],
   pageOrder?: number[]
 ): Promise<Uint8Array> {
-  const srcPdf = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const srcPdf = await PDFDocument.load(toSafeUint8Array(pdfBuffer), { ignoreEncryption: true });
   const newPdf = await PDFDocument.create();
   const total = srcPdf.getPageCount();
 
@@ -251,7 +270,7 @@ export async function insertBlankPage(
   width: number = 612,
   height: number = 792
 ): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const pdfDoc = await PDFDocument.load(toSafeUint8Array(pdfBuffer), { ignoreEncryption: true });
   const idx = atIndex !== undefined && atIndex >= 0 ? Math.min(atIndex, pdfDoc.getPageCount()) : pdfDoc.getPageCount();
   pdfDoc.insertPage(idx, [width, height]);
   return await pdfDoc.save();
@@ -264,7 +283,7 @@ export async function deletePdfPage(
   pdfBuffer: ArrayBuffer | Uint8Array,
   pageIndex: number
 ): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const pdfDoc = await PDFDocument.load(toSafeUint8Array(pdfBuffer), { ignoreEncryption: true });
   if (pdfDoc.getPageCount() <= 1) {
     throw new Error('Cannot delete the only page of a document.');
   }
@@ -281,7 +300,7 @@ export async function duplicatePdfPage(
   pdfBuffer: ArrayBuffer | Uint8Array,
   pageIndex: number
 ): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const pdfDoc = await PDFDocument.load(toSafeUint8Array(pdfBuffer), { ignoreEncryption: true });
   if (pageIndex >= 0 && pageIndex < pdfDoc.getPageCount()) {
     const [copied] = await pdfDoc.copyPages(pdfDoc, [pageIndex]);
     pdfDoc.insertPage(pageIndex + 1, copied);
@@ -297,7 +316,7 @@ export async function rotatePdfPage(
   pageIndex: number,
   deltaDegrees: number = 90
 ): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const pdfDoc = await PDFDocument.load(toSafeUint8Array(pdfBuffer), { ignoreEncryption: true });
   if (pageIndex >= 0 && pageIndex < pdfDoc.getPageCount()) {
     const page = pdfDoc.getPage(pageIndex);
     const currentAngle = page.getRotation().angle;
@@ -313,7 +332,7 @@ export async function reorderPdfPages(
   pdfBuffer: ArrayBuffer | Uint8Array,
   newOrder: number[]
 ): Promise<Uint8Array> {
-  const srcPdf = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const srcPdf = await PDFDocument.load(toSafeUint8Array(pdfBuffer), { ignoreEncryption: true });
   const newPdf = await PDFDocument.create();
   const total = srcPdf.getPageCount();
   const validOrder = newOrder.filter((idx) => idx >= 0 && idx < total);
@@ -329,7 +348,7 @@ export async function extractSelectedPages(
   pdfBuffer: ArrayBuffer | Uint8Array,
   selectedIndices: number[]
 ): Promise<Uint8Array> {
-  const srcPdf = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const srcPdf = await PDFDocument.load(toSafeUint8Array(pdfBuffer), { ignoreEncryption: true });
   const newPdf = await PDFDocument.create();
   const total = srcPdf.getPageCount();
   const validIndices = selectedIndices.filter((idx) => idx >= 0 && idx < total);
@@ -348,7 +367,7 @@ export async function verifyPdfIntegrity(
   pdfBytes: ArrayBuffer | Uint8Array
 ): Promise<{ valid: boolean; isValid: boolean; pageCount: number; sizeBytes: number; error?: string }> {
   try {
-    const data = pdfBytes instanceof Uint8Array ? pdfBytes : new Uint8Array(pdfBytes);
+    const data = toSafeUint8Array(pdfBytes);
     const doc = await PDFDocument.load(data, { ignoreEncryption: true });
     const pageCount = doc.getPageCount();
     return { 
@@ -358,7 +377,10 @@ export async function verifyPdfIntegrity(
       sizeBytes: data.byteLength 
     };
   } catch (err: any) {
-    const size = pdfBytes instanceof Uint8Array ? pdfBytes.byteLength : pdfBytes.byteLength;
+    let size = 0;
+    try {
+      size = pdfBytes ? (pdfBytes as any).byteLength || 0 : 0;
+    } catch {}
     return { 
       valid: false, 
       isValid: false, 
@@ -381,7 +403,8 @@ export async function applyPdfModifications(
     textEdits?: PdfTextEdit[];
   }
 ): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const safeData = toSafeUint8Array(pdfBuffer);
+  const pdfDoc = await PDFDocument.load(safeData, { ignoreEncryption: true });
   const pages = pdfDoc.getPages();
   const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);

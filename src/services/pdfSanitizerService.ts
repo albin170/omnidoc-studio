@@ -210,7 +210,10 @@ export async function sanitizeAndRedactPdf(
   pdfData: ArrayBuffer | Uint8Array,
   redactions: RedactionTarget[]
 ): Promise<SanitizedPdfResult> {
-  const pdfDoc = await PDFDocument.load(pdfData);
+  const safeData = pdfData instanceof Uint8Array
+    ? new Uint8Array(pdfData.buffer.slice(pdfData.byteOffset, pdfData.byteOffset + pdfData.byteLength))
+    : new Uint8Array(pdfData.slice(0));
+  const pdfDoc = await PDFDocument.load(safeData);
   const totalPages = pdfDoc.getPageCount();
 
   // Step 1: Strip document metadata and XMP catalog streams

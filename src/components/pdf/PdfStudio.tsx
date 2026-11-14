@@ -157,8 +157,9 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setStatusMessage('Loading PDF document...');
       setFileName(file.name);
       const buffer = await file.arrayBuffer();
-      setPdfBytes(buffer);
-      const doc = await loadPdfForViewing(buffer);
+      const safeBuffer = buffer.slice(0);
+      setPdfBytes(safeBuffer);
+      const doc = await loadPdfForViewing(safeBuffer.slice(0));
       setPdfJsDoc(doc);
       setNumPages(doc.numPages);
       setCurrentPage(1);
@@ -233,7 +234,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setIsProcessing(true);
       saveToHistory();
       const reorderedBytes = await reorderPdfPages(pdfBytes, newOrder);
-      const newBuffer = reorderedBytes.buffer as ArrayBuffer;
+      const newBuffer = reorderedBytes.buffer.slice(reorderedBytes.byteOffset, reorderedBytes.byteOffset + reorderedBytes.byteLength) as ArrayBuffer;
       setPdfBytes(newBuffer);
       const doc = await loadPdfForViewing(newBuffer);
       setPdfJsDoc(doc);
@@ -272,7 +273,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setIsProcessing(true);
       saveToHistory();
       const updated = await insertBlankPage(pdfBytes, currentPage);
-      const newBuffer = updated.buffer as ArrayBuffer;
+      const newBuffer = updated.buffer.slice(updated.byteOffset, updated.byteOffset + updated.byteLength) as ArrayBuffer;
       setPdfBytes(newBuffer);
       const doc = await loadPdfForViewing(newBuffer);
       setPdfJsDoc(doc);
@@ -295,7 +296,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setIsProcessing(true);
       saveToHistory();
       const updated = await deletePdfPage(pdfBytes, pageIdx);
-      const newBuffer = updated.buffer as ArrayBuffer;
+      const newBuffer = updated.buffer.slice(updated.byteOffset, updated.byteOffset + updated.byteLength) as ArrayBuffer;
       setPdfBytes(newBuffer);
       const doc = await loadPdfForViewing(newBuffer);
       setPdfJsDoc(doc);
@@ -315,7 +316,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setIsProcessing(true);
       saveToHistory();
       const updated = await duplicatePdfPage(pdfBytes, pageIdx);
-      const newBuffer = updated.buffer as ArrayBuffer;
+      const newBuffer = updated.buffer.slice(updated.byteOffset, updated.byteOffset + updated.byteLength) as ArrayBuffer;
       setPdfBytes(newBuffer);
       const doc = await loadPdfForViewing(newBuffer);
       setPdfJsDoc(doc);
@@ -334,7 +335,7 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       setIsProcessing(true);
       saveToHistory();
       const updated = await rotatePdfPage(pdfBytes, pageIdx, delta);
-      const newBuffer = updated.buffer as ArrayBuffer;
+      const newBuffer = updated.buffer.slice(updated.byteOffset, updated.byteOffset + updated.byteLength) as ArrayBuffer;
       setPdfBytes(newBuffer);
       const doc = await loadPdfForViewing(newBuffer);
       setPdfJsDoc(doc);
@@ -711,16 +712,22 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
         throw new Error(verifyReport.error || 'Failed to verify output PDF structure');
       }
 
-      // Re-load the verified bytes into current view
-      const newBuffer = modifiedBytes.buffer as ArrayBuffer;
-      setPdfBytes(newBuffer);
-      const doc = await loadPdfForViewing(newBuffer);
+      // 1. Create a safe copy of modified bytes and trigger download
+      const exportCopy = new Uint8Array(modifiedBytes.slice());
+      const blob = new Blob([exportCopy], { type: 'application/pdf' });
+      saveAs(blob, fileName.replace('.pdf', '_edited.pdf'));
+      confetti({ particleCount: 50, spread: 60 });
+
+      // 2. Re-load verified bytes into current view
+      const freshBuffer = exportCopy.buffer.slice(
+        exportCopy.byteOffset,
+        exportCopy.byteOffset + exportCopy.byteLength
+      ) as ArrayBuffer;
+      setPdfBytes(freshBuffer);
+      const doc = await loadPdfForViewing(freshBuffer);
       setPdfJsDoc(doc);
       setTextEdits({});
 
-      const blob = new Blob([modifiedBytes as any], { type: 'application/pdf' });
-      saveAs(blob, fileName.replace('.pdf', '_edited.pdf'));
-      confetti({ particleCount: 50, spread: 60 });
       setStatusMessage(
         `Verified: ${verifyReport.pageCount} pages.${zeroLeakVerified ? ' Zero-leak verification confirmed.' : ''} Download started.`
       );
@@ -738,7 +745,8 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
     try {
       setIsProcessing(true);
       const splitBytes = await splitPdfByRange(pdfBytes, splitRange.start, splitRange.end);
-      const blob = new Blob([splitBytes as any], { type: 'application/pdf' });
+      const exportCopy = new Uint8Array(splitBytes.slice());
+      const blob = new Blob([exportCopy], { type: 'application/pdf' });
       saveAs(blob, `${fileName.replace('.pdf', '')}_pages_${splitRange.start}-${splitRange.end}.pdf`);
       setIsSplitModalOpen(false);
       setStatusMessage(`Extracted pages ${splitRange.start} through ${splitRange.end}`);
@@ -759,9 +767,12 @@ export const PdfStudio: React.FC<PdfStudioProps> = ({
       const secondBuffer = await file.arrayBuffer();
       const mergedBytes = await mergePdfFiles([pdfBytes, secondBuffer]);
 
-      const newBuffer = mergedBytes.buffer as ArrayBuffer;
-      setPdfBytes(newBuffer);
-      const doc = await loadPdfForViewing(newBuffer);
+      const freshBuffer = mergedBytes.buffer.slice(
+        mergedBytes.byteOffset,
+        mergedBytes.byteOffset + mergedBytes.byteLength
+      ) as ArrayBuffer;
+      setPdfBytes(freshBuffer);
+      const doc = await loadPdfForViewing(freshBuffer);
       setPdfJsDoc(doc);
       setNumPages(doc.numPages);
       setStatusMessage(`Merged! Total pages now: ${doc.numPages}`);

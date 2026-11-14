@@ -132,7 +132,29 @@ export const App: React.FC = () => {
     maintenance_message?: string;
     disabled_modules?: string[];
   } | null>(null);
-  const [isAnnouncementDismissed, setIsAnnouncementDismissed] = useState(false);
+  const [dismissedNoticeKey, setDismissedNoticeKey] = useState<string>(() => {
+    try {
+      return localStorage.getItem('omnidoc_dismissed_notice_v1') || '';
+    } catch {
+      return '';
+    }
+  });
+
+  const isBannerDismissed = Boolean(
+    uiConfig?.announcement_banner &&
+    dismissedNoticeKey &&
+    dismissedNoticeKey === uiConfig.announcement_banner.trim()
+  );
+
+  const handleDismissBanner = () => {
+    if (uiConfig?.announcement_banner) {
+      const trimmed = uiConfig.announcement_banner.trim();
+      try {
+        localStorage.setItem('omnidoc_dismissed_notice_v1', trimmed);
+      } catch {}
+      setDismissedNoticeKey(trimmed);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -706,25 +728,47 @@ export const App: React.FC = () => {
       {/* Full-Size Dynamic Workspace Content Area */}
       <main className="flex-1 h-full flex flex-col overflow-hidden relative z-10 bg-transparent">
         {/* Dynamic Global Administrator Announcement Banner */}
-        {uiConfig?.announcement_banner && uiConfig.announcement_banner.trim() && !isAnnouncementDismissed && (
-          <div className="w-full bg-gradient-to-r from-[#FF3366]/20 via-[#060914] to-[#38BDF8]/20 border-b border-[#38BDF8]/30 px-4 py-2.5 flex items-center justify-between text-xs text-[#F5FAFF] z-50 backdrop-blur-md shrink-0 shadow-lg animate-fade-in">
-            <div className="flex items-center gap-2.5 min-w-0 pr-3">
-              <span className="w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_8px_rgba(56,189,248,0.8)] shrink-0 animate-pulse" />
-              <span className="font-bold text-[#38BDF8] uppercase tracking-wider text-[10px] shrink-0 font-display">
-                Notice
-              </span>
-              <span className="text-xs text-[#F5FAFF] font-medium truncate">
+        {uiConfig?.announcement_banner && uiConfig.announcement_banner.trim() && !isBannerDismissed && (
+          <div className="w-full bg-[#0c1b37]/95 backdrop-blur-2xl border-b border-[#38BDF8]/35 px-4 py-2 flex items-center justify-between text-xs text-[#F5FAFF] z-50 shadow-[0_4px_25px_rgba(0,0,0,0.6)] animate-fade-in shrink-0">
+            <div className="flex items-center gap-3 min-w-0 pr-3 flex-1">
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#38BDF8]/15 border border-[#38BDF8]/40 shrink-0">
+                <span className="w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_8px_rgba(56,189,248,0.9)] animate-pulse" />
+                <span className="font-extrabold text-[#38BDF8] uppercase tracking-wider text-[10px] font-display">
+                  Notice
+                </span>
+              </div>
+              <span className="text-xs text-[#F5FAFF] font-medium leading-relaxed">
                 {uiConfig.announcement_banner}
               </span>
             </div>
-            <button
-              onClick={() => setIsAnnouncementDismissed(true)}
-              className="p-1 rounded-lg hover:bg-white/10 text-[#A7B8CA] hover:text-white transition-colors cursor-pointer shrink-0"
-              title="Dismiss Notice"
-              aria-label="Dismiss Notice"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {(userSession.role === 'admin' || userSession.role === 'superadmin') && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await omniDocClient.updateAdminUiConfig({ announcement_banner: '' });
+                      setUiConfig((prev) => (prev ? { ...prev, announcement_banner: '' } : null));
+                      addToast('info', 'Notice Cleared', 'Global banner has been removed for all workspace users.');
+                    } catch (e: any) {
+                      addToast('error', 'Clear Failed', e?.message || 'Could not update UI config.');
+                    }
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/10 text-[10px] text-[#A7B5CC] hover:text-white transition-colors cursor-pointer border border-white/10 hidden sm:inline-flex items-center gap-1"
+                  title="Clear notice globally (Administrator)"
+                >
+                  <span>Clear Notice</span>
+                </button>
+              )}
+              <button
+                onClick={handleDismissBanner}
+                className="p-1 rounded-lg hover:bg-white/10 text-[#A7B8CA] hover:text-white transition-colors cursor-pointer"
+                title="Dismiss Notice"
+                aria-label="Dismiss Notice"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
 
