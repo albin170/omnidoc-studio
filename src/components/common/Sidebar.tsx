@@ -183,16 +183,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Headphones,
       customAction: onOpenHelp,
     },
-    ...(userRole === 'admin' || userRole === 'superadmin'
-      ? [
-        {
-          id: 'admin',
-          tab: 'admin' as WorkspaceTab,
-          label: 'Admin Console',
-          icon: ShieldAlert,
-        },
-      ]
-      : []),
+    {
+      id: 'admin',
+      tab: 'admin' as WorkspaceTab,
+      label: 'Admin Console',
+      icon: ShieldAlert,
+      badge: (userRole === 'admin' || userRole === 'superadmin') ? 'ACTIVE' : 'GOV',
+      badgeColor: 'pink',
+    },
   ];
 
   const handleSelectNav = (item: typeof navItems[0]) => {
@@ -304,7 +302,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     isCollapsed ? 'justify-center p-2.5' : 'justify-between px-3 py-2.5'
                   } ${
                     isActive
-                      ? 'bg-[#FF3366] text-white font-bold shadow-[0_0_20px_rgba(255,51,102,0.5)]'
+                      ? 'bg-gradient-to-r from-[#FF3366] to-[#E11D48] text-white font-bold shadow-[0_4px_20px_rgba(255,51,102,0.45)] border border-white/25'
                       : 'text-[#A7B5CC] hover:text-white hover:bg-white/[0.06]'
                   }`}
                 >

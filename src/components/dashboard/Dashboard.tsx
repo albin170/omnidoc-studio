@@ -207,7 +207,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 text-[#F8FAFC] custom-scrollbar bg-transparent relative select-none"
+      className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-8 space-y-6 text-[#F8FAFC] custom-scrollbar bg-transparent relative select-none"
     >
       {/* Hidden File Input */}
       <input
@@ -326,7 +326,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Welcome Hero Card with Continuous Multi-Layer Animations */}
-        <div className="lg:col-span-8 rounded-[26px] p-6 sm:p-8 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[220px] group">
+        <div className="lg:col-span-8 rounded-[26px] p-6 sm:p-8 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[220px] group liquid-glass-card">
           {/* Ambient Glowing Liquid Reflection */}
           <div className="ambient-glow-1 absolute -top-20 -left-20 w-80 h-80 rounded-full bg-[#FF3366]/25 blur-3xl pointer-events-none" />
           <div className="ambient-glow-2 absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-[#38BDF8]/25 blur-3xl pointer-events-none" />
@@ -361,15 +361,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               {/* Floating 3D Format Badges bobbing continuously */}
               {/* PDF Card */}
-              <div className="absolute top-1 left-3 px-2 py-1 rounded-lg bg-[#FF3366] text-white text-[10px] font-black shadow-lg shadow-[#FF3366]/50 rotate-[-8deg] animate-float-gentle">
+              <div className="absolute top-1 left-3 px-2 py-1 rounded-lg bg-[#FF3366] text-white text-[10px] font-black shadow-lg shadow-[#FF3366]/50 rotate-[-8deg] animate-float-gentle border border-white/20">
                 PDF
               </div>
               {/* Word Card */}
-              <div className="absolute top-3 right-8 px-2 py-1 rounded-lg bg-[#1677FF] text-white text-[10px] font-black shadow-lg shadow-[#1677FF]/50 rotate-[6deg] animate-float-slow">
+              <div className="absolute top-3 right-8 px-2 py-1 rounded-lg bg-[#1677FF] text-white text-[10px] font-black shadow-lg shadow-[#1677FF]/50 rotate-[6deg] animate-float-slow border border-white/20">
                 W
               </div>
               {/* Excel Card */}
-              <div className="absolute bottom-6 right-6 px-2 py-1 rounded-lg bg-emerald-500 text-white text-[10px] font-black shadow-lg shadow-emerald-500/50 rotate-[-4deg] animate-float-gentle">
+              <div className="absolute bottom-6 right-6 px-2 py-1 rounded-lg bg-emerald-500 text-white text-[10px] font-black shadow-lg shadow-emerald-500/50 rotate-[-4deg] animate-float-gentle border border-white/20">
                 X
               </div>
               {/* Photo Card */}
@@ -381,7 +381,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Quick Actions Card with Interactive Hover Motion */}
-        <div className="lg:col-span-4 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+        <div className="lg:col-span-4 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between liquid-glass-card">
           <div className="flex items-center gap-2 mb-4">
             <Zap className="w-4 h-4 text-[#38BDF8] animate-pulse" />
             <h2 className="text-sm font-bold text-white font-display">Quick Actions</h2>
@@ -737,7 +737,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Glowing Pulsing Animated Rocket Graphic */}
             <div className="relative w-16 h-16 flex items-center justify-center animate-float-gentle">
               {/* Rocket Thruster Flame Halo */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#FF3366] to-[#38BDF8] blur-md opacity-40 animate-pulse" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#FF3366] to-[#38BDF8] blur-md opacity-50 animate-pulse" />
+              {/* Animated Thruster Flame */}
+              <div className="absolute -bottom-2 w-4 h-6 rounded-full bg-gradient-to-b from-[#FF3366] via-amber-400 to-transparent blur-xs animate-thruster-flame pointer-events-none" />
               <div className="relative w-14 h-14 rounded-2xl bg-[#0c1b37] border border-white/20 flex items-center justify-center text-[#FF3366] shadow-[0_0_20px_rgba(255,51,102,0.4)]">
                 <Rocket className="w-7 h-7 text-[#FF3366]" />
               </div>
@@ -751,7 +753,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Conversion Studio Dropzone Card */}
-        <div className="lg:col-span-5 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+        <div className="lg:col-span-5 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between liquid-glass-card">
           <div className="pb-3 border-b border-white/10 mb-4">
             <div className="flex items-center gap-2">
               <RefreshCw className="w-4 h-4 text-[#38BDF8]" />
@@ -760,22 +762,51 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <p className="text-[11px] text-[#A7B5CC] mt-0.5">Convert your files between multiple formats</p>
           </div>
 
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="p-6 rounded-2xl border-2 border-dashed border-white/20 hover:border-[#38BDF8]/60 bg-white/[0.02] hover:bg-white/[0.05] transition-all cursor-pointer flex flex-col items-center justify-center text-center space-y-2 group shadow-inner"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center group-hover:scale-110 group-hover:bg-[#38BDF8]/25 transition-all shadow-[0_0_15px_rgba(56,189,248,0.2)]">
-              <UploadCloud className="w-6 h-6 animate-pulse" />
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+            {/* Dropzone */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="sm:col-span-8 p-5 rounded-2xl border-2 border-dashed border-white/20 hover:border-[#38BDF8]/60 bg-white/[0.02] hover:bg-white/[0.05] transition-all cursor-pointer flex flex-col items-center justify-center text-center space-y-2 group shadow-inner"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-[#38BDF8]/15 text-[#38BDF8] flex items-center justify-center group-hover:scale-110 group-hover:bg-[#38BDF8]/25 transition-all shadow-[0_0_15px_rgba(56,189,248,0.2)]">
+                <UploadCloud className="w-6 h-6 animate-pulse" />
+              </div>
+              <p className="text-xs font-bold text-white">Drag &amp; drop your files here or click to browse</p>
+              <p className="text-[10px] text-[#A7B5CC]">Supports: PDF, DOCX, PPTX, XLSX, JPG, PNG</p>
             </div>
-            <p className="text-xs font-bold text-white">Drag &amp; drop your files here or click to browse</p>
-            <p className="text-[10px] text-[#A7B5CC]">Supports: PDF, DOCX, PPTX, XLSX, JPG, PNG</p>
+
+            {/* Floating 3D Format Badges Platform matching Image 4 */}
+            <div className="hidden sm:flex sm:col-span-4 flex-col items-center justify-center relative py-2">
+              <div className="relative w-28 h-28 flex items-center justify-center">
+                {/* Glowing Base Platform */}
+                <div className="absolute bottom-1 w-24 h-6 rounded-full bg-gradient-to-r from-[#FF3366]/30 via-[#38BDF8]/40 to-[#FF3366]/30 blur-md animate-pulse" />
+                <div className="absolute bottom-2 w-20 h-4 rounded-full border border-white/20 bg-white/5" />
+
+                {/* 3D Stacked Badges */}
+                {/* PDF */}
+                <div className="absolute top-2 -left-1 px-2.5 py-1.5 rounded-xl bg-[#FF3366] text-white text-[10px] font-black shadow-lg shadow-[#FF3366]/40 rotate-[-10deg] animate-float-gentle border border-white/20 flex items-center gap-1">
+                  <FileText className="w-3 h-3" />
+                  <span>PDF</span>
+                </div>
+                {/* Word */}
+                <div className="absolute top-5 right-0 px-2.5 py-1.5 rounded-xl bg-[#1677FF] text-white text-[10px] font-black shadow-lg shadow-[#1677FF]/40 rotate-[8deg] animate-float-slow border border-white/20 flex items-center gap-1">
+                  <span className="font-serif font-black">W</span>
+                </div>
+                {/* Excel */}
+                <div className="absolute bottom-4 left-6 px-2.5 py-1.5 rounded-xl bg-emerald-500 text-white text-[10px] font-black shadow-lg shadow-emerald-500/40 rotate-[-4deg] animate-float-reverse border border-white/20 flex items-center gap-1">
+                  <Table className="w-3 h-3" />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="pt-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="pt-4 flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5">
               <span className="px-2 py-0.5 rounded bg-[#FF3366]/20 text-[#FF3366] text-[10px] font-bold">PDF</span>
               <span className="px-2 py-0.5 rounded bg-[#1677FF]/20 text-[#38BDF8] text-[10px] font-bold">Word</span>
               <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Excel</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">PPT</span>
+              <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-400 text-[10px] font-bold">Image</span>
             </div>
             <button
               onClick={() => setActiveTab('converter')}
@@ -788,7 +819,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Storage Overview Donut Gauge Card (AUTHENTIC STORAGE) */}
-        <div className="lg:col-span-3 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+        <div className="lg:col-span-3 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between liquid-glass-card">
           <div className="flex items-center gap-2 pb-3 border-b border-white/10 mb-2">
             <HardDrive className="w-4 h-4 text-[#38BDF8]" />
             <h2 className="text-sm font-bold text-white font-display">Storage Overview</h2>
@@ -869,14 +900,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Need Help Card */}
-        <div className="lg:col-span-4 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between">
+        <div className="lg:col-span-4 rounded-[26px] p-6 bg-[#0c1b37]/65 backdrop-blur-2xl border border-white/15 shadow-2xl flex flex-col justify-between liquid-glass-card">
           <div className="flex items-center gap-2 pb-3 border-b border-white/10">
             <Headphones className="w-4 h-4 text-[#FF3366]" />
             <h2 className="text-sm font-bold text-white font-display">Need Help?</h2>
           </div>
 
           <div className="flex flex-col items-center justify-center text-center space-y-3 py-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#FF3366]/20 to-[#38BDF8]/20 border border-white/20 flex items-center justify-center text-[#38BDF8] shadow-[0_0_25px_rgba(56,189,248,0.35)] animate-float-gentle">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#FF3366]/20 to-[#38BDF8]/20 border border-white/20 flex items-center justify-center text-[#38BDF8] shadow-[0_0_25px_rgba(56,189,248,0.35)] animate-float-gentle relative">
+              <div className="absolute inset-0 rounded-full border border-[#38BDF8]/40 animate-ping opacity-25 pointer-events-none" />
               <Headphones className="w-8 h-8 text-[#38BDF8]" />
             </div>
             <p className="text-xs text-[#A7B5CC] max-w-[220px]">

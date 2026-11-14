@@ -67,7 +67,12 @@ import {
   LogOut,
   AlertTriangle,
   X,
-  Bell
+  Bell,
+  LayoutDashboard,
+  RefreshCw,
+  FileText,
+  FolderArchive,
+  ShieldAlert
 } from 'lucide-react';
 import { OmniDocLogo } from './components/common/OmniDocLogo';
 import { useToast } from './services/toastService';
@@ -1043,6 +1048,85 @@ export const App: React.FC = () => {
           />
         )}
       </main>
+
+      {/* Floating Liquid Glass Mobile Navigation Dock (iOS / Android / Mobile Gadgets) */}
+      <nav className="fixed bottom-3 inset-x-3 md:hidden z-40 p-1.5 rounded-2xl bg-[#071329]/90 backdrop-blur-2xl border border-white/20 shadow-[0_10px_35px_rgba(0,0,0,0.6)] flex items-center justify-around">
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'dashboard'
+              ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-bold shadow-md scale-105'
+              : 'text-[#A7B5CC] hover:text-white'
+          }`}
+          title="Dashboard"
+        >
+          <LayoutDashboard className="w-4 h-4" />
+          <span className="text-[10px] mt-0.5">Home</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('converter')}
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'converter'
+              ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-bold shadow-md scale-105'
+              : 'text-[#A7B5CC] hover:text-white'
+          }`}
+          title="Convert"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span className="text-[10px] mt-0.5">Convert</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('pdf')}
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'pdf'
+              ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-bold shadow-md scale-105'
+              : 'text-[#A7B5CC] hover:text-white'
+          }`}
+          title="PDF Studio"
+        >
+          <FileText className="w-4 h-4" />
+          <span className="text-[10px] mt-0.5">PDF</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('projects')}
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'projects'
+              ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-bold shadow-md scale-105'
+              : 'text-[#A7B5CC] hover:text-white'
+          }`}
+          title="Documents"
+        >
+          <FolderArchive className="w-4 h-4" />
+          <span className="text-[10px] mt-0.5">Files</span>
+        </button>
+
+        {(userSession.role === 'admin' || userSession.role === 'superadmin') ? (
+          <button
+            onClick={() => setActiveTab('admin')}
+            className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'admin'
+                ? 'bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-bold shadow-md scale-105'
+                : 'text-[#A7B5CC] hover:text-white'
+            }`}
+            title="Admin Console"
+          >
+            <ShieldAlert className="w-4 h-4 text-amber-400" />
+            <span className="text-[10px] mt-0.5">Admin</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-[#A7B5CC] hover:text-white transition-all cursor-pointer"
+            title="More Studios"
+          >
+            <Menu className="w-4 h-4" />
+            <span className="text-[10px] mt-0.5">More</span>
+          </button>
+        )}
+      </nav>
 
       {/* User & Billing Panel */}
       <UserPanel
