@@ -57,6 +57,7 @@ interface SidebarProps {
   onOpenWhatIf?: () => void;
   onOpenCollab?: () => void;
   onOpenDeveloper?: () => void;
+  disabledModules?: string[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -83,6 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenWhatIf,
   onOpenCollab,
   onOpenDeveloper,
+  disabledModules = [],
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -176,6 +178,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setActiveTab(tab);
     if (onCloseMobile) onCloseMobile();
   };
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (!disabledModules || disabledModules.length === 0) return true;
+    if (item.tab === 'dashboard' || item.tab === 'settings' || item.tab === 'admin') return true;
+    return !disabledModules.includes(item.tab);
+  });
 
   const userInitial = userName ? userName[0].toUpperCase() : 'D';
 
@@ -274,7 +282,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Navigation Links */}
           <nav className="flex-1 min-h-0 space-y-1 overflow-y-auto pr-0.5 custom-scrollbar">
-            {navItems.map((item, idx) => {
+            {visibleNavItems.map((item, idx) => {
               const Icon = item.icon;
               const isActive = activeTab === item.tab;
 

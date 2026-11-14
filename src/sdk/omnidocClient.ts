@@ -267,6 +267,19 @@ export class OmniDocApiClient {
     return res.json();
   }
 
+  public async exportUserData(): Promise<{
+    status: string;
+    export_version: string;
+    exported_at: string;
+    user_id: string;
+    checksum_sha256: string;
+    archive: any;
+  }> {
+    const res = await fetch(`${this.baseUrl}/users/me/export`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to export user archive: ${res.statusText}`);
+    return res.json();
+  }
+
   public async updateProfile(fullName: string): Promise<any> {
     const res = await fetch(`${this.baseUrl}/users/me`, {
       method: 'PUT',

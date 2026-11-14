@@ -530,9 +530,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* ========================================================================= */}
       {/* 4. LOWER 3-SECTION GRID: Recent Documents, Storage Overview & Quick Access */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-5 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         {/* Left Column: Recent Documents */}
-        <div className="col-span-1 md:col-span-2 xl:col-span-6 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-4 min-w-0">
+        <div className="col-span-1 lg:col-span-12 2xl:col-span-6 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-4 min-w-0 shadow-lg">
           <div className="flex items-center justify-between pb-2 border-b border-white/10">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Recent Documents</h2>
             <button
@@ -617,9 +617,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Center Column: Storage Overview Radial Chart */}
-        <div className="col-span-1 md:col-span-1 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-4 min-w-[260px]">
-          <div className="pb-2 border-b border-[rgba(255,255,255,0.1)] flex items-center justify-between gap-1">
-            <h2 className="text-sm font-bold text-[#F5FAFF] font-display truncate">Storage Usage</h2>
+        <div className="col-span-1 sm:col-span-6 lg:col-span-6 2xl:col-span-3 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-4 min-w-0 shadow-lg">
+          <div className="pb-2 border-b border-white/10 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-bold text-[#F5FAFF] font-display shrink-0">Storage Usage</h2>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold flex items-center gap-1 shrink-0 ${
               storageSource === 'cloud'
                 ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
@@ -632,9 +632,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row xl:flex-col 2xl:flex-row items-center justify-center gap-4 py-3 text-center sm:text-left xl:text-center 2xl:text-left">
+          <div className="flex items-center justify-start gap-4 py-3 text-left">
             {/* Circular Gauge Ring */}
-            <div className="relative w-22 h-22 flex items-center justify-center shrink-0">
+            <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 88 88">
                 <circle
                   cx="44"
@@ -663,14 +663,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </linearGradient>
                 </defs>
               </svg>
-              <span className="absolute font-extrabold text-base text-[#F5FAFF] font-display">
+              <span className="absolute font-extrabold text-sm text-[#F5FAFF] font-display">
                 {storageLoading ? '...' : `${storagePercentage}%`}
               </span>
             </div>
 
             {/* Storage Legend with honest numbers */}
-            <div className="min-w-0 flex flex-col items-center sm:items-start xl:items-center 2xl:items-start">
-              <div className="text-xs font-bold text-[#F5FAFF] truncate">
+            <div className="min-w-0 flex flex-col items-start">
+              <div className="text-sm font-bold text-[#F5FAFF] truncate">
                 {formatFileSize(usedBytes)}
               </div>
               <div className="text-[11px] text-[#A7B8CA] mt-0.5 truncate">
@@ -679,12 +679,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[rgba(255,255,255,0.1)] flex items-center justify-between text-[11px] text-[#A7B8CA]">
+          <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-[#A7B8CA]">
             <span className="truncate">
               {storageSource === 'cloud'
                 ? 'Backend Vault Storage'
                 : cloudOffline
-                  ? 'Browser Sandbox (Server Offline)'
+                  ? 'Browser Sandbox (Offline)'
                   : 'Browser Storage Sandbox'}
             </span>
             <span className={`font-semibold shrink-0 ml-1 ${cloudOffline ? 'text-amber-400' : 'text-emerald-400'}`}>
@@ -694,8 +694,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Right Column: Quick Access */}
-        <div className="col-span-1 md:col-span-1 xl:col-span-3 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-3 min-w-[260px]">
-          <div className="pb-2 border-b border-[rgba(255,255,255,0.1)]">
+        <div className="col-span-1 sm:col-span-6 lg:col-span-6 2xl:col-span-3 lg-secondary rounded-2xl p-5 border border-white/15 flex flex-col justify-between space-y-3 min-w-0 shadow-lg">
+          <div className="pb-2 border-b border-white/10">
             <h2 className="text-sm font-bold text-[#F5FAFF] font-display">Quick Access</h2>
           </div>
 

@@ -264,3 +264,119 @@ async def test_direct_messaging_and_announcements_lifecycle(client: AsyncClient,
     res_arch_ann = await client.delete(f"/api/v1/announcements/{ann_crit_id}", headers=admin_headers)
     assert res_arch_ann.status_code == 200
     assert res_arch_ann.json()["status"] == "archived"
+
+
+@pytest.mark.asyncio
+async def test_announcement_effective_plan_scheduling_and_suspension(client: AsyncClient, db_session: AsyncSession):
+    """
+    Test Phase 3 requirements:
+    1. Organization plan inheritance for users without individual overrides
+    2. Individual plan overrides taking strict precedence over org plan
+    3. Future-scheduled announcements are hidden until published_at
+    4. Inactive/suspended users are denied with 403 Forbidden
+    """
+    # 1. Pro Organization
+    pro_org = Organization(name="Pro Enterprise Corp", slug="pro-corp", plan_tier="pro")
+    db_session.add(pro_org)
+    await db_session.flush()
+
+    admin = User(
+        email="admin_sched@omnidoc.io",
+        hashed_password=get_password_hash("AdminPass123!"),
+        full_name="Admin Scheduler",
+        role="admin",
+        is_active=True,
+        org_id=pro_org.id
+    )
+    # User C has NO individual override -> should inherit "pro" from pro_org
+    user_c = User(
+        email="user_c@omnidoc.io",
+        hashed_password=get_password_hash("UserPass123!"),
+        full_name="User C Inherited Pro",
+        role="user",
+        individual_plan_tier=None,
+        is_active=True,
+        org_id=pro_org.id
+    )
+    # User D is in pro_org but has individual override "free" -> should resolve to "free"
+    user_d = User(
+        email="user_d@omnidoc.io",
+        hashed_password=get_password_hash("UserPass123!"),
+        full_name="User D Override Free",
+        role="user",
+        individual_plan_tier="free",
+        is_active=True,
+        org_id=pro_org.id
+    )
+    # User E is suspended / inactive
+    user_e = User(
+        email="user_e@omnidoc.io",
+        hashed_password=get_password_hash("UserPass123!"),
+        full_name="User E Suspended",
+        role="user",
+        is_active=False,
+        org_id=pro_org.id
+    )
+    db_session.add_all([admin, user_c, user_d, user_e])
+    await db_session.commit()
+
+    admin_token = create_access_token({"sub": admin.id, "email": admin.email, "role": "admin"})
+    user_c_token = create_access_token({"sub": user_c.id, "email": user_c.email, "role": "user"})
+    user_d_token = create_access_token({"sub": user_d.id, "email": user_d.email, "role": "user"})
+    user_e_token = create_access_token({"sub": user_e.id, "email": user_e.email, "role": "user"})
+
+    admin_headers = {"Authorization": f"Bearer {admin_token}"}
+    user_c_headers = {"Authorization": f"Bearer {user_c_token}"}
+    user_d_headers = {"Authorization": f"Bearer {user_d_token}"}
+    user_e_headers = {"Authorization": f"Bearer {user_e_token}"}
+
+    # Create plan-targeted announcement for 'pro'
+    res_pro = await client.post(
+        "/api/v1/announcements",
+        headers=admin_headers,
+        json={
+            "title": "Pro Exclusives",
+            "body": "Welcome Pro tier users to advanced features.",
+            "priority": "important",
+            "audience_type": "plan",
+            "audience_reference": "pro",
+            "is_published": True
+        }
+    )
+    assert res_pro.status_code == 201
+    pro_ann_id = res_pro.json()["id"]
+
+    # Create a future-scheduled announcement (published_at in 2 hours)
+    future_time = (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+    res_future = await client.post(
+        "/api/v1/announcements",
+        headers=admin_headers,
+        json={
+            "title": "Future Scheduled Notice",
+            "body": "This notice should NOT be visible yet.",
+            "priority": "informational",
+            "audience_type": "all",
+            "published_at": future_time,
+            "is_published": True
+        }
+    )
+    assert res_future.status_code == 201
+    future_ann_id = res_future.json()["id"]
+
+    # Verify User C (inherited Pro): sees the Pro announcement, does NOT see future announcement
+    res_c = await client.get("/api/v1/announcements/active", headers=user_c_headers)
+    assert res_c.status_code == 200
+    c_ids = [item["id"] for item in res_c.json()["items"]]
+    assert pro_ann_id in c_ids
+    assert future_ann_id not in c_ids
+
+    # Verify User D (overridden to Free): does NOT see Pro announcement, does NOT see future announcement
+    res_d = await client.get("/api/v1/announcements/active", headers=user_d_headers)
+    assert res_d.status_code == 200
+    d_ids = [item["id"] for item in res_d.json()["items"]]
+    assert pro_ann_id not in d_ids
+    assert future_ann_id not in d_ids
+
+    # Verify User E (suspended): receives 403 Forbidden
+    res_e = await client.get("/api/v1/announcements/active", headers=user_e_headers)
+    assert res_e.status_code == 403

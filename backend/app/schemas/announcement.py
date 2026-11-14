@@ -11,6 +11,7 @@ class AnnouncementCreateRequest(BaseModel):
     priority: AnnouncementPriority = Field(default="informational")
     audience_type: AnnouncementAudience = Field(default="all")
     audience_reference: Optional[str] = Field(None, max_length=128, description="Target plan slug, role name, or user ID")
+    published_at: Optional[datetime] = Field(None, description="Optional scheduled publication date")
     expires_at: Optional[datetime] = Field(None, description="Optional automatic expiration date")
     is_published: bool = Field(default=True, description="Publish immediately upon creation")
 
@@ -20,6 +21,7 @@ class AnnouncementUpdateRequest(BaseModel):
     priority: Optional[AnnouncementPriority] = None
     audience_type: Optional[AnnouncementAudience] = None
     audience_reference: Optional[str] = Field(None, max_length=128)
+    published_at: Optional[datetime] = None
     expires_at: Optional[datetime] = None
     is_published: Optional[bool] = None
     is_archived: Optional[bool] = None

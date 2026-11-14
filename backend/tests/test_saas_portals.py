@@ -166,3 +166,24 @@ async def test_admin_and_user_portal_workflow(client: AsyncClient, db_session: A
     assert res_audit.status_code == 200
     logs = res_audit.json()
     assert len(logs) >= 4
+
+    # P. User Data Export (PRIV-01)
+    res_export = await client.get("/api/v1/users/me/export", headers=user_headers)
+    assert res_export.status_code == 200
+    export_data = res_export.json()
+    assert export_data["status"] == "success"
+    assert export_data["user_id"] == user.id
+    assert "checksum_sha256" in export_data
+    assert len(export_data["checksum_sha256"]) == 64
+    archive = export_data["archive"]
+    assert archive["profile"]["email"] == "standard@omnidoc.io"
+    assert "documents" in archive
+    assert "jobs" in archive
+    assert "consent_history" in archive
+    assert "messages" in archive
+    assert "audit_events" in archive
+
+    # Verify suspended user cannot export
+    await client.post(f"/api/v1/admin/users/{user.id}/suspend", headers=admin_headers, json={"reason": "Audit"})
+    res_export_susp = await client.get("/api/v1/users/me/export", headers=user_headers)
+    assert res_export_susp.status_code == 403

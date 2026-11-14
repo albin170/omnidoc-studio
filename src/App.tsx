@@ -64,7 +64,8 @@ import {
   Sparkles,
   GitCompare,
   Layers,
-  LogOut
+  LogOut,
+  AlertTriangle
 } from 'lucide-react';
 import { OmniDocLogo } from './components/common/OmniDocLogo';
 import { useToast } from './services/toastService';
@@ -116,6 +117,33 @@ export const App: React.FC = () => {
   const [isWhatIfOpen, setIsWhatIfOpen] = useState(false);
   const [isCollabOpen, setIsCollabOpen] = useState(false);
   const [isDeveloperOpen, setIsDeveloperOpen] = useState(false);
+
+  // Dynamic UI Configuration from Backend
+  const [uiConfig, setUiConfig] = useState<{
+    announcement_banner?: string;
+    maintenance_mode?: boolean;
+    disabled_modules?: string[];
+  } | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (userSession?.jwtToken && !userSession.isGuest) {
+      omniDocClient.getUserUiConfig()
+        .then((cfg) => {
+          if (isMounted && cfg) {
+            setUiConfig(cfg);
+          }
+        })
+        .catch(() => {
+          // Graceful non-blocking fallback for offline / guest mode
+        });
+    } else {
+      setUiConfig(null);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [userSession?.jwtToken, userSession?.isGuest]);
 
   // URL Path & Hash Route Synchronization (User Portal vs Admin Portal vs Pricing)
   const initialAuthMode = useMemo<'signin' | 'signup' | 'admin'>(() => {
@@ -653,10 +681,22 @@ export const App: React.FC = () => {
         onOpenWhatIf={() => setIsWhatIfOpen(true)}
         onOpenCollab={() => setIsCollabOpen(true)}
         onOpenDeveloper={() => setIsDeveloperOpen(true)}
+        disabledModules={uiConfig?.disabled_modules}
       />
 
       {/* Full-Size Dynamic Workspace Content Area */}
       <main className="flex-1 h-full flex flex-col overflow-hidden relative z-10 bg-transparent">
+        {/* Dynamic Maintenance Mode Banner */}
+        {uiConfig?.maintenance_mode && userSession.role !== 'admin' && userSession.role !== 'superadmin' && (
+          <div className="w-full bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-amber-500/20 border-b border-amber-500/40 px-4 py-2.5 flex items-center justify-between text-xs text-amber-200 z-50 backdrop-blur-md shrink-0 shadow-lg">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-bold">Maintenance Notice:</span>
+              <span>OmniDoc Cloud is performing scheduled background updates. Local studio features remain operational.</span>
+            </div>
+          </div>
+        )}
+
         {/* Admin View-As-User Persistent Banner */}
         {viewAsUserSession?.active && (
           <div className="w-full bg-amber-500/20 border-b border-amber-500/40 px-4 py-2.5 flex items-center justify-between text-xs text-amber-200 z-50 backdrop-blur-md shrink-0 shadow-lg">

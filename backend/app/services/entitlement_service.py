@@ -79,6 +79,35 @@ class EffectiveEntitlements:
             "overrides_applied": self.overrides_applied
         }
 
+async def get_effective_plan_tier(user: User, db: AsyncSession) -> str:
+    """
+    Resolve the authoritative effective plan tier for a user.
+    Resolution Precedence:
+    1. Individual user plan override (user.individual_plan_tier)
+    2. Active Organization subscription (SubscriptionModel.status == 'active')
+    3. Organization default plan tier (Organization.plan_tier)
+    4. Global default fallback ("free")
+    """
+    if getattr(user, "individual_plan_tier", None):
+        return user.individual_plan_tier.lower().strip()
+
+    if getattr(user, "org_id", None):
+        sub = await db.scalar(
+            select(SubscriptionModel)
+            .where(SubscriptionModel.org_id == user.org_id, SubscriptionModel.status == "active")
+            .order_by(SubscriptionModel.created_at.desc())
+        )
+        if sub and sub.plan_id:
+            plan = await db.get(PlanModel, sub.plan_id)
+            if plan and plan.slug:
+                return plan.slug.lower().strip()
+
+        org = await db.get(Organization, user.org_id)
+        if org and org.plan_tier:
+            return org.plan_tier.lower().strip()
+
+    return "free"
+
 async def calculate_user_entitlements(user: User, db: AsyncSession) -> EffectiveEntitlements:
     """
     Entitlement Precedence Calculation:

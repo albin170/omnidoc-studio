@@ -18,8 +18,17 @@ from app.schemas.announcement import (
     AnnouncementListResponse,
 )
 from app.api.v1.admin import require_admin
+from app.services.entitlement_service import get_effective_plan_tier
 
 router = APIRouter(prefix="/announcements", tags=["Announcements"])
+
+
+def _normalize_dt(dt: Optional[datetime]) -> Optional[datetime]:
+    if not dt:
+        return None
+    if dt.tzinfo is not None:
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 
 def _announcement_to_out(
@@ -61,6 +70,10 @@ async def create_announcement(
     """
     now = utc_now()
     ann_id = str(uuid.uuid4())
+
+    published_dt = _normalize_dt(req.published_at) or (now if req.is_published else None)
+    expires_dt = _normalize_dt(req.expires_at)
+
     announcement = Announcement(
         id=ann_id,
         title=req.title.strip(),
@@ -70,8 +83,8 @@ async def create_announcement(
         audience_reference=req.audience_reference.strip() if req.audience_reference else None,
         created_by=admin_user.id,
         created_at=now,
-        published_at=now if req.is_published else None,
-        expires_at=req.expires_at,
+        published_at=published_dt,
+        expires_at=expires_dt,
         is_published=req.is_published,
         is_archived=False
     )
@@ -126,8 +139,10 @@ async def update_announcement(
         ann.audience_type = req.audience_type
     if req.audience_reference is not None:
         ann.audience_reference = req.audience_reference.strip() if req.audience_reference else None
+    if req.published_at is not None:
+        ann.published_at = _normalize_dt(req.published_at)
     if req.expires_at is not None:
-        ann.expires_at = req.expires_at
+        ann.expires_at = _normalize_dt(req.expires_at)
     if req.is_published is not None:
         if req.is_published and not ann.published_at:
             ann.published_at = utc_now()
@@ -245,24 +260,37 @@ async def get_active_announcements_for_user(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Fetch active, non-expired announcements that apply to the current user based on:
+    Fetch active, scheduled, and non-expired announcements that apply to the current user based on:
     - Audience: 'all'
     - Audience: 'role' matching user's role
-    - Audience: 'plan' matching user's individual_plan_tier
+    - Audience: 'plan' matching user's effective plan tier (individual override or organization inheritance)
     - Audience: 'user' matching user's ID
     Includes user-specific read and dismissal state.
     """
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Suspended or inactive user account"
+        )
+
     now = utc_now()
+    effective_plan = await get_effective_plan_tier(current_user, db)
 
     # Audience filter
     audience_conds = [Announcement.audience_type == "all"]
     if current_user.role:
         audience_conds.append(
-            and_(Announcement.audience_type == "role", Announcement.audience_reference == current_user.role)
+            and_(
+                Announcement.audience_type == "role",
+                func.lower(Announcement.audience_reference) == current_user.role.lower()
+            )
         )
-    if current_user.individual_plan_tier:
+    if effective_plan:
         audience_conds.append(
-            and_(Announcement.audience_type == "plan", Announcement.audience_reference == current_user.individual_plan_tier)
+            and_(
+                Announcement.audience_type == "plan",
+                func.lower(Announcement.audience_reference) == effective_plan.lower()
+            )
         )
     audience_conds.append(
         and_(Announcement.audience_type == "user", Announcement.audience_reference == current_user.id)
@@ -271,6 +299,9 @@ async def get_active_announcements_for_user(
     base_filter = [
         Announcement.is_published.is_(True),
         Announcement.is_archived.is_(False),
+        # Must not be scheduled in the future
+        or_(Announcement.published_at.is_(None), Announcement.published_at <= now),
+        # Must not be expired
         or_(Announcement.expires_at.is_(None), Announcement.expires_at > now),
         or_(*audience_conds)
     ]

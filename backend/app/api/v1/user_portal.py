@@ -2,17 +2,21 @@ from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_, and_
+import json
+import hashlib
 
-from app.core.database import get_db
+from app.core.database import get_db, utc_now
 from app.core.security import get_current_user
 from app.models.user import User
 from app.models.document import Document
 from app.models.job import Job
 from app.models.organization import Organization
 from app.models.subscription_management import SubscriptionModel, PlanModel, UiConfigurationModel
+from app.models.consent import ConsentRecord
+from app.models.message import Message
+from app.models.audit import AuditEvent
 from app.services.entitlement_service import calculate_user_entitlements
-import json
 
 router = APIRouter(prefix="/users/me", tags=["User Portal"])
 
@@ -154,4 +158,183 @@ async def get_user_ui_configuration(
         "maintenance_mode": maintenance,
         "disabled_modules": disabled_modules
     }
+
+
+@router.get("/export")
+async def export_my_user_data(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    PRIV-01 & Master Prompt:
+    Authentic user data export archive generating complete, tamper-verifiable JSON
+    containing user profile, document metadata, conversion jobs, consent ledger,
+    direct messages, and audit trail with a cryptographic SHA-256 integrity checksum.
+    """
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Suspended or inactive user account"
+        )
+
+    now = utc_now()
+
+    # 1. Profile
+    profile = {
+        "id": current_user.id,
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "role": current_user.role,
+        "org_id": current_user.org_id,
+        "individual_plan_tier": current_user.individual_plan_tier,
+        "is_active": current_user.is_active,
+        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+    }
+
+    # 2. Documents
+    docs_res = await db.scalars(
+        select(Document)
+        .where(or_(Document.user_id == current_user.id, and_(Document.org_id == current_user.org_id, Document.user_id.is_(None))))
+        .order_by(Document.created_at.desc())
+    )
+    documents = [
+        {
+            "id": d.id,
+            "filename": d.filename,
+            "file_size": d.file_size,
+            "mime_type": d.mime_type,
+            "format_type": d.format_type,
+            "storage_path": d.storage_path,
+            "content_hash_sha256": d.content_hash_sha256,
+            "version": d.version,
+            "created_at": d.created_at.isoformat() if d.created_at else None,
+            "updated_at": d.updated_at.isoformat() if d.updated_at else None,
+        }
+        for d in docs_res.all()
+    ]
+
+    # 3. Jobs
+    jobs_res = await db.scalars(
+        select(Job)
+        .where(or_(Job.user_id == current_user.id, and_(Job.org_id == current_user.org_id, Job.user_id.is_(None))))
+        .order_by(Job.created_at.desc())
+    )
+    jobs = [
+        {
+            "id": j.id,
+            "title": j.title,
+            "objective": j.objective,
+            "status": j.status,
+            "mode": j.mode,
+            "current_step_index": j.current_step_index,
+            "total_steps": j.total_steps,
+            "created_at": j.created_at.isoformat() if j.created_at else None,
+            "updated_at": j.updated_at.isoformat() if j.updated_at else None,
+        }
+        for j in jobs_res.all()
+    ]
+
+    # 4. Consents
+    consents_res = await db.scalars(
+        select(ConsentRecord)
+        .where(ConsentRecord.user_id == current_user.id)
+        .order_by(ConsentRecord.timestamp.desc())
+    )
+    consents = [
+        {
+            "id": c.id,
+            "consent_type": c.consent_type,
+            "policy_version": c.policy_version,
+            "granted": c.granted,
+            "timestamp": c.timestamp.isoformat() if c.timestamp else None,
+            "ip_address": c.ip_address,
+            "user_agent": c.user_agent,
+        }
+        for c in consents_res.all()
+    ]
+
+    # 5. Messages
+    msgs_res = await db.scalars(
+        select(Message)
+        .where(or_(Message.sender_user_id == current_user.id, Message.recipient_user_id == current_user.id))
+        .order_by(Message.created_at.desc())
+    )
+    messages = [
+        {
+            "id": m.id,
+            "sender_user_id": m.sender_user_id,
+            "recipient_user_id": m.recipient_user_id,
+            "subject": m.subject,
+            "body": m.body,
+            "priority": m.priority,
+            "status": m.status,
+            "created_at": m.created_at.isoformat() if m.created_at else None,
+            "read_at": m.read_at.isoformat() if m.read_at else None,
+        }
+        for m in msgs_res.all()
+    ]
+
+    # 6. Audit Events (for this user)
+    audits_res = await db.scalars(
+        select(AuditEvent)
+        .where(AuditEvent.user_id == current_user.id)
+        .order_by(AuditEvent.timestamp.desc())
+        .limit(500)
+    )
+    audit_events = [
+        {
+            "id": a.id,
+            "action": a.action,
+            "target_type": a.target_type,
+            "target_id": a.target_id,
+            "details_json": a.details_json,
+            "timestamp": a.timestamp.isoformat() if a.timestamp else None,
+        }
+        for a in audits_res.all()
+    ]
+
+    payload = {
+        "export_version": "1.0",
+        "exported_at": now.isoformat(),
+        "user_id": current_user.id,
+        "profile": profile,
+        "documents": documents,
+        "jobs": jobs,
+        "consent_history": consents,
+        "messages": messages,
+        "audit_events": audit_events
+    }
+
+    # Deterministic SHA-256 Checksum
+    serialized_canonical = json.dumps(payload, sort_keys=True, separators=(',', ':'))
+    checksum = hashlib.sha256(serialized_canonical.encode("utf-8")).hexdigest()
+
+    # Record Audit Event
+    audit = AuditEvent(
+        org_id=current_user.org_id,
+        user_id=current_user.id,
+        action="EXPORT_USER_DATA",
+        target_type="User",
+        target_id=current_user.id,
+        details_json=json.dumps({"checksum_sha256": checksum, "record_counts": {
+            "documents": len(documents),
+            "jobs": len(jobs),
+            "consents": len(consents),
+            "messages": len(messages),
+            "audits": len(audit_events)
+        }}),
+        timestamp=now
+    )
+    db.add(audit)
+    await db.commit()
+
+    return {
+        "status": "success",
+        "export_version": "1.0",
+        "exported_at": now.isoformat(),
+        "user_id": current_user.id,
+        "checksum_sha256": checksum,
+        "archive": payload
+    }
+
 
