@@ -68,13 +68,15 @@ interface AdminConsoleProps {
   onUpdateSession: (newSession: UserSession) => void;
   totalStorageBytes: number;
   onStartViewAsUser?: (targetUser: any, sessionToken: string, scopedToken?: string) => void;
+  onReturnToDashboard?: () => void;
 }
 
 export const AdminConsole: React.FC<AdminConsoleProps> = ({
   userSession,
   onUpdateSession,
   totalStorageBytes,
-  onStartViewAsUser
+  onStartViewAsUser,
+  onReturnToDashboard
 }) => {
   const { addToast } = useToast();
 
@@ -538,28 +540,19 @@ export const AdminConsole: React.FC<AdminConsoleProps> = ({
     return (
       <div className="w-full h-full flex items-center justify-center p-6 bg-[#03050C] text-[#F5FAFF]">
         <div className="p-8 rounded-[28px] lg-primary max-w-md text-center space-y-4 border border-rose-500/30">
-          <ShieldAlert className="w-12 h-12 text-[#FF3366] mx-auto animate-pulse" />
+          <ShieldAlert className="w-12 h-12 text-[#FF3366] mx-auto" />
           <h2 className="text-xl font-bold font-display">Administrative Privileges Required</h2>
           <p className="text-xs text-[#A7B8CA]">
-            Your current authenticated account ({userSession.userEmail || 'Guest / Visitor'}) does not possess administrative or superadministrative privileges.
+            Your current authenticated account ({userSession.userEmail || 'Guest / Visitor'}) does not possess administrative privileges. This area is strictly reserved for verified administrators.
           </p>
-          <button
-            onClick={() => {
-              onUpdateSession({
-                ...userSession,
-                role: 'superadmin',
-                planTier: 'enterprise',
-                isAuthenticated: true,
-                userName: userSession.userName || 'System Administrator',
-                userEmail: userSession.userEmail || 'admin@omnidoc.io',
-              });
-              addToast('success', 'Admin Mode Activated', 'Granted Superadministrator governance rights.');
-            }}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-black text-xs shadow-lg hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-2"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Enter Administrator Mode (Superadmin Access)</span>
-          </button>
+          {onReturnToDashboard && (
+            <button
+              onClick={onReturnToDashboard}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#FF3366] to-[#38BDF8] text-white font-bold text-xs shadow-lg hover:brightness-110 transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span>Return to Workspace Dashboard</span>
+            </button>
+          )}
         </div>
       </div>
     );

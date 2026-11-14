@@ -203,6 +203,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const visibleNavItems = navItems.filter((item) => {
+    // Admin Console is strictly reserved for administrators (admin or superadmin).
+    // Hide completely for standard users, staff, and guests.
+    if (item.id === 'admin' && userRole !== 'admin' && userRole !== 'superadmin') {
+      return false;
+    }
     if (!disabledModules || disabledModules.length === 0) return true;
     if (item.tab === 'dashboard' || item.tab === 'settings' || item.tab === 'admin') return true;
     return !disabledModules.includes(item.tab);

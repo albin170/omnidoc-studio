@@ -227,5 +227,27 @@ describe('Admin-User Communications & Role Consistency Suite', () => {
       expect(check.allowed).toBe(false);
       expect(check.reason).toContain('Administrator privileges required');
     });
+
+    it('rejects administrative access to staff accounts', async () => {
+      const now = Date.now();
+      const staffUserSession: SecureAuthSession = {
+        isGuest: false,
+        storageUsedBytes: 0,
+        userEmail: 'staff@omnidoc.io',
+        userName: 'Staff Member',
+        role: 'staff',
+        planTier: 'starter',
+        isAuthenticated: true,
+        authSource: 'backend',
+        jwtToken: 'fake.staff.jwt',
+        issuedAt: now,
+        expiresAt: now + 3600000,
+      };
+      staffUserSession.signature = await computeSessionSignature(staffUserSession);
+
+      const check = await authorizeUserAction(staffUserSession, 'admin');
+      expect(check.allowed).toBe(false);
+      expect(check.reason).toContain('Administrator privileges required');
+    });
   });
 });

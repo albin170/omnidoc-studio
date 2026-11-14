@@ -213,6 +213,14 @@ export const App: React.FC = () => {
     }
   }, [userSession.role]);
 
+  // Administrative tab guard: automatically redirect user or staff away from Admin Console
+  useEffect(() => {
+    if (activeTab === 'admin' && userSession.role !== 'admin' && userSession.role !== 'superadmin') {
+      setActiveTab('dashboard');
+      addToast('warning', 'Access Restricted', 'The Admin Console is reserved for verified administrators.');
+    }
+  }, [activeTab, userSession.role, addToast]);
+
   // Extract current document content for AI Assistant & Revision Diff
   const currentDocumentContent = useMemo(() => {
     if (activeTab === 'docx') return docxState.content;
@@ -705,7 +713,7 @@ export const App: React.FC = () => {
         projectCount={projects.length}
         userName={userSession.userName || 'Document Architect'}
         avatarUrl={userSession.avatarUrl}
-        userRole={userSession.role || 'admin'}
+        userRole={userSession.role || 'user'}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
         onOpenUserPanel={() => setIsUserPanelOpen(true)}
@@ -1058,11 +1066,12 @@ export const App: React.FC = () => {
           />
         )}
 
-        {activeTab === 'admin' && (
+        {activeTab === 'admin' && (userSession.role === 'admin' || userSession.role === 'superadmin') && (
           <AdminConsole
             userSession={userSession}
             onUpdateSession={handleUpdateSession}
             totalStorageBytes={totalStorageBytes}
+            onReturnToDashboard={() => setActiveTab('dashboard')}
             onStartViewAsUser={(targetUser, sessionId, scopedToken) => {
               if (scopedToken) {
                 omniDocClient.setToken(scopedToken);
@@ -1188,6 +1197,7 @@ export const App: React.FC = () => {
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         onNavigate={setActiveTab}
+        userRole={userSession.role || 'user'}
         onNewDocx={() => {
           setDocxState({ title: 'Untitled Document', content: '' });
           setActiveTab('docx');

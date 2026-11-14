@@ -36,6 +36,7 @@ interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigate: (tab: WorkspaceTab) => void;
+  userRole?: string;
   onNewDocx?: () => void;
   onNewSlides?: () => void;
   onNewSheet?: () => void;
@@ -46,6 +47,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   isOpen,
   onClose,
   onNavigate,
+  userRole,
   onNewDocx,
   onNewSlides,
   onNewSheet,
@@ -162,14 +164,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       icon: DollarSign,
       tab: 'pricing',
     },
-    {
-      id: 'tool-admin',
-      title: 'Admin & Telemetry Console',
-      subtitle: 'Inspect WebAssembly drivers, system metrics and manage license roles',
-      category: 'Tools',
-      icon: ShieldAlert,
-      tab: 'admin',
-    },
+    ...(userRole === 'admin' || userRole === 'superadmin'
+      ? [
+          {
+            id: 'tool-admin',
+            title: 'Admin & Telemetry Console',
+            subtitle: 'Inspect WebAssembly drivers, system metrics and manage license roles',
+            category: 'Tools' as const,
+            icon: ShieldAlert,
+            tab: 'admin' as WorkspaceTab,
+          },
+        ]
+      : []),
     // Actions
     {
       id: 'act-new-docx',
